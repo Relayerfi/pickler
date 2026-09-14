@@ -1,17 +1,17 @@
 # Pickler
 
-Monorepo con npm workspaces, Turborepo, Next.js App Router y TypeScript estricto.
+A monorepo using npm workspaces, Turborepo, Next.js App Router, and strict TypeScript.
 
-## Desarrollo
+## Development
 
-Node 22 o superior y npm 10.9.3. Desde la raíz:
+Use Node 22 or newer and npm 10.9.3. Run from the repository root:
 
 ```sh
-npm install
+npm ci
 npm run dev
 ```
 
-Web: http://localhost:3000. Endpoint de liveness: `/api/v1/health`.
+Web: http://localhost:3000. Liveness endpoint: `/api/v1/health`.
 
 ```sh
 npm run lint
@@ -20,37 +20,37 @@ npm test
 npm run build
 ```
 
-## Organización
+## Repository structure
 
 ```text
 apps/web/src/
-  app/                      # Presentación: páginas y Route Handlers
+  app/                      # Presentation: pages and Route Handlers
     api/v1/health/route.ts
-  server/container.ts       # Composición e inyección; server-only
+  server/container.ts       # Server-only composition and dependency injection
 packages/
-  core/src/                 # Negocio: dominio, casos de uso e interfaces
-  infrastructure/src/       # Adaptadores: reloj; futuros repositorios/API/RPC
-  api-schema/src/           # DTO públicos serializables
-  ui/src/                   # Componentes React independientes del producto
-  chain/src/                # Tipos públicos; futuros ABI y despliegues por red
-  typescript-config/        # Configuración compartida
-contracts/                  # Proyecto Foundry independiente
-  src/                      # Solidity
-  test/                     # Pruebas, fuzzing e invariantes
-  script/                   # Scripts de despliegue
+  core/src/                 # Business: domain, use cases, and ports
+  infrastructure/src/       # Adapters: clock; future persistence/API/RPC clients
+  api-schema/src/           # Public, serializable HTTP DTOs
+  ui/src/                   # Product-independent React components and styles
+  chain/src/                # Public types; future ABIs and per-network deployments
+  typescript-config/        # Shared TypeScript configuration
+contracts/                  # Independent Foundry project
+  src/                      # Solidity contracts
+  test/                     # Unit, fuzz, and invariant tests
+  script/                   # Deployment scripts
 ```
 
-La implementación inicial conecta un Route Handler con un caso de uso y un reloj real inyectado. `health` comprueba que la aplicación responde; no comprueba servicios externos. No hay todavía proveedores conectados, base de datos, wallet ni contratos de negocio. El contrato HTTP inicial se expresa en TypeScript; las entradas futuras necesitan validación en runtime.
+The initial implementation connects a Route Handler to a use case and an injected system clock. The health endpoint checks that the application responds; it does not check external dependencies. No providers, database, wallet, or business contracts are connected yet. The initial HTTP contract is expressed in TypeScript; future request inputs require runtime validation.
 
-Ver [decisiones de arquitectura](docs/architecture.md).
+See [architecture decisions](docs/architecture.md) and [repository agent instructions](AGENTS.md). Every app and package has its own `AGENTS.md`; read it before working in that project and update it when the project changes. Repository documentation is maintained in English.
 
 ## Solidity
 
-Se incluye la estructura y configuración de Foundry. No hay contratos hasta definir sus reglas, permisos y red de destino. Los comandos siguientes requieren Foundry instalado:
+Foundry configuration and directories are included. Contracts remain undefined until their business rules, permissions, and target network are established. These commands require Foundry:
 
 ```sh
 npm run contracts:build
 npm run contracts:test
 ```
 
-Los despliegues on-chain se ejecutan explícitamente, nunca como efecto de `build`. Solidity tiene su propia cadena de compilación; los comandos de contratos son independientes de las tareas de la web.
+On-chain deployments run explicitly, never as a side effect of `build`. Solidity has its own toolchain; contract commands are independent of web tasks. The current source and test directories are empty.
