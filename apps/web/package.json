@@ -1,0 +1,24 @@
+{
+  "name": "@pickler/web",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "next typegen && tsc --noEmit"
+  },
+  "dependencies": {
+    "next": "^16.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "server-only": "^0.0.1",
+    "@pickler/ui": "*",
+    "@pickler/core": "*",
+    "@pickler/infrastructure": "*",
+    "@pickler/api-schema": "*"
+  },
+  "devDependencies": {
+    "@pickler/typescript-config": "*"
+  }
+}

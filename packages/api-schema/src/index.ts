@@ -1,0 +1,5 @@
+// Public wire format only: no domain objects, secrets, Date or bigint.
+export interface HealthResponse {
+  status: "ok";
+  checkedAt: string;
+}
