@@ -32,6 +32,12 @@ See [README.md](README.md) for setup and [docs/architecture.md](docs/architectur
 - Use declared workspace dependencies and public package exports. Do not bypass package boundaries with relative imports into another project's source.
 - External providers, networks, and business contracts have not been selected. Do not document planned integrations as operational.
 
+## Branch and pull request workflow
+
+- Never push directly to `main`, including corrective changes. Do not force-push `main`.
+- Create a `codex/` feature branch before committing changes and submit changes through a pull request.
+- Do not merge a pull request without explicit user authorization.
+
 ## Workflow and checks
 
 Use Node 22+ and npm 10.9.3 with the committed lockfile. Install from the root with `npm ci`; use `npm install` when intentionally changing dependencies. Turborepo coordinates workspace tasks. All commands below run from the repository root:
