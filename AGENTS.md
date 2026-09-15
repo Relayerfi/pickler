@@ -21,16 +21,16 @@ Keep each project's `AGENTS.md` updated in the same change whenever its structur
 | `packages/typescript-config` | Shared compiler configuration | [AGENTS.md](packages/typescript-config/AGENTS.md) |
 | `contracts` | Foundry/Solidity project | [AGENTS.md](contracts/AGENTS.md) |
 
-See [README.md](README.md) for setup and [docs/architecture.md](docs/architecture.md) for architectural decisions.
+See [README.md](README.md) for setup, [docs/architecture.md](docs/architecture.md) for architectural decisions, and [the agent runtime V1 specification](docs/specs/agent-runtime-v1.md) for the planned Mastra service, capability interfaces, tenant isolation, scheduling, and implementation phases. `apps/agent-service` is proposed and does not exist yet; create its own `AGENTS.md` when scaffolding it.
 
 ## Architecture invariants
 
 - Maintain three layers: presentation (`apps/web`), business (`packages/core`), and infrastructure (`packages/infrastructure`). Code dependencies point toward business: presentation → business ← infrastructure.
-- Only server composition code in `apps/web/src/server` connects concrete adapters with use cases. Protect this boundary with `server-only`.
+- Each executable app connects concrete adapters with use cases in its own server composition root. Today this is `apps/web/src/server`, protected with `server-only`. The proposed agent service uses `src/composition/container.ts` and a Node server boundary; it must not depend on Next.js-specific guards.
 - Keep Next.js, React, transport objects, database clients, and provider SDKs out of core. Use business-owned interfaces and dependency injection.
 - Keep HTTP DTOs in `api-schema`; keep public on-chain artifacts in `chain`. Neither package carries credentials or server implementation details.
 - Use declared workspace dependencies and public package exports. Do not bypass package boundaries with relative imports into another project's source.
-- External providers, networks, and business contracts have not been selected. Do not document planned integrations as operational.
+- The planned agent pilot uses Mastra, Exa, and Polymarket; Firecrawl is a later provider option. Monad is the launcher direction. None of these integrations or business contracts is implemented. Auth, storage, queue, hosting, model, credentials, and live execution policy still require concrete choices. Do not document planned integrations as operational.
 
 ## Workflow and checks
 

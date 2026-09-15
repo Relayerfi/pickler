@@ -172,3 +172,7 @@ npm run build --workspace=@pickler/web
 ```
 
 Use root `npm run build` and `npm run typecheck` when validating changes across packages. For behavior changes, verify affected HTTP methods, runtime input rejection, safe failures, caching, and the UI flow as applicable. The existing health test covers core behavior only; it is not an end-to-end test suite.
+
+## Planned agent pilot
+
+The planned [agent runtime V1](../../docs/specs/agent-runtime-v1.md) runs in a separate `apps/agent-service` host. Future web routes act as authenticated facades: verify workspace access, forward trusted scope server-to-server, and expose safe run status/events. Keep Mastra runtime and worker code out of the frontend. The proposed routes are not implemented; the specification lets frontend work proceed independently.
