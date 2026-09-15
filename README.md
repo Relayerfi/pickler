@@ -4,7 +4,7 @@ A monorepo using npm workspaces, Turborepo, Next.js App Router, and strict TypeS
 
 ## Development
 
-Use Node 22 or newer and npm 10.9.3. Run from the repository root:
+Use Node 22.22 or newer and npm 10.9.3. Run from the repository root:
 
 ```sh
 npm ci
@@ -23,13 +23,14 @@ npm run build
 ## Repository structure
 
 ```text
+apps/agent-service/         # Local Mastra research pilot (independent of frontend)
 apps/web/src/
   app/                      # Presentation: pages and Route Handlers
     api/v1/health/route.ts
   server/container.ts       # Server-only composition and dependency injection
 packages/
   core/src/                 # Business: domain, use cases, and ports
-  infrastructure/src/       # Adapters: clock; future persistence/API/RPC clients
+  infrastructure/src/       # Clock, SQLite, Exa and Polymarket adapters
   api-schema/src/           # Public, serializable HTTP DTOs
   ui/src/                   # Product-independent React components and styles
   chain/src/                # Public types; future ABIs and per-network deployments
@@ -40,9 +41,15 @@ contracts/                  # Independent Foundry project
   script/                   # Deployment scripts
 ```
 
-The initial implementation connects a Route Handler to a use case and an injected system clock. The health endpoint checks that the application responds; it does not check external dependencies. No providers, database, wallet, or business contracts are connected yet. The initial HTTP contract is expressed in TypeScript; future request inputs require runtime validation.
+The web health endpoint remains a liveness check. The independent [agent research pilot](apps/agent-service/README.md) adds tenant-scoped SQLite jobs, Exa research, Polymarket market data and Mastra Studio. It produces research decisions without placing orders. Credentials and the exact compatible model must be configured locally.
 
-The next planned build is described in the [agent runtime V1 specification](docs/specs/agent-runtime-v1.md): an independent Mastra service with tenant-scoped tools, research, scheduling, and bounded execution. It includes proposed folders, API contracts, and acceptance criteria; these features are not implemented yet.
+```sh
+npm run agent -- init
+# Fill in apps/agent-service/.env, then:
+npm run dev:agent
+```
+
+`npm run dev` starts only the frontend. The agent has its own terminal and Studio at `http://127.0.0.1:4111`. Core, infrastructure and API schemas compile to ESM; root development/build/test commands build dependencies in order. Read the [pilot guide](apps/agent-service/README.md) before running paid connection checks or research. The broader [runtime specification](docs/specs/agent-runtime-v1.md) also describes future capabilities outside this pilot.
 
 See [architecture decisions](docs/architecture.md) and [repository agent instructions](AGENTS.md). Every app and package has its own `AGENTS.md`; read it before working in that project and update it when the project changes. Repository documentation is maintained in English.
 

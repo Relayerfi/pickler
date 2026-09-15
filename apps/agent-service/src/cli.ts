@@ -1,0 +1,35 @@
+import { readFile, writeFile } from 'node:fs/promises';
+import { randomBytes, randomUUID } from 'node:crypto';
+import { config } from 'dotenv';
+const [command, ...args] = process.argv.slice(2);
+config({ quiet: true });
+if (command === 'init') {
+  const template = await readFile('.env.example', 'utf8');
+  await writeFile('.env', template.replace('TENANT_ALPHA_TOKEN=', `TENANT_ALPHA_TOKEN=${randomBytes(32).toString('hex')}`).replace('TENANT_BETA_TOKEN=', `TENANT_BETA_TOKEN=${randomBytes(32).toString('hex')}`), { flag: 'wx', mode: 0o600 });
+  console.log('Created .env with distinct local tokens. Fill in the four provider variables before starting.');
+} else {
+  const tenant = args[0] ?? 'alpha';
+  if (!['alpha','beta'].includes(tenant)) throw new Error('Choose alpha or beta');
+  const token = process.env[`TENANT_${tenant.toUpperCase()}_TOKEN`];
+  if (!token) throw new Error('Run init and configure .env first');
+  const agent = `pickle-${tenant}`;
+  let path: string; let method = 'GET'; let body: unknown;
+  switch (command) {
+    case 'agents': path = '/agents'; break;
+    case 'categories': path = '/categories'; break;
+    case 'check': path = '/connections/check'; method = 'POST'; break;
+    case 'configure': path = `/agents/${agent}/config`; method = 'PUT'; body = JSON.parse(await readFile(args[1] ?? 'config.json', 'utf8')); break;
+    case 'run': path = `/agents/${agent}/runs`; method = 'POST'; body = args[1] ? { marketId: args[1] } : {}; break;
+    case 'result': path = `/runs/${encodeURIComponent(args[1] ?? '')}`; break;
+    case 'events': path = `/runs/${encodeURIComponent(args[1] ?? '')}/events`; break;
+    case 'schedule': path = `/agents/${agent}/schedule`; method = 'PUT'; if (!['on','off'].includes(args[1] ?? '')) throw new Error('Use on or off'); body = { enabled: args[1] === 'on' }; break;
+    case 'pause': case 'resume': path = `/agents/${agent}/pause`; method = 'PUT'; body = { paused: command === 'pause' }; break;
+    default: throw new Error('Commands: init, agents, categories, check, configure, run, result, events, schedule, pause, resume. Each accepts alpha|beta (default alpha).');
+  }
+  const response = await fetch(`http://127.0.0.1:4111/pilot${path}`, {
+    method, headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', 'Idempotency-Key': randomUUID() },
+    ...(body !== undefined ? { body: JSON.stringify(body) } : {}), signal: AbortSignal.timeout(240_000),
+  });
+  console.log(JSON.stringify(await response.json(), null, 2));
+  if (!response.ok) process.exitCode = 1;
+}

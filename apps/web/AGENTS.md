@@ -48,7 +48,7 @@ export interface Clock {
 **2. Use case — `packages/core/src/application/get-health.ts`:**
 
 ```ts
-import type { Clock } from "../ports/clock";
+import type { Clock } from "../ports/clock.js";
 
 export function createGetHealth(clock: Clock) {
   return () => ({ status: "ok" as const, checkedAt: clock.now() });
@@ -164,15 +164,15 @@ Export new public functionality through each package's declared entry points and
 Run from the repository root:
 
 ```sh
-npm run dev --workspace=@pickler/web
+npm run dev
 npm run typecheck --workspace=@pickler/web
 npm run lint
 npm test
-npm run build --workspace=@pickler/web
+npm run build
 ```
 
 Use root `npm run build` and `npm run typecheck` when validating changes across packages. For behavior changes, verify affected HTTP methods, runtime input rejection, safe failures, caching, and the UI flow as applicable. The existing health test covers core behavior only; it is not an end-to-end test suite.
 
 ## Planned agent pilot
 
-The planned [agent runtime V1](../../docs/specs/agent-runtime-v1.md) runs in a separate `apps/agent-service` host. Future web routes act as authenticated facades: verify workspace access, forward trusted scope server-to-server, and expose safe run status/events. Keep Mastra runtime and worker code out of the frontend. The proposed routes are not implemented; the specification lets frontend work proceed independently.
+The [agent runtime V1](../../docs/specs/agent-runtime-v1.md) has a research-only pilot in the separate `apps/agent-service` host. See its README for the current laboratory API. Future web routes act as authenticated facades: verify workspace access, forward trusted scope server-to-server, and expose safe run status/events. Keep Mastra runtime and worker code out of the frontend. The proposed routes are not implemented; the specification lets frontend work proceed independently.

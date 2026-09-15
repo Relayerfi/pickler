@@ -7,12 +7,25 @@
       ],
       "outputs": [
         ".next/**",
-        "!.next/cache/**"
+        "!.next/cache/**",
+        "dist/**",
+        ".mastra/output/**"
+      ],
+      "env": [
+        "MODEL_BASE_URL",
+        "MODEL_ID",
+        "MODEL_API_KEY",
+        "EXA_API_KEY",
+        "TENANT_ALPHA_TOKEN",
+        "TENANT_BETA_TOKEN"
       ]
     },
     "dev": {
       "cache": false,
-      "persistent": true
+      "persistent": true,
+      "dependsOn": [
+        "^build"
+      ]
     },
     "typecheck": {
       "dependsOn": [

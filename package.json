@@ -7,16 +7,19 @@
     "packages/*"
   ],
   "engines": {
-    "node": ">=22.0.0"
+    "node": ">=22.22.0"
   },
   "scripts": {
-    "dev": "turbo run dev",
+    "dev": "turbo run dev --filter=@pickler/web",
     "build": "turbo run build",
     "typecheck": "turbo run typecheck",
     "lint": "eslint .",
-    "test": "node --import tsx --test packages/core/test/*.test.ts",
+    "test": "npm run build:shared && node --import tsx --test packages/core/test/*.test.ts packages/infrastructure/test/*.test.ts apps/agent-service/test/*.test.ts",
     "contracts:build": "forge build --root contracts",
-    "contracts:test": "forge test --root contracts"
+    "contracts:test": "forge test --root contracts",
+    "dev:agent": "npm run build:shared && npm run dev --workspace=@pickler/agent-service",
+    "build:shared": "turbo run build --filter=@pickler/core --filter=@pickler/infrastructure --filter=@pickler/api-schema",
+    "agent": "npm run cli --workspace=@pickler/agent-service --"
   },
   "devDependencies": {
     "turbo": "^2.10.13",

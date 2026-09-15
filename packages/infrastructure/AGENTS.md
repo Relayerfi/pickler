@@ -4,9 +4,9 @@ Read [the root instructions](../../AGENTS.md) and [core instructions](../core/AG
 
 ## Responsibility and current state
 
-`@pickler/infrastructure` implements interfaces owned by core. Its only current implementation is `systemClock`, exported from `src/index.ts` and implementing core's `Clock` port. No database, provider SDK, RPC client, or credentials are configured.
+`@pickler/infrastructure` implements interfaces owned by core. It exports `systemClock`, `ExaResearch` (`WebSearch`/`PageReader`), `PolymarketData` (`MarketData`) and `SqliteResearchStore` (scoped configuration, runs, evidence, decisions and job persistence). Constructors accept configuration; no credentials are embedded.
 
-As concrete capabilities are introduced, organize adapters by feature, for example `src/bookings/booking-repository.ts` or `src/blockchain/<capability>.ts`. These are proposed paths, not existing integrations.
+Actual adapters live in `src/research`, `src/polymarket` and `src/persistence`. Business policy comes from core; SQL implements transactional admission, idempotency, claims and scoped access. SQLite retries only bounded lock contention, never an ambiguous investigation. New providers must pass capability contract tests. Public runtime exports use compiled `dist`; relative source imports include `.js` extensions.
 
 ## Rules
 
@@ -22,8 +22,4 @@ As concrete capabilities are introduced, organize adapters by feature, for examp
 
 ## Checks
 
-From the root: `npm run typecheck --workspace=@pickler/infrastructure` and `npm run lint`. Add adapter contract tests when real integrations exist, covering failures and timeouts as well as success. There is no infrastructure test script yet; explicitly wire new tests into the root checks. Use `npm run build` when changing exports consumed by Next.js.
-
-## Planned agent pilot
-
-The planned [agent runtime V1](../../docs/specs/agent-runtime-v1.md) places Exa, Polymarket, persistence, queue, and credential adapters here, with Firecrawl as a later option. No such adapters are implemented yet. Mastra-specific tool wrappers belong to the new agent-service host and call use cases. Provider replacement must preserve capability contracts and record provenance.
+Run `npm test`, `npm run typecheck`, `npm run lint` and `npm run build` from root. Tests in `test/*.test.ts` cover provider normalization/errors, SQLite isolation/concurrency/recovery/schedules, and core research with injected providers. No paid calls occur in tests. Shared package builds precede runtime consumption. Keep operational persistence in ignored app `.data` directories, separate from Mastra storage.

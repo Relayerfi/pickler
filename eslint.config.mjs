@@ -6,11 +6,11 @@ export default defineConfig([
   ...nextVitals,
   ...nextTs,
   { settings: { next: { rootDir: "apps/web/" } } },
-  globalIgnores(["**/.next/**", "**/.turbo/**", "**/next-env.d.ts", "contracts/out/**", "contracts/cache/**"]),
+  globalIgnores(["**/.next/**", "**/dist/**", "**/.mastra/**", "**/.turbo/**", "**/next-env.d.ts", "contracts/out/**", "contracts/cache/**"]),
   {
     files: ["packages/core/**/*.{ts,tsx}", "packages/api-schema/**/*.{ts,tsx}", "packages/chain/**/*.{ts,tsx}"],
     rules: {
-      "no-restricted-imports": ["error", { patterns: ["next", "next/*", "react", "@pickler/infrastructure", "@pickler/ui", "@pickler/web", "@pickler/core", "@pickler/api-schema", "@pickler/chain"] }],
+      "no-restricted-imports": ["error", { patterns: ["next", "next/*", "react", "@pickler/infrastructure", "@pickler/ui", "@pickler/web", "@pickler/core", "@pickler/api-schema", "@pickler/chain", "@mastra/*", "@ai-sdk/*"] }],
     },
   },
   {

@@ -2,6 +2,11 @@
   "extends": "@pickler/typescript-config/base.json",
   "include": [
     "src/**/*.ts",
-    "src/**/*.tsx"
-  ]
+    "test/**/*.ts"
+  ],
+  "compilerOptions": {
+    "types": [
+      "node"
+    ]
+  }
 }

@@ -1,5 +1,7 @@
 # Pickler agent runtime V1 specification
 
+> Implementation note: the local research-only subset is documented in [the pilot guide](../../apps/agent-service/README.md). This broader specification also includes future capabilities; it is not a claim that trading, wallets or public authentication are implemented.
+
 ## Purpose and status
 
 Build the shortest verifiable path from a configured agent to market research, an explicit trade or abstention decision, and eventually bounded autonomous execution on Polymarket. Run the agent independently of the product frontend so frontend development and agent experimentation can proceed separately.
