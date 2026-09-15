@@ -32,7 +32,3 @@ The actual test is `test/health.test.ts`. `createGetHealth` and the `Clock` inte
 ## Checks
 
 From the repository root, run `npm run typecheck --workspace=@pickler/core`, `npm test`, and `npm run lint` as relevant. Tests use Node's test runner with `tsx`. The root test command currently finds only `packages/core/test/*.test.ts`; update it if introducing nested tests or other suites. Use injected test doubles to check success, rejection, and authorization paths without networking or framework startup.
-
-## Planned agent pilot
-
-The planned [agent runtime V1](../../docs/specs/agent-runtime-v1.md) assigns identity, agents, capabilities, research, markets, execution, budgets, scheduling, and runs to feature modules here. This is a proposed layout, not current exports. Keep Mastra out of core; use trusted tenant scope, business-owned capability ports, versioned configuration, and deterministic policy/budget checks.
