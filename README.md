@@ -42,6 +42,8 @@ contracts/                  # Independent Foundry project
 
 The initial implementation connects a Route Handler to a use case and an injected system clock. The health endpoint checks that the application responds; it does not check external dependencies. No providers, database, wallet, or business contracts are connected yet. The initial HTTP contract is expressed in TypeScript; future request inputs require runtime validation.
 
+The next planned build is described in the [agent runtime V1 specification](docs/specs/agent-runtime-v1.md): an independent Mastra service with tenant-scoped tools, research, scheduling, and bounded execution. It includes proposed folders, API contracts, and acceptance criteria; these features are not implemented yet.
+
 See [architecture decisions](docs/architecture.md) and [repository agent instructions](AGENTS.md). Every app and package has its own `AGENTS.md`; read it before working in that project and update it when the project changes. Repository documentation is maintained in English.
 
 ## Solidity

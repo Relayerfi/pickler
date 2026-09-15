@@ -12,3 +12,7 @@ Read [the root instructions](../../AGENTS.md) first and the local instructions o
 - Treat changes to serialized fields as API compatibility changes. Coordinate producer and consumer updates and document versioning decisions.
 
 From the root: `npm run typecheck --workspace=@pickler/api-schema`, `npm run lint`, and relevant consumer checks. There is no dedicated package test script yet.
+
+## Planned agent pilot
+
+The planned [agent runtime V1](../../docs/specs/agent-runtime-v1.md) defines agent configuration, durable runs, schedules, decisions, safe errors, and proposed HTTP endpoints. Add their runtime-validated public DTOs here when implementing them; only HealthResponse exists today. Keep research-run, decision, and order states separate, and encode financial quantities as strings with explicit asset/unit metadata.
