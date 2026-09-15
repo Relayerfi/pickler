@@ -23,7 +23,3 @@ As concrete capabilities are introduced, organize adapters by feature, for examp
 ## Checks
 
 From the root: `npm run typecheck --workspace=@pickler/infrastructure` and `npm run lint`. Add adapter contract tests when real integrations exist, covering failures and timeouts as well as success. There is no infrastructure test script yet; explicitly wire new tests into the root checks. Use `npm run build` when changing exports consumed by Next.js.
-
-## Planned agent pilot
-
-The planned [agent runtime V1](../../docs/specs/agent-runtime-v1.md) places Exa, Polymarket, persistence, queue, and credential adapters here, with Firecrawl as a later option. No such adapters are implemented yet. Mastra-specific tool wrappers belong to the new agent-service host and call use cases. Provider replacement must preserve capability contracts and record provenance.

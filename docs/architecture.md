@@ -6,7 +6,7 @@
 2. **Business** (`packages/core`): entities, rules, use cases, and ports for persistence, external services, and blockchain operations. No Next.js, React, ORM, or provider SDK imports. The current layout has `domain`, `application`, and `ports`; organize future business features under `features/<feature>/{domain,application,ports}` when needed.
 3. **Infrastructure** (`packages/infrastructure`): implementations of the ports, including repositories and provider/RPC adapters. Infrastructure depends on business; business never depends on infrastructure.
 
-Runtime flow is HTTP → use case → adapter. Code dependencies are inverted through interfaces: presentation → business ← infrastructure. `apps/web/src/server/container.ts` is the current composition root, protected by `server-only`. The proposed independent agent service will have its own server composition root at `src/composition/container.ts`; both hosts consume the same business ports and rules. ESLint checks direct imports across key boundaries; these checks are guardrails, not a substitute for reviewing transitive dependencies. Next.js rejects importing the protected server boundary into a Client Component.
+Runtime flow is HTTP → use case → adapter. Code dependencies are inverted through interfaces: presentation → business ← infrastructure. `apps/web/src/server/container.ts` is the composition root that selects and connects implementations, protected by `server-only`. ESLint checks direct imports across key boundaries; these checks are guardrails, not a substitute for reviewing transitive dependencies. Next.js rejects importing the protected server boundary into a Client Component.
 
 `api-schema` contains public HTTP contracts only. `ui` knows nothing about use cases, authentication, wallets, or providers. Keep interactive client boundaries small instead of making the entire UI library client-only.
 
@@ -32,11 +32,7 @@ Server-side reads use infrastructure adapters implementing business ports. Walle
 
 A submitted transaction is not a finalized operation. When implementing writes, model pending, confirmed, and failed states; account for network-specific confirmations, replacements, and reorganizations. Deduplicate events by network, transaction hash, and log index. Off-chain storage and blockchain writes are not atomic: introduce persistent state, idempotency, and reconciliation when these operations are added.
 
-Monad is the launcher direction. The agent pilot targets Polymarket execution with Exa research through Mastra, as specified in [agent runtime V1](specs/agent-runtime-v1.md). These are planned integrations, not deployed capabilities. Contract parameters, wallet authority, authorization rules, confirmation policy, and concrete infrastructure remain unresolved. No agent SDK or provider has been provisioned.
-
-## Planned independent agent service
-
-The [agent runtime V1 specification](specs/agent-runtime-v1.md) defines `apps/agent-service` as a new host for Mastra, internal Studio, API handlers, scheduling, and workers. Its business rules remain in core and provider adapters in infrastructure. The existing frontend can evolve independently against the proposed API. This service is not yet scaffolded and does not require moving the existing health endpoint or implementing the launcher.
+The network, contracts, authorization rules, confirmation policy, and external providers remain undefined. No SDK or provider has been provisioned.
 
 ## Future backend extraction
 
