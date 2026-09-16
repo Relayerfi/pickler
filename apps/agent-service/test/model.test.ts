@@ -1,4 +1,6 @@
 import { test } from "node:test";
+import { DEFAULT_CONFIG, assertConfig } from "@pickler/core";
+import { agentConfigSchema } from "@pickler/api-schema";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { researchSystemPrompt } from "../src/prompts/research-system";
@@ -123,6 +125,7 @@ test("research combines tool calls, per-step usage and validated decisions in Ma
       ),
     );
     assert.equal(request.enable_thinking, undefined);
+    assert.equal(request.max_tokens, 8000);
     calls++;
     const tool = calls <= 2;
     const toolCalls = [
@@ -192,7 +195,7 @@ test("research combines tool calls, per-step usage and validated decisions in Ma
       pageReads: 5,
       steps: 12,
       durationMs: 300000,
-      outputTokens: 2000,
+      outputTokens: 8000,
       dailyRuns: 6,
     },
     onUsage: async () => {
@@ -250,6 +253,7 @@ test("selector sends the trusted current time and classifies real Mastra output 
     const user = request.messages.find((m: { role: string }) => m.role === "user");
     assert.equal(JSON.parse(user.content).now, now);
     assert.equal(request.enable_thinking, false);
+    assert.equal(request.max_tokens, 2000);
     if (httpFailure) {
       return Response.json(
         { error: { message: "Fixture rate limit", type: "rate_limit_error" } },
@@ -287,7 +291,7 @@ test("selector sends the trusted current time and classifies real Mastra output 
     pageReads: 5,
     steps: 12,
     durationMs: 300000,
-    outputTokens: 2000,
+    outputTokens: 8000,
     dailyRuns: 6,
   };
   const select = () =>
@@ -297,4 +301,15 @@ test("selector sends the trusted current time and classifies real Mastra output 
   await assert.rejects(select(), { code: "MODEL_OUTPUT_TRUNCATED" });
   httpFailure = true;
   await assert.rejects(select(), { code: "MODEL_HTTP_429" });
+});
+
+test("API and core accept the research token cap and reject larger values", () => {
+  for (const outputTokens of [2000, 8000]) {
+    const config = { ...DEFAULT_CONFIG, limits: { ...DEFAULT_CONFIG.limits, outputTokens } };
+    assert.doesNotThrow(() => assertConfig(config));
+    assert.equal(agentConfigSchema.safeParse(config).success, true);
+  }
+  const invalid = { ...DEFAULT_CONFIG, limits: { ...DEFAULT_CONFIG.limits, outputTokens: 8001 } };
+  assert.throws(() => assertConfig(invalid));
+  assert.equal(agentConfigSchema.safeParse(invalid).success, false);
 });
