@@ -10,7 +10,8 @@
         "MODEL_API_KEY",
         "EXA_API_KEY",
         "TENANT_ALPHA_TOKEN",
-        "TENANT_BETA_TOKEN"
+        "TENANT_BETA_TOKEN",
+        "DATABASE_URL"
       ]
     },
     "dev": {
