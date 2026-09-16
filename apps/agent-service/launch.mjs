@@ -1,5 +1,5 @@
 import { spawn } from "node:child_process";
-// Both children share the app working directory and its ignored data files.
+// Both children share the app environment and PostgreSQL database.
 const mode = process.argv[2] === "start" ? "start" : "dev";
 const children = [
   spawn(process.execPath, ["--import", "tsx", "src/workers/main.ts"], {
