@@ -1,22 +1,13 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { mkdtemp, rm } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
-import { SqliteResearchStore } from "@pickler/infrastructure";
+import { createTestStore } from "@pickler/infrastructure/testing";
 import { DEFAULT_CONFIG, type MarketData } from "@pickler/core";
 import { createApi } from "../src/api/app";
 import { buildTools } from "../src/plugins/registry";
 import { decisionSchema } from "@pickler/api-schema";
 
 test("HTTP authorization, scoped writes, async run dispatch and polling", async (t) => {
-  const dir = await mkdtemp(join(tmpdir(), "pickler-api-"));
-  const repository = new SqliteResearchStore(`file:${join(dir, "test.db")}`);
-  await repository.init();
-  t.after(async () => {
-    repository.close();
-    await rm(dir, { recursive: true, force: true });
-  });
+  const repository = await createTestStore(t);
   const unavailable = async () => {
     throw new Error("Not used in this test");
   };
