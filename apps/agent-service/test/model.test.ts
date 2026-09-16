@@ -236,3 +236,57 @@ test("runtime metadata identifies the exact immutable system prompts without cre
   }
   assert.equal(JSON.stringify(metadata).includes(env.MODEL_API_KEY), false);
 });
+
+test("selector sends the trusted current time and classifies real Mastra output truncation", async (t) => {
+  const now = "2026-09-16T12:00:00.000Z";
+  let truncated = false;
+  let httpFailure = false;
+  t.mock.method(globalThis, "fetch", async (_url: unknown, init: RequestInit) => {
+    const request = JSON.parse(String(init.body));
+    const user = request.messages.find((m: { role: string }) => m.role === "user");
+    assert.equal(JSON.parse(user.content).now, now);
+    if (httpFailure) {
+      return Response.json(
+        { error: { message: "Fixture rate limit", type: "rate_limit_error" } },
+        { status: 429 },
+      );
+    }
+    return Response.json({
+      id: "selector-fixture",
+      object: "chat.completion",
+      created: 1,
+      model: env.MODEL_ID,
+      choices: [
+        {
+          index: 0,
+          message: {
+            role: "assistant",
+            content: JSON.stringify({ marketId: "1", reason: "Future candidate" }),
+          },
+          finish_reason: truncated ? "length" : "stop",
+        },
+      ],
+      usage: {
+        prompt_tokens: 100,
+        completion_tokens: truncated ? 2000 : 50,
+        total_tokens: truncated ? 2100 : 150,
+      },
+    });
+  });
+  const model = createModel(env);
+  const limits = {
+    searches: 3,
+    pageReads: 5,
+    steps: 12,
+    durationMs: 300000,
+    outputTokens: 2000,
+    dailyRuns: 6,
+  };
+  const select = () =>
+    model.select([], "Fixture profile", new AbortController().signal, limits, now);
+  assert.equal((await select()).marketId, "1");
+  truncated = true;
+  await assert.rejects(select(), { code: "MODEL_OUTPUT_TRUNCATED" });
+  httpFailure = true;
+  await assert.rejects(select(), { code: "MODEL_HTTP_429" });
+});
