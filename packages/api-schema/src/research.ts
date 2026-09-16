@@ -1,5 +1,13 @@
 import { z } from "zod";
 export const toolNameSchema = z.enum(["searchWeb", "readPage", "getMarketRules", "getOrderBook"]);
+export const uncertaintyPolicySchema = z
+  .object({
+    blockHighUncertainty: z.boolean(),
+    requireCompleteInformation: z.boolean(),
+    minProbabilityMargin: z.number().min(0).max(1),
+    maxProbabilityRangeWidth: z.number().min(0).max(1),
+  })
+  .strict();
 export const agentConfigSchema = z
   .object({
     limits: z
@@ -16,6 +24,7 @@ export const agentConfigSchema = z
     categoryIds: z.array(z.string().regex(/^\d+$/)).max(10),
     tools: z.array(toolNameSchema).max(4),
     intervalHours: z.number().int().min(1).max(168),
+    uncertaintyPolicy: uncertaintyPolicySchema.optional(),
   })
   .strict();
 export const configUpdateSchema = z
@@ -26,7 +35,7 @@ export const runRequestSchema = z
   .strict();
 export const scheduleSchema = z.object({ enabled: z.boolean() }).strict();
 const price = z.string().regex(/^(0(\.\d{1,8})?|1(\.0{1,8})?)$/);
-export const decisionSchema = z
+export const legacyDecisionSchema = z
   .object({
     action: z.enum(["TRADE", "ABSTAIN"]),
     marketId: z.string(),
@@ -42,6 +51,47 @@ export const decisionSchema = z
     abstentionReason: z.string().max(2000).nullable(),
   })
   .strict();
+export const modelAssessmentSchema = legacyDecisionSchema
+  .omit({ estimatedProbability: true })
+  .extend({
+    probability: z
+      .object({
+        lower: z.number().min(0).max(1),
+        estimate: z.number().min(0).max(1),
+        upper: z.number().min(0).max(1),
+      })
+      .strict()
+      .nullable(),
+    uncertaintyLevel: z.enum(["LOW", "MEDIUM", "HIGH"]),
+    missingInformation: z.array(z.string().min(1).max(1000)).max(20),
+  })
+  .strict();
+export const decisionV2Schema = legacyDecisionSchema
+  .extend({
+    schemaVersion: z.literal(2),
+    modelAssessment: modelAssessmentSchema,
+    policyEvaluation: z
+      .object({
+        version: z.literal("1.0.0"),
+        config: uncertaintyPolicySchema,
+        finalAction: z.enum(["TRADE", "ABSTAIN"]),
+        reasonCodes: z.array(
+          z.enum([
+            "MODEL_ABSTAINED",
+            "HIGH_UNCERTAINTY",
+            "MISSING_INFORMATION",
+            "MISSING_PROBABILITY",
+            "WIDE_PROBABILITY_RANGE",
+            "INSUFFICIENT_CONSERVATIVE_MARGIN",
+            "PRICE_EXCEEDS_LIMIT",
+          ]),
+        ),
+        evaluatedAt: z.string().datetime(),
+      })
+      .strict(),
+  })
+  .strict();
+export const decisionSchema = z.union([decisionV2Schema, legacyDecisionSchema]);
 export type ResearchDecisionDto = z.infer<typeof decisionSchema>;
 export const agentResponseSchema = z.object({
   id: z.string(),
