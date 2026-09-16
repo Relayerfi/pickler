@@ -31,7 +31,7 @@ See [README.md](README.md) for setup, [docs/architecture.md](docs/architecture.m
 - Keep Next.js, React, transport objects, database clients, and provider SDKs out of core. Use business-owned interfaces and dependency injection.
 - Keep HTTP DTOs in `api-schema`; keep public on-chain artifacts in `chain`. Neither package carries credentials or server implementation details.
 - Use declared workspace dependencies and public package exports. Do not bypass package boundaries with relative imports into another project's source.
-- The local agent pilot uses Mastra, Exa, Polymarket and SQLite. Provider credentials and the exact OpenAI-compatible model are operator supplied. No trading, wallets, public login, external queue, contracts or Firecrawl integration exists. Do not describe offline tests as a verified live model run.
+- The local agent pilot uses Mastra, Exa, Polymarket and PostgreSQL. Provider credentials and the exact OpenAI-compatible model are operator supplied. No trading, wallets, public login, external queue, contracts or Firecrawl integration exists. Do not describe offline tests as a verified live model run.
 
 ## Branch and pull request workflow
 
@@ -47,6 +47,7 @@ Use Node 22.22+ and npm 10.9.3 with the committed lockfile. Install from the roo
 npm run dev
 npm run lint
 npm run typecheck
+npm run db:up # Local PostgreSQL for integration tests
 npm test
 npm run build
 npm run contracts:build
@@ -70,3 +71,5 @@ Use the root Prettier configuration for TypeScript, JavaScript, JSON, CSS, YAML 
 Run `npm run format` to format files and `npm run format:check` to verify them. Pull requests run the format check in GitHub Actions. `npm run lint:fix` applies supported ESLint fixes, including required braces on all conditional and loop bodies. Run formatting after lint fixes. ESLint retains the architecture restrictions; Prettier handles layout.
 
 Write one statement per line and separate logical phases with blank lines. Expand schemas, transaction blocks and complex callbacks for readability. Prefer named predicates or explicit branches over nested ternaries. Write long SQL queries as multiline template literals without changing query semantics or parameter order. Separate test setup, action and assertions visually. Keep formatting-only changes distinguishable from behavior changes; do not add abstractions solely to satisfy a line-length target.
+
+PostgreSQL is hosted by Supabase in deployed environments. Drizzle and database clients belong only in infrastructure. Use direct or session-pooler connections: worker ownership uses a session advisory lock. Never expose `pickler`, `pickler_migrations`, or `mastra` through the Supabase Data API. Local PostgreSQL runs through `compose.yaml`; credentials there are disposable local development values only.
