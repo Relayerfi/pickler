@@ -122,6 +122,7 @@ test("research combines tool calls, per-step usage and validated decisions in Ma
         (message) => message.role === "user" && String(message.content).includes(profile),
       ),
     );
+    assert.equal(request.enable_thinking, undefined);
     calls++;
     const tool = calls <= 2;
     const toolCalls = [
@@ -167,7 +168,10 @@ test("research combines tool calls, per-step usage and validated decisions in Ma
       { headers: { "Content-Type": "text/event-stream" } },
     );
   });
-  const result = await createModel(env).research({
+  const result = await createModel({
+    ...env,
+    MODEL_BASE_URL: "https://dashscope-intl.aliyuncs.com/compatible-mode/v1",
+  }).research({
     market: {
       id: "1",
       question: "Test",
@@ -245,6 +249,7 @@ test("selector sends the trusted current time and classifies real Mastra output 
     const request = JSON.parse(String(init.body));
     const user = request.messages.find((m: { role: string }) => m.role === "user");
     assert.equal(JSON.parse(user.content).now, now);
+    assert.equal(request.enable_thinking, false);
     if (httpFailure) {
       return Response.json(
         { error: { message: "Fixture rate limit", type: "rate_limit_error" } },
@@ -273,7 +278,10 @@ test("selector sends the trusted current time and classifies real Mastra output 
       },
     });
   });
-  const model = createModel(env);
+  const model = createModel({
+    ...env,
+    MODEL_BASE_URL: "https://dashscope-intl.aliyuncs.com/compatible-mode/v1",
+  });
   const limits = {
     searches: 3,
     pageReads: 5,
