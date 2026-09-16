@@ -19,3 +19,9 @@ The previous SQLite revision was also checked in Studio on 2026-09-15: the publi
 The runtime now uses a PostgreSQL session advisory lock instead of a local file lock. One worker owns recovery and processes jobs serially. The database adapter separately tests safe concurrent admission, quota enforcement, claims and schedule deduplication. Multiple active research workers remain outside this pilot's recovery model.
 
 To complete acceptance, follow the README: configure Supabase direct/session connection URLs and provider values, apply migrations, start Studio, select categories, run the paid connection check, and complete a manual research workflow. A justified, source-backed abstention is valid. Enable scheduling only afterwards. Existing SQLite files are preserved but not automatically imported.
+
+## Local Supabase verification
+
+On 2026-09-16, Supabase CLI 2.111.0 started the full local stack using project `pickler-monorepo` and ports 54521/54522/54523. Drizzle migrations applied successfully; all 28 tests passed against this Supabase PostgreSQL instance. The Mastra adapter wrote, loaded and deleted a workflow snapshot in its separate schema. Studio returned HTTP 200. Both laboratory agents were seeded without model/provider calls. The ignored app `.env` contains local database URLs and generated tenant tokens; model and Exa values remain empty.
+
+The first image download was interrupted when Docker stopped responding; reopening Docker and retrying completed successfully. The Supabase stack is left running for operator inspection. Hosted Supabase and paid-provider acceptance remain pending.
