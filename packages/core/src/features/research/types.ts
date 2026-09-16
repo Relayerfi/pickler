@@ -5,7 +5,7 @@ export const MAX_LIMITS = {
   pageReads: 5,
   steps: 12,
   durationMs: 300_000,
-  outputTokens: 8000,
+  outputTokens: 32768,
   dailyRuns: 6,
 } as const;
 export type ResearchLimits = { [K in keyof typeof MAX_LIMITS]: number };
