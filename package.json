@@ -22,7 +22,11 @@
     "agent": "npm run cli --workspace=@pickler/agent-service --",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "lint:fix": "eslint . --fix"
+    "lint:fix": "eslint . --fix",
+    "db:generate": "npm run db:generate --workspace=@pickler/infrastructure",
+    "db:migrate": "npm run db:migrate --workspace=@pickler/infrastructure",
+    "db:up": "docker compose up -d --wait postgres",
+    "db:down": "docker compose stop postgres"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
