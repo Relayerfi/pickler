@@ -64,7 +64,7 @@ export function createModel(env: Environment): ResearchModel & { check(): Promis
             {
               maxSteps: 1,
               abortSignal: signal,
-              modelSettings: { maxOutputTokens: limits.outputTokens },
+              modelSettings: { maxOutputTokens: Math.min(limits.outputTokens, 2000) },
               ...(isDashScope
                 ? { providerOptions: { "pickler-configured": { enable_thinking: false } } }
                 : {}),
