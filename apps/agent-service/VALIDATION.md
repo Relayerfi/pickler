@@ -61,3 +61,9 @@ Run `e2469799-b136-4074-8bbf-79564dd35a2e` passed selection, read market rules a
 The research cap and default are now 8,000 tokens per call in core and API validation. Selection remains capped at 2,000 with DashScope reasoning disabled; research retains provider-default reasoning. The existing alpha agent was updated through the authenticated versioned API to configuration version 3, outputTokens 8,000, Sports category 1 and scheduling disabled. Historical run snapshots remain unchanged. Existing beta configuration was not modified. This setting lives in versioned agent configuration, not `.env`.
 
 All 39 tests, lint, format, type checks and the full build pass. The service was restarted and the persisted alpha configuration was read back successfully. No paid investigation with the higher limit was launched as part of this configuration change.
+
+## Model request timeout
+
+Run `4725915c-7a82-43ea-a73d-c557d76cc48b` used the 8,000-token research cap and preserved three searches (15 results) and three page reads. A successful research step reported 4,839 output tokens, but a later call failed with `MODEL_TIMEOUT`; the run ended after approximately 166 seconds without a decision.
+
+Individual model requests now allow 180 seconds instead of 60. The existing incoming cancellation signal and five-minute overall research deadline still take precedence. All 40 tests pass against local Supabase, including a transport test that observes the 180-second timeout and verifies caller cancellation propagation. No paid retry is included in this timeout change.
