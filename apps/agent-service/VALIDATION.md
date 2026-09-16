@@ -67,3 +67,7 @@ All 39 tests, lint, format, type checks and the full build pass. The service was
 Run `4725915c-7a82-43ea-a73d-c557d76cc48b` used the 8,000-token research cap and preserved three searches (15 results) and three page reads. A successful research step reported 4,839 output tokens, but a later call failed with `MODEL_TIMEOUT`; the run ended after approximately 166 seconds without a decision.
 
 Individual model requests now allow 180 seconds instead of 60. The existing incoming cancellation signal and five-minute overall research deadline still take precedence. All 40 tests pass against local Supabase, including a transport test that observes the 180-second timeout and verifies caller cancellation propagation. No paid retry is included in this timeout change.
+
+## Follow-up PR live run
+
+After opening PR #3, the authorized run `989d2de5-9191-4c3f-b06b-58e12789e16b` researched market `608546` (Vinicius Junior winning the 2026 Ballon d'Or). Selection, market rules/quotes and three Exa searches completed, preserving 15 search results. The run failed after approximately 110 seconds with `MODEL_OUTPUT_TRUNCATED` in research, not a timeout. Its final call consumed 8,000 output tokens, all reported as reasoning, and returned no final decision. Aggregate research output was 9,827 tokens across calls; it must not be confused with the per-call limit. No page reads were completed. The five-minute deadline, 180-second request timeout and 8,000-token cap were not changed or automatically retried after this result. Full live research acceptance remains incomplete.
