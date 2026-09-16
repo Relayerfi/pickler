@@ -35,6 +35,10 @@ test("configured OpenAI-compatible model executes a real Mastra tool loop and st
     const request = JSON.parse(String(init.body)) as Record<string, unknown>;
     calls.push(request);
     assert.equal(request.model, "explicit-test-model");
+    if (request.response_format) {
+      assert.match(JSON.stringify(request.messages), /json/i);
+      assert.match(JSON.stringify(request.messages), /required/);
+    }
     assert.ok(Number(request.max_tokens ?? request.max_completion_tokens) <= 2000);
     const tool = calls.length === 1;
     const message = tool
@@ -221,6 +225,8 @@ test("runtime metadata identifies the exact immutable system prompts without cre
     marketSelection: marketSelectionSystemPrompt,
   });
   for (const prompt of Object.values(metadata.prompts)) {
+    assert.match(prompt.instructions, /json/i);
+    assert.match(prompt.instructions, /required/);
     assert.match(prompt.version, /^\d+\.\d+\.\d+$/);
     assert.equal(
       prompt.sha256,
