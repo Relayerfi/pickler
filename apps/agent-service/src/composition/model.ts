@@ -23,7 +23,7 @@ export function createModel(env: Environment): ResearchModel & { check(): Promis
         ...init,
         signal: AbortSignal.any([
           ...(init?.signal ? [init.signal] : []),
-          AbortSignal.timeout(60_000),
+          AbortSignal.timeout(180_000),
         ]),
       }),
   });
