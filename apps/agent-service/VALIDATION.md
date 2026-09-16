@@ -47,3 +47,9 @@ An isolated replay of the saved sports candidates on 2026-09-16 succeeded with t
 The runner now excludes expired, boundary-time, missing and invalid closing dates; rechecks manual/selected markets and final trade refreshes; and passes its clock to selection. Prompt version 1.0.2 references that clock. Safe model diagnostics retain stage, status, finish reason and numeric usage when available. Regression fixtures cover truncation, malformed structured output, HTTP failures, timeout/cancellation, metadata redaction and preservation of partial evidence. No additional paid research run or scheduling activation is part of this correction.
 
 Validation: all 38 tests pass against local Supabase. Repository lint, format and type checks pass, and the full Next.js/Mastra build succeeds. The selector transport fixture also verifies an actual Mastra HTTP 429 is preserved as `MODEL_HTTP_429`.
+
+## Selector reasoning control
+
+The explicitly requested full retry `8b867c96-741a-4499-b058-8581f08068e8` failed in selection with `MODEL_OUTPUT_TRUNCATED`: 2,000 output tokens, all reported as reasoning, and no decision. DashScope selection now sends `enable_thinking: false`; research retains its provider default and the 2,000-token cap is unchanged. An isolated real selector call with saved eligible candidates succeeded with 125 output tokens and zero reasoning tokens. This verifies selection only; no new full research run is claimed. All 38 tests pass, including transport assertions that the setting is present only on selection requests.
+
+Provider reference: [DashScope thinking controls](https://www.alibabacloud.com/help/en/model-studio/deep-thinking).
