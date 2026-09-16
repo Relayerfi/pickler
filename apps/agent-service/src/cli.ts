@@ -13,7 +13,7 @@ if (command === "init") {
     { flag: "wx", mode: 0o600 },
   );
   console.log(
-    "Created .env with distinct local tokens. Fill in the four provider variables before starting.",
+    "Created .env with distinct local tokens. Fill in database connection URLs and the four provider variables before starting.",
   );
 } else {
   const tenant = args[0] ?? "alpha";
