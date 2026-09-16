@@ -1,0 +1,18 @@
+services:
+  postgres:
+    image: postgres:17.6
+    environment:
+      POSTGRES_USER: pickler
+      POSTGRES_PASSWORD: pickler_local_only
+      POSTGRES_DB: pickler
+    ports:
+      - "127.0.0.1:55432:5432"
+    volumes:
+      - pickler_postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pickler -d pickler"]
+      interval: 2s
+      timeout: 3s
+      retries: 20
+volumes:
+  pickler_postgres:
