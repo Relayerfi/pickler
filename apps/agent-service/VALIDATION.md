@@ -53,3 +53,11 @@ Validation: all 38 tests pass against local Supabase. Repository lint, format an
 The explicitly requested full retry `8b867c96-741a-4499-b058-8581f08068e8` failed in selection with `MODEL_OUTPUT_TRUNCATED`: 2,000 output tokens, all reported as reasoning, and no decision. DashScope selection now sends `enable_thinking: false`; research retains its provider default and the 2,000-token cap is unchanged. An isolated real selector call with saved eligible candidates succeeded with 125 output tokens and zero reasoning tokens. This verifies selection only; no new full research run is claimed. All 38 tests pass, including transport assertions that the setting is present only on selection requests.
 
 Provider reference: [DashScope thinking controls](https://www.alibabacloud.com/help/en/model-studio/deep-thinking).
+
+## Research output allowance
+
+Run `e2469799-b136-4074-8bbf-79564dd35a2e` passed selection, read market rules and quotes, performed three Exa searches and two page reads, and then failed in research with `MODEL_OUTPUT_TRUNCATED`. Its final model call reported 2,000 output tokens, all reasoning. Partial evidence remains stored; no decision was produced.
+
+The research cap and default are now 8,000 tokens per call in core and API validation. Selection remains capped at 2,000 with DashScope reasoning disabled; research retains provider-default reasoning. The existing alpha agent was updated through the authenticated versioned API to configuration version 3, outputTokens 8,000, Sports category 1 and scheduling disabled. Historical run snapshots remain unchanged. Existing beta configuration was not modified. This setting lives in versioned agent configuration, not `.env`.
+
+All 39 tests, lint, format, type checks and the full build pass. The service was restarted and the persisted alpha configuration was read back successfully. No paid investigation with the higher limit was launched as part of this configuration change.
