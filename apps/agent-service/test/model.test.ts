@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { createModel } from "../src/composition/model";
 import { readEnv } from "../src/config/env";
 const env = readEnv({
+  DATABASE_URL: "postgresql://test:test@127.0.0.1:55432/pickler",
   MODEL_BASE_URL: "https://model.example/v1",
   MODEL_ID: "explicit-test-model",
   MODEL_API_KEY: "test-only",
@@ -88,6 +89,11 @@ test("configured OpenAI-compatible model executes a real Mastra tool loop and st
 
 test("missing configuration fails without a default model or token reuse", () => {
   assert.throws(() => readEnv({}), /MODEL_BASE_URL/);
+  assert.throws(() => readEnv({ ...env, DATABASE_URL: "invalid" }), /DATABASE_URL/);
+  assert.throws(
+    () => readEnv({ ...env, DATABASE_URL: "postgresql://test:test@localhost:6543/pickler" }),
+    /DATABASE_URL/,
+  );
   assert.throws(() => readEnv({ ...env, TENANT_BETA_TOKEN: env.TENANT_ALPHA_TOKEN }), /distinct/);
 });
 
