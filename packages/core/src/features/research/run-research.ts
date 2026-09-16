@@ -63,13 +63,13 @@ export function createResearchRunner(deps: {
       }
     };
     try {
-      await guard("searchWeb");
-      await guard("getMarketRules");
-      await guard("getOrderBook");
       await event("runtime", {
         ...deps.model.metadata(),
         plugins: { research: "1.0.0", "prediction-markets": "1.0.0" },
       });
+      await guard("searchWeb");
+      await guard("getMarketRules");
+      await guard("getOrderBook");
       let marketId = run.marketId;
       if (!run.config.categoryIds.length) {
         throw new PilotError("CATEGORIES_REQUIRED", "Select categories before researching");
