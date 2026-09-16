@@ -30,7 +30,7 @@ apps/web/src/
   server/container.ts       # Server-only composition and dependency injection
 packages/
   core/src/                 # Business: domain, use cases, and ports
-  infrastructure/src/       # Clock, SQLite, Exa and Polymarket adapters
+  infrastructure/src/       # Clock, PostgreSQL, Exa and Polymarket adapters
   api-schema/src/           # Public, serializable HTTP DTOs
   ui/src/                   # Product-independent React components and styles
   chain/src/                # Public types; future ABIs and per-network deployments
@@ -41,7 +41,7 @@ contracts/                  # Independent Foundry project
   script/                   # Deployment scripts
 ```
 
-The web health endpoint remains a liveness check. The independent [agent research pilot](apps/agent-service/README.md) adds tenant-scoped SQLite jobs, Exa research, Polymarket market data and Mastra Studio. It produces research decisions without placing orders. Credentials and the exact compatible model must be configured locally.
+The web health endpoint remains a liveness check. The independent [agent research pilot](apps/agent-service/README.md) adds tenant-scoped PostgreSQL jobs, Exa research, Polymarket market data and Mastra Studio. It produces research decisions without placing orders. Credentials and the exact compatible model must be configured locally.
 
 ```sh
 npm run agent -- init
