@@ -144,6 +144,7 @@ export interface ResearchModel {
     profile: string,
     signal: AbortSignal,
     limits: ResearchLimits,
+    now: string,
   ): Promise<{ marketId: string; reason: string; usage: unknown }>;
   research(input: {
     market: Market;
@@ -236,11 +237,36 @@ export function assertConfig(config: AgentConfig): void {
   }
 }
 
-export function assertMarket(market: Market, categories: string[]): void {
+export interface ModelFailureDetails {
+  stage: "selection" | "research";
+  statusCode?: number;
+  finishReason?: string;
+  inputTokens?: number;
+  outputTokens?: number;
+  reasoningTokens?: number;
+}
+
+export class ModelFailure extends PilotError {
+  constructor(
+    code: string,
+    public readonly details: ModelFailureDetails,
+  ) {
+    super(code, "Model execution failed; inspect the model_failure event");
+  }
+}
+
+export function isMarketOpen(market: Market, now: number): boolean {
+  return market.active && market.closesAt !== null && Date.parse(market.closesAt) > now;
+}
+
+export function assertMarket(market: Market, categories: string[], now: number): void {
   if (!market.active || !categories.some((id) => market.categoryIds.includes(id))) {
     throw new PilotError(
       "MARKET_NOT_ALLOWED",
       "Market is inactive or outside the configured categories",
     );
+  }
+  if (!isMarketOpen(market, now)) {
+    throw new PilotError("MARKET_NOT_OPEN", "Market needs a valid future closing date");
   }
 }
