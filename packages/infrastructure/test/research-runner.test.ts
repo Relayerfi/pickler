@@ -8,7 +8,8 @@ import {
   type ResearchModel,
   type Market,
   type Source,
-  type Decision,
+  type ModelAssessment,
+  type DecisionV2,
   type MarketData,
 } from "@pickler/core";
 import { createTestStore } from "./database";
@@ -36,7 +37,7 @@ const source: Source = {
   retrievedAt: new Date(100).toISOString(),
   truncated: false,
 };
-const decision: Decision = {
+const decision: ModelAssessment = {
   action: "ABSTAIN",
   marketId: "1",
   outcomeId: null,
@@ -44,7 +45,9 @@ const decision: Decision = {
   counterEvidence: "Test source gives conflicting evidence",
   uncertainty: "Result unknown",
   sourceIds: ["source"],
-  estimatedProbability: null,
+  probability: null,
+  uncertaintyLevel: "LOW" as const,
+  missingInformation: [],
   observedPrice: null,
   limitPrice: null,
   expiresAt: null,
@@ -204,7 +207,7 @@ test("trade proposal refreshes actual ask and abstains when it exceeds the limit
         ...decision,
         action: "TRADE",
         outcomeId: "99",
-        estimatedProbability: 0.7,
+        probability: { lower: 0.6, estimate: 0.7, upper: 0.8 },
         limitPrice: "0.4",
         observedPrice: "0.1",
         expiresAt: new Date(10000).toISOString(),
@@ -237,7 +240,7 @@ test("missing final quotation is an execution failure", async (t) => {
         ...decision,
         action: "TRADE",
         outcomeId: "99",
-        estimatedProbability: 0.7,
+        probability: { lower: 0.6, estimate: 0.7, upper: 0.8 },
         limitPrice: "0.4",
         expiresAt: new Date(10000).toISOString(),
       },
@@ -359,7 +362,7 @@ test("a market closing during research blocks the final trade proposal", async (
         ...decision,
         action: "TRADE",
         outcomeId: "99",
-        estimatedProbability: 0.7,
+        probability: { lower: 0.6, estimate: 0.7, upper: 0.8 },
         limitPrice: "0.5",
         expiresAt: new Date(1000).toISOString(),
         abstentionReason: null,
@@ -398,4 +401,67 @@ test("model failures retain stage metadata and partial evidence without becoming
     });
     assert.ok(events.some((e) => e.type === (stage === "selection" ? "candidates" : "sources")));
   }
+});
+
+test("policy persists an unchanged proposal and final abstention in tenant-scoped JSONB", async (t) => {
+  const f = await setup(t);
+  const research = f.model.research;
+  const proposed: ModelAssessment = {
+    ...decision,
+    action: "TRADE",
+    outcomeId: "99",
+    probability: { lower: 0.0005, estimate: 0.003, upper: 0.01 },
+    uncertaintyLevel: "HIGH",
+    missingInformation: ["Unverified sports facts"],
+    limitPrice: "0.001",
+    expiresAt: new Date(10000).toISOString(),
+    abstentionReason: null,
+  };
+  f.markets.book = async (id) => ({
+    outcomeId: id,
+    observedAt: new Date(200).toISOString(),
+    bids: [],
+    asks: [{ price: "0.001", size: "10" }],
+  });
+  f.model.research = async (input) => {
+    await research(input);
+    return { decision: proposed, usage: {} };
+  };
+  await f.execute();
+  const saved = await f.repository.run("alpha", f.run.id);
+  assert.equal(saved.status, "completed");
+  const result = saved.decision as DecisionV2;
+  assert.equal(result.schemaVersion, 2);
+  assert.equal(result.action, "ABSTAIN");
+  assert.deepEqual(result.modelAssessment, proposed);
+  assert.equal(proposed.action, "TRADE");
+  assert.ok(result.policyEvaluation.reasonCodes.includes("HIGH_UNCERTAINTY"));
+  const events = await f.repository.events("alpha", f.run.id);
+  assert.deepEqual(events.find((e) => e.type === "model_assessment")?.data, proposed);
+  assert.deepEqual(
+    events.find((e) => e.type === "policy_evaluation")?.data,
+    result.policyEvaluation,
+  );
+  await assert.rejects(f.repository.run("beta", f.run.id));
+  await assert.rejects(f.repository.events("beta", f.run.id));
+});
+
+test("malformed uncertainty is failed research with original evidence retained", async (t) => {
+  const f = await setup(t);
+  const research = f.model.research;
+  f.model.research = async (input) => {
+    await research(input);
+    return {
+      decision: { ...decision, probability: { lower: 0.8, estimate: 0.2, upper: 0.9 } },
+      usage: {},
+    };
+  };
+  await f.execute();
+  const saved = await f.repository.run("alpha", f.run.id);
+  assert.equal(saved.status, "failed");
+  assert.equal(saved.error, "INVALID_DECISION");
+  assert.equal(saved.decision, null);
+  assert.ok(
+    (await f.repository.events("alpha", f.run.id)).some((e) => e.type === "model_assessment"),
+  );
 });
