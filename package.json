@@ -26,7 +26,11 @@
     "db:generate": "npm run db:generate --workspace=@pickler/infrastructure",
     "db:migrate": "npm run db:migrate --workspace=@pickler/infrastructure",
     "db:up": "docker compose up -d --wait postgres",
-    "db:down": "docker compose stop postgres"
+    "db:down": "docker compose stop postgres",
+    "supabase:start": "supabase start",
+    "supabase:stop": "supabase stop",
+    "supabase:status": "supabase status",
+    "test:supabase": "TEST_DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54522/postgres npm test"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
