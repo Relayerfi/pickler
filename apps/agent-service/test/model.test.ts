@@ -125,7 +125,7 @@ test("research combines tool calls, per-step usage and validated decisions in Ma
       ),
     );
     assert.equal(request.enable_thinking, undefined);
-    assert.equal(request.max_tokens, 8000);
+    assert.equal(request.max_tokens, 32768);
     calls++;
     const tool = calls <= 2;
     const toolCalls = [
@@ -195,7 +195,7 @@ test("research combines tool calls, per-step usage and validated decisions in Ma
       pageReads: 5,
       steps: 12,
       durationMs: 300000,
-      outputTokens: 8000,
+      outputTokens: 32768,
       dailyRuns: 6,
     },
     onUsage: async () => {
@@ -291,7 +291,7 @@ test("selector sends the trusted current time and classifies real Mastra output 
     pageReads: 5,
     steps: 12,
     durationMs: 300000,
-    outputTokens: 8000,
+    outputTokens: 32768,
     dailyRuns: 6,
   };
   const select = () =>
@@ -304,12 +304,12 @@ test("selector sends the trusted current time and classifies real Mastra output 
 });
 
 test("API and core accept the research token cap and reject larger values", () => {
-  for (const outputTokens of [2000, 8000]) {
+  for (const outputTokens of [2000, 32768]) {
     const config = { ...DEFAULT_CONFIG, limits: { ...DEFAULT_CONFIG.limits, outputTokens } };
     assert.doesNotThrow(() => assertConfig(config));
     assert.equal(agentConfigSchema.safeParse(config).success, true);
   }
-  const invalid = { ...DEFAULT_CONFIG, limits: { ...DEFAULT_CONFIG.limits, outputTokens: 8001 } };
+  const invalid = { ...DEFAULT_CONFIG, limits: { ...DEFAULT_CONFIG.limits, outputTokens: 32769 } };
   assert.throws(() => assertConfig(invalid));
   assert.equal(agentConfigSchema.safeParse(invalid).success, false);
 });
