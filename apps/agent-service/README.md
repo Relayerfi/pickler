@@ -161,6 +161,16 @@ Limits can be reduced (at least two searches and three model steps) but cannot e
 
 The runner checks permissions again before every capability call. Mandatory rules, order book and search capabilities must be enabled to begin research. Page reads are restricted to URLs discovered in that run. Provider failures cannot be converted to successful abstentions by the model. A `TRADE` proposal rechecks market eligibility and refreshes the outcome's ask; a missing/stale quote fails the run, and a fresh ask above the proposed limit yields an explained abstention. Source IDs must refer to retrieved evidence. Both a supporting and a contradicting search intent are required before a decision can complete; queries and intent are persisted for review. Research quality still needs human review; the pilot validates operation, not profitability.
 
+## System prompts and user customization
+
+System instructions live in `src/prompts/research-system.ts` and `src/prompts/market-selection-system.ts`. Each definition contains a stable ID, a semantic version and its exact instructions; the service computes a SHA-256 fingerprint of the UTF-8 text. Increment the version whenever editing the instructions. The initial extraction is version `1.0.0` and preserves the previous prompt text.
+
+Every started investigation saves both configured definitions (ID, version, fingerprint and full text) under `prompts` in its first `runtime` event, before permissions/provider calls. Read them with `npm run agent -- events alpha RUN_ID` or the authenticated events endpoint. Snapshots survive subsequent code changes and failed research. Recording a selection prompt does not imply selection occurred: manual-market runs skip that step. Queued jobs use the installed runtime when they start; they do not pin code at enqueue time. Jobs cancelled before starting and historical runs do not acquire new snapshots retroactively.
+
+User customization remains `config.profile`, versioned per agent and copied into each run. It is sent as task data alongside the market/candidates, never appended to the trusted system prompt. Profiles can express research preferences but cannot grant tools, expand categories or change quotas. Evidence is persisted per investigation; this does not introduce automatic memory between runs. Connectivity-check prompts remain separate diagnostic fixtures.
+
+Prompt snapshots use existing JSONB events; no new tables or migration are required.
+
 ## Code map and extension
 
 ```text
@@ -169,6 +179,7 @@ src/
   api/app.ts               # Token resolution, request validation and HTTP mapping
   composition/container.ts # Wires core, providers, PostgreSQL and the configured model
   composition/model.ts     # Mastra implementation of ResearchModel
+  prompts/                 # Versioned system instructions and SHA-256 snapshots
   config/env.ts            # Required server-only configuration
   plugins/registry.ts      # Reviewed research@1.0.0 and prediction-markets@1.0.0
   workers/main.ts          # Exclusive worker lifecycle and restart recovery
