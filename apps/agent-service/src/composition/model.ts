@@ -29,6 +29,10 @@ export function createModel(env: Environment): ResearchModel & { check(): Promis
   });
   const model = provider.chatModel(env.MODEL_ID);
   const settings = { maxOutputTokens: 2000 };
+  // DashScope's hybrid models accept this nonstandard top-level request field.
+  const isDashScope = ["dashscope.aliyuncs.com", "dashscope-intl.aliyuncs.com"].includes(
+    new URL(env.MODEL_BASE_URL).hostname,
+  );
   return {
     metadata: () => ({
       model: env.MODEL_ID,
@@ -61,6 +65,9 @@ export function createModel(env: Environment): ResearchModel & { check(): Promis
               maxSteps: 1,
               abortSignal: signal,
               modelSettings: { maxOutputTokens: limits.outputTokens },
+              ...(isDashScope
+                ? { providerOptions: { "pickler-configured": { enable_thinking: false } } }
+                : {}),
               structuredOutput: { schema },
             },
           ),
