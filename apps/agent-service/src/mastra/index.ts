@@ -1,10 +1,9 @@
 import { Mastra } from "@mastra/core/mastra";
 import { registerApiRoute } from "@mastra/core/server";
 import { createWorkflow, createStep } from "@mastra/core/workflows";
-import { LibSQLStore } from "@mastra/libsql";
+import { PostgresStore } from "@mastra/pg";
+import "../config/env";
 import { z } from "zod";
-import { join, resolve } from "node:path";
-import { mkdir } from "node:fs/promises";
 import { setTimeout } from "node:timers/promises";
 import { createContainer } from "../composition/container";
 import { createApi } from "../api/app";
@@ -13,8 +12,6 @@ import { plugins } from "../plugins/registry";
 
 let pendingContainer: ReturnType<typeof createContainer> | undefined;
 const getContainer = () => (pendingContainer ??= createContainer());
-const dataDir = resolve(process.cwd(), ".data");
-await mkdir(dataDir, { recursive: true, mode: 0o700 });
 const input = z.object({
   preset: z.enum(["alpha", "beta"]).default("alpha"),
   marketId: z.string().regex(/^\d+$/).optional(),
@@ -136,7 +133,12 @@ const connections = createWorkflow({
   .commit();
 export const mastra = new Mastra({
   workflows: { research, configure, catalog, connections },
-  storage: new LibSQLStore({ id: "pickler-studio", url: `file:${join(dataDir, "mastra.db")}` }),
+  storage: new PostgresStore({
+    id: "pickler-studio",
+    connectionString: process.env.DATABASE_URL,
+    schemaName: "mastra",
+    max: 5,
+  }),
   server: {
     host: "127.0.0.1",
     port: 4111,
@@ -152,10 +154,6 @@ export const mastra = new Mastra({
           const origin = c.req.header("origin");
           if (host !== "127.0.0.1:4111" || (origin && origin !== "http://127.0.0.1:4111")) {
             return c.json({ error: "LOCAL_OPERATOR_ONLY" }, 403);
-          }
-          // The installed LibSQL adapter has no feedback domain. Avoid repeated framework stack traces from Studio's optional inbox polling.
-          if (c.req.path === "/api/observability/feedback") {
-            return c.json({ error: "FEEDBACK_NOT_SUPPORTED_IN_PILOT" }, 501);
           }
           await next();
         },
