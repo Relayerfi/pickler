@@ -29,3 +29,5 @@ JSON-mode compatibility: keep the explicit JSON instruction and generated output
 Model output validation and safe failure classification live in `src/composition/model-output.ts`. Preserve HTTP status, known finish reason and numeric token counts only; never persist provider bodies, error messages, headers or reasoning text. Selection receives the runner clock as UTC `now`. Market-selection prompt version 1.0.2 incorporates that reference time.
 
 For DashScope endpoints (`dashscope.aliyuncs.com` and `dashscope-intl.aliyuncs.com`), market selection explicitly sends `enable_thinking: false` through provider options. Research and connectivity probes retain provider defaults; research allows up to 8,000 output tokens per call while selection and connectivity probes remain capped at 2,000. This is a request setting, not a prompt instruction. Other compatible providers need their own documented controls; do not send DashScope-specific options to them.
+
+Individual model requests allow 180 seconds. Always combine this timeout with the incoming abort signal so the five-minute research deadline and cancellation still take precedence.
