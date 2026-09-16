@@ -15,6 +15,7 @@ export interface AgentConfig {
   categoryIds: string[];
   tools: ToolName[];
   intervalHours: number;
+  uncertaintyPolicy?: UncertaintyPolicy | undefined;
 }
 
 export interface AgentRecord {
@@ -67,7 +68,7 @@ export interface Source {
   providerUsage?: unknown;
 }
 
-export interface Decision {
+export interface LegacyDecision {
   action: "TRADE" | "ABSTAIN";
   marketId: string;
   outcomeId: string | null;
@@ -81,6 +82,44 @@ export interface Decision {
   expiresAt: string | null;
   abstentionReason: string | null;
 }
+
+export interface UncertaintyPolicy {
+  blockHighUncertainty: boolean;
+  requireCompleteInformation: boolean;
+  minProbabilityMargin: number;
+  maxProbabilityRangeWidth: number;
+}
+export const DEFAULT_UNCERTAINTY_POLICY: Readonly<UncertaintyPolicy> = Object.freeze({
+  blockHighUncertainty: true,
+  requireCompleteInformation: true,
+  minProbabilityMargin: 0.01,
+  maxProbabilityRangeWidth: 0.2,
+});
+export interface ModelAssessment extends Omit<LegacyDecision, "estimatedProbability"> {
+  probability: { lower: number; estimate: number; upper: number } | null;
+  uncertaintyLevel: "LOW" | "MEDIUM" | "HIGH";
+  missingInformation: string[];
+}
+export type PolicyReason =
+  | "MODEL_ABSTAINED"
+  | "HIGH_UNCERTAINTY"
+  | "MISSING_INFORMATION"
+  | "MISSING_PROBABILITY"
+  | "WIDE_PROBABILITY_RANGE"
+  | "INSUFFICIENT_CONSERVATIVE_MARGIN"
+  | "PRICE_EXCEEDS_LIMIT";
+export interface DecisionV2 extends LegacyDecision {
+  schemaVersion: 2;
+  modelAssessment: ModelAssessment;
+  policyEvaluation: {
+    version: "1.0.0";
+    config: UncertaintyPolicy;
+    finalAction: "TRADE" | "ABSTAIN";
+    reasonCodes: PolicyReason[];
+    evaluatedAt: string;
+  };
+}
+export type Decision = LegacyDecision | DecisionV2;
 
 export interface RunRecord extends Scope {
   id: string;
@@ -153,7 +192,7 @@ export interface ResearchModel {
     signal: AbortSignal;
     limits: ResearchLimits;
     onUsage(usage: unknown): Promise<void>;
-  }): Promise<{ decision: Decision; usage: unknown }>;
+  }): Promise<{ decision: ModelAssessment; usage: unknown }>;
   metadata(): {
     model: string;
     provider: string;
@@ -204,9 +243,26 @@ export const DEFAULT_CONFIG: AgentConfig = {
   tools: [...TOOL_NAMES],
   intervalHours: 4,
   limits: { ...MAX_LIMITS },
+  uncertaintyPolicy: { ...DEFAULT_UNCERTAINTY_POLICY },
 };
 
+export function assertUncertaintyPolicy(policy: UncertaintyPolicy): void {
+  if (
+    typeof policy.blockHighUncertainty !== "boolean" ||
+    typeof policy.requireCompleteInformation !== "boolean" ||
+    !Number.isFinite(policy.minProbabilityMargin) ||
+    policy.minProbabilityMargin < 0 ||
+    policy.minProbabilityMargin > 1 ||
+    !Number.isFinite(policy.maxProbabilityRangeWidth) ||
+    policy.maxProbabilityRangeWidth < 0 ||
+    policy.maxProbabilityRangeWidth > 1
+  ) {
+    throw new PilotError("INVALID_INPUT", "Invalid uncertainty policy");
+  }
+}
+
 export function assertConfig(config: AgentConfig): void {
+  assertUncertaintyPolicy(config.uncertaintyPolicy ?? DEFAULT_UNCERTAINTY_POLICY);
   if (
     !config.limits ||
     Object.entries(MAX_LIMITS).some(([key, cap]) => {
