@@ -8,7 +8,7 @@ export const agentConfigSchema = z
         pageReads: z.number().int().min(1).max(5),
         steps: z.number().int().min(3).max(12),
         durationMs: z.number().int().min(1).max(300000),
-        outputTokens: z.number().int().min(1).max(8000),
+        outputTokens: z.number().int().min(1).max(32768),
         dailyRuns: z.number().int().min(1).max(6),
       })
       .strict(),
