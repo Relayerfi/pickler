@@ -11,7 +11,7 @@ npm ci
 npm run agent -- init
 ```
 
-Edit `apps/agent-service/.env`. `init` generates distinct random laboratory tokens without printing them and refuses to overwrite an existing file. Supply all four provider settings:
+Edit `apps/agent-service/.env`. `init` generates distinct random laboratory tokens without printing them and refuses to overwrite an existing file. Supply both database URLs described below and all four provider settings:
 
 - `MODEL_BASE_URL`: the exact OpenAI-compatible API base URL, including its version path when required.
 - `MODEL_ID`: the exact model identifier accepted by that endpoint.
@@ -19,6 +19,8 @@ Edit `apps/agent-service/.env`. `init` generates distinct random laboratory toke
 - `EXA_API_KEY`: your Exa key.
 
 No default model, fallback provider or trading key is used. HTTPS is required except for a model hosted on loopback. Compatibility depends on tool calling and structured output support; the explicit connection check verifies both with your chosen model.
+
+Configure PostgreSQL and run `npm run db:migrate` using the instructions below before starting.
 
 ```sh
 npm run dev:agent
@@ -34,9 +36,34 @@ In Studio, open **Workflows**:
 4. Run `research` with `{"preset":"alpha","requestKey":"my-first-research"}`. Use a new request key for new work; reuse it to observe the original job. Optionally add a numeric `marketId` to research a specific market within the same permitted categories.
 5. Inspect the workflow result: run ID, status, decision and persisted events including candidates, selection, rules, quotes, search queries, evidence and reported model usage. `failed` is not a research abstention. If the workflow reports `poll-via-api`, continue polling its run ID; it does not enqueue another job.
 
-Mastra's optional feedback/inbox feature is not supported by this LibSQL adapter; its feedback endpoint explicitly returns 501. This does not affect workflows or Pickler evidence/results.
-
 Studio is privileged **local operator access**, not a tenant login. Raw researcher agents are intentionally not registered as independently callable Studio agents: that would bypass the persistent queue and quotas. The workflow exposes the reviewed plugin catalog and recorded tool results. Both presets, the API and scheduler enter the same queue and core runner.
+
+## PostgreSQL, Supabase and migrations
+
+Use one PostgreSQL database with separate `pickler` and `mastra` schemas. Supabase hosts PostgreSQL; this backend connects using the PostgreSQL connection string, not the Supabase browser client, anon key, or service-role API key.
+
+1. In your Supabase project's **Connect** panel, copy the **Direct connection** URL when your network supports it, or the **Session pooler** URL for IPv4. Use session mode on port 5432, not transaction mode on port 6543: worker ownership requires a persistent PostgreSQL session.
+2. Set `DATABASE_URL` in `apps/agent-service/.env`. Keep the provider's TLS settings and enable SSL enforcement in Supabase. Never disable certificate verification. URL-encode special characters in the database password.
+3. Set `DATABASE_MIGRATION_URL` to a direct or session connection with schema creation privileges. For this operator-only pilot, both URLs can use the same database owner. Runtime must own the Pickler tables (or have BYPASSRLS) because no tenant-facing SQL policies are installed. Mastra currently initializes its own schema at startup, so its connection also needs schema/table creation privileges.
+4. Run `npm run db:migrate` from the repository root. This applies committed Drizzle migrations; running it again is safe. Run one migration process per deployment. Start the agent afterwards; startup seeds the two lab agents idempotently.
+
+The database schemas are server-only. Do not add `pickler`, `pickler_migrations`, or `mastra` to Supabase's exposed Data API schemas or grant browser roles access. Pickler tables enable RLS without public policies as a default denial for non-owner roles. The privileged backend bypasses RLS and enforces tenant scope in repository queries and the API; these are not Supabase Auth policies. Public login and production role separation remain separate work.
+
+For local development without Supabase:
+
+```sh
+npm run db:up
+```
+
+Set both database URLs to `postgresql://pickler:pickler_local_only@127.0.0.1:55432/pickler`, then run `npm run db:migrate`. These credentials are only for the loopback Docker development service. `npm run db:down` stops the container and preserves its named volume.
+
+To change tables, edit `packages/infrastructure/src/persistence/schema.ts`, run `npm run db:generate`, review the generated SQL and commit the migration and snapshots. Apply with `npm run db:migrate`. Do not use schema push against shared databases. Mastra manages its own tables; Drizzle owns only `pickler`.
+
+Integration tests use real PostgreSQL and create a randomly named `pickler_test_*` database per test, apply migrations, then remove only that database. They default to the local Docker connection. Set `TEST_DATABASE_URL` to override with a **dedicated test server** and a role with `CREATEDB`; never use production. No Supabase account or paid model credentials are required for these tests.
+
+This migration starts a fresh PostgreSQL pilot. Existing ignored SQLite files are left intact; their data is not automatically imported. If a previous pilot contains valuable history, retain those files and perform a separately reviewed data import before switching environments.
+
+References: [Supabase connections](https://supabase.com/docs/guides/database/connecting-to-postgres), [Drizzle with Supabase](https://orm.drizzle.team/docs/get-started/supabase-new), [Mastra PostgreSQL](https://mastra.ai/integrations/databases/postgresql).
 
 ## CLI and API
 
@@ -98,9 +125,9 @@ Use the same idempotency key to retry an ambiguous dispatch. Reusing a key with 
 
 ## Execution and persistence
 
-- `.data/pickler.db`: scoped configuration, queued jobs, immutable config snapshots, events and decisions, using `@libsql/client`.
-- `.data/mastra.db`: Mastra workflow storage via `@mastra/libsql`. It is operator-visible, not a public tenant resource.
-- `.data/worker.lock`: exclusive local worker ownership. A dead process's lock is reclaimed. Never remove a live worker's lock. One worker processes jobs serially; SQLite transactions and a partial unique index additionally enforce one running investigation per agent.
+- `pickler` PostgreSQL schema: tenant configuration, queued jobs, immutable config snapshots, JSONB events and decisions, accessed through Drizzle and `pg`.
+- `mastra` PostgreSQL schema: framework storage through `@mastra/pg`, initialized by Mastra. It is operator-visible, not a public tenant resource.
+- A PostgreSQL session advisory lock admits one worker across machines. A second worker fails before recovery. Connection loss aborts the owner; database disconnection releases its lock. The pilot still processes research serially. Agent row locks, transactions and a partial unique index additionally enforce one running investigation per agent. Scaling to multiple workers requires per-job leases and recovery changes, not just increasing replicas.
 
 A job ID is its run ID. Scheduled occurrence is encoded in its unique persistent request key (`schedule:CONFIG_VERSION:DUE_TIMESTAMP`), alongside the agent's persisted `nextDueAt`. Duplicate ticks cannot enqueue duplicate work. Missed intervals collapse into one current run. An existing queued/running job prevents a new periodic enqueue. Six jobs per rolling 24 hours is the default; failed/cancelled jobs also consume the conservative admission quota.
 
@@ -118,7 +145,7 @@ The runner checks permissions again before every capability call. Mandatory rule
 src/
   mastra/index.ts          # Studio workflows and loopback HTTP host
   api/app.ts               # Token resolution, request validation and HTTP mapping
-  composition/container.ts # Wires core, providers, SQLite and the configured model
+  composition/container.ts # Wires core, providers, PostgreSQL and the configured model
   composition/model.ts     # Mastra implementation of ResearchModel
   config/env.ts            # Required server-only configuration
   plugins/registry.ts      # Reviewed research@1.0.0 and prediction-markets@1.0.0
@@ -131,7 +158,10 @@ src/
 ../../packages/infrastructure/src/
   research/exa.ts          # WebSearch and PageReader
   polymarket/market-data.ts
-  persistence/research-store.ts
+  persistence/schema.ts       # Drizzle tables, JSONB types, constraints and indexes
+  persistence/research-store.ts # Transactional PostgreSQL adapter
+  persistence/migrate.ts      # Explicit migration runner
+  ../drizzle/                # Committed SQL migrations and Drizzle snapshots
 ```
 
 To add Firecrawl, implement `WebSearch` and `PageReader`, run the provider contract tests against that adapter, and select it in composition. Core and plugin tool contracts should not change. No dynamic installation of external plugin code is supported.
@@ -141,6 +171,7 @@ Shared packages compile to ESM `dist` with declarations; Mastra packages those a
 ```sh
 npm run lint
 npm run typecheck
+npm run db:up
 npm test
 npm run build
 npm run start --workspace=@pickler/agent-service
@@ -148,6 +179,6 @@ npm run start --workspace=@pickler/agent-service
 
 The production build command still starts a local laboratory host, not a hardened deployment. Do not expose Studio through a public tunnel. Public login, external scheduling/queues, trading execution and on-chain contracts remain separate work.
 
-Tests use controlled clocks, temporary SQLite files and explicitly injected test transports. They do not call paid providers or manufacture production results. Run the real `check` and a manual research job after supplying credentials; automated offline tests do not establish compatibility of an untested remote model.
+Tests use controlled clocks, isolated PostgreSQL databases and explicitly injected test transports. They do not call paid providers or manufacture production results. Run the real `check` and a manual research job after supplying credentials; automated offline tests do not establish compatibility of an untested remote model.
 
-Provider references: [Mastra workflows](https://mastra.ai/docs/workflows/overview), [custom routes](https://mastra.ai/docs/server/custom-api-routes), [LibSQL storage](https://mastra.ai/integrations/databases/libsql), [Exa search](https://exa.ai/docs/reference/search), [Polymarket markets](https://docs.polymarket.com/api-reference/markets/list-markets), [market tags](https://docs.polymarket.com/api-reference/markets/get-market-tags-by-id).
+Provider references: [Mastra workflows](https://mastra.ai/docs/workflows/overview), [custom routes](https://mastra.ai/docs/server/custom-api-routes), [PostgreSQL storage](https://mastra.ai/integrations/databases/postgresql), [Exa search](https://exa.ai/docs/reference/search), [Polymarket markets](https://docs.polymarket.com/api-reference/markets/list-markets), [market tags](https://docs.polymarket.com/api-reference/markets/get-market-tags-by-id).
