@@ -3,6 +3,16 @@ import { config } from "dotenv";
 import { z } from "zod";
 config({ path: resolve(process.cwd(), ".env"), quiet: true });
 const schema = z.object({
+  DATABASE_URL: z
+    .string()
+    .url()
+    .refine((value) => {
+      if (!URL.canParse(value)) {
+        return false;
+      }
+      const url = new URL(value);
+      return ["postgres:", "postgresql:"].includes(url.protocol) && url.port !== "6543";
+    }, "Use a PostgreSQL direct or session-pooler connection, not transaction mode"),
   MODEL_BASE_URL: z.string().url(),
   MODEL_ID: z.string().min(1),
   MODEL_API_KEY: z.string().min(1),
@@ -30,7 +40,7 @@ export function readEnv(env: NodeJS.ProcessEnv = process.env) {
   if (value.TENANT_ALPHA_TOKEN === value.TENANT_BETA_TOKEN) {
     throw new Error("Tenant tokens must be distinct");
   }
-  return { ...value, dataDir: resolve(process.cwd(), ".data") };
+  return value;
 }
 
 export type Environment = ReturnType<typeof readEnv>;
