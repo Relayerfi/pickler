@@ -4,6 +4,7 @@ import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import { z } from "zod";
 import { decisionSchema } from "@pickler/api-schema";
 import { PilotError, type ResearchModel, type Market } from "@pickler/core";
+import { validatedModelOutput } from "./model-output";
 import { buildTools } from "../plugins/registry";
 import type { Environment } from "../config/env";
 import { researchSystemPrompt } from "../prompts/research-system";
@@ -34,7 +35,7 @@ export function createModel(env: Environment): ResearchModel & { check(): Promis
       provider: new URL(env.MODEL_BASE_URL).origin,
       prompts: { research: researchSystemPrompt, marketSelection: marketSelectionSystemPrompt },
     }),
-    async select(markets: Market[], profile: string, signal: AbortSignal, limits) {
+    async select(markets: Market[], profile: string, signal: AbortSignal, limits, now) {
       const agent = new Agent({
         maxRetries: 0,
         id: "market-selector",
@@ -43,24 +44,31 @@ export function createModel(env: Environment): ResearchModel & { check(): Promis
         model,
       });
       const schema = marketSelectionSchema;
-      const result = await agent.generate(
-        JSON.stringify({
-          profile,
-          candidates: markets.map(({ id, question, liquidity, closesAt }) => ({
-            id,
-            question,
-            liquidity,
-            closesAt,
-          })),
-        }),
-        {
-          maxSteps: 1,
-          abortSignal: signal,
-          modelSettings: { maxOutputTokens: limits.outputTokens },
-          structuredOutput: { schema },
-        },
+      const result = await validatedModelOutput(
+        () =>
+          agent.generate(
+            JSON.stringify({
+              now,
+              profile,
+              candidates: markets.map(({ id, question, liquidity, closesAt }) => ({
+                id,
+                question,
+                liquidity,
+                closesAt,
+              })),
+            }),
+            {
+              maxSteps: 1,
+              abortSignal: signal,
+              modelSettings: { maxOutputTokens: limits.outputTokens },
+              structuredOutput: { schema },
+            },
+          ),
+        schema,
+        "selection",
+        signal,
       );
-      return { ...schema.parse(result.object), usage: result.totalUsage };
+      return { ...result.object, usage: result.usage };
     },
     async research(input) {
       const agent = new Agent({
@@ -71,24 +79,30 @@ export function createModel(env: Environment): ResearchModel & { check(): Promis
         model,
         tools: buildTools(input.tools),
       });
-      const result = await agent.generate(
-        JSON.stringify({
-          now: new Date().toISOString(),
-          market: input.market,
-          profile: input.profile,
-        }),
-        {
-          maxSteps: input.limits.steps - 1,
-          abortSignal: input.signal,
-          modelSettings: { maxOutputTokens: input.limits.outputTokens },
-          onStepFinish: async (step) => {
-            await input.onUsage(step.usage);
-          },
-          structuredOutput: { schema: decisionSchema },
-          toolCallConcurrency: 1,
-        },
+      const result = await validatedModelOutput(
+        () =>
+          agent.generate(
+            JSON.stringify({
+              now: new Date().toISOString(),
+              market: input.market,
+              profile: input.profile,
+            }),
+            {
+              maxSteps: input.limits.steps - 1,
+              abortSignal: input.signal,
+              modelSettings: { maxOutputTokens: input.limits.outputTokens },
+              onStepFinish: async (step) => {
+                await input.onUsage(step.usage);
+              },
+              structuredOutput: { schema: decisionSchema },
+              toolCallConcurrency: 1,
+            },
+          ),
+        decisionSchema,
+        "research",
+        input.signal,
       );
-      return { decision: decisionSchema.parse(result.object), usage: result.totalUsage };
+      return { decision: result.object, usage: result.usage };
     },
     async check() {
       let called = false;
