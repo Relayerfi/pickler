@@ -16,3 +16,5 @@ From the root: `npm run typecheck --workspace=@pickler/api-schema`, `npm run lin
 ## Research pilot
 
 The local service consumes these schemas at the HTTP and model boundaries. Reject extra request fields, including caller-supplied tenant IDs. Financial prices are bounded decimal strings representing a fraction of one outcome payout per share. No executable sizes or order DTOs exist. Job timestamps use Unix milliseconds; evidence/decision timestamps use ISO UTC. Runtime schemas must stay portable and contain no business-owned imports.
+
+The research `outputTokens` cap is 8,000 per model call, including provider reasoning tokens. Core defaults to this cap; existing persisted agent configurations retain their values until explicitly updated. The agent-service caps selection and connection probes separately at 2,000.
