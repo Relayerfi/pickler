@@ -3,4 +3,5 @@ export interface HealthResponse {
   status: "ok";
   checkedAt: string;
 }
-export * from './research.js';
+
+export * from "./research.js";
