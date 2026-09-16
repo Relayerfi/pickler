@@ -1,15 +1,12 @@
 import { createHash } from "node:crypto";
-import { mkdir } from "node:fs/promises";
-import { join } from "node:path";
 import { createResearchRunner } from "@pickler/core";
-import { SqliteResearchStore, ExaResearch, PolymarketData } from "@pickler/infrastructure";
+import { PostgresResearchStore, ExaResearch, PolymarketData } from "@pickler/infrastructure";
 import { readEnv } from "../config/env";
 import { createModel } from "./model";
 
 export async function createContainer() {
   const env = readEnv();
-  await mkdir(env.dataDir, { recursive: true, mode: 0o700 });
-  const repository = new SqliteResearchStore(`file:${join(env.dataDir, "pickler.db")}`);
+  const repository = new PostgresResearchStore(env.DATABASE_URL);
   await repository.init();
   await repository.bindConnectionIdentity(
     createHash("sha256")
