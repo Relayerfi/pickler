@@ -39,3 +39,11 @@ The live check exposed JSON-mode compatibility requirements: requests must expli
 The operator selected Sports (verified Polymarket tag ID 1). Alpha configuration version 2 uses that category with scheduling disabled. One manual run, `725b1217-483c-4791-9508-8e995715d4bd`, persisted runtime prompt snapshots and candidates, then failed before selection completed with `PROVIDER_OR_MODEL_FAILURE`. It has no decision and is not a valid abstention. The existing generic failure code does not establish the precise model failure cause; model-stage diagnostics need improvement before another paid attempt. The run was not automatically retried. Full research acceptance and scheduling remain pending.
 
 The 29-test Supabase suite passes after the compatibility change. Tests now require JSON instructions and explicit schema requirements in the configured research prompts and structured connection probe. Offline fixtures still do not establish a completed live research run.
+
+## Market selector isolation and regression coverage
+
+An isolated replay of the saved sports candidates on 2026-09-16 succeeded with the unchanged configured model: HTTP 200 and a validated selection, with 1,091 reported output tokens including 986 reasoning tokens. This does not identify the historical failure cause or constitute a full research run. It exposed a stale closing date being described as future.
+
+The runner now excludes expired, boundary-time, missing and invalid closing dates; rechecks manual/selected markets and final trade refreshes; and passes its clock to selection. Prompt version 1.0.2 references that clock. Safe model diagnostics retain stage, status, finish reason and numeric usage when available. Regression fixtures cover truncation, malformed structured output, HTTP failures, timeout/cancellation, metadata redaction and preservation of partial evidence. No additional paid research run or scheduling activation is part of this correction.
+
+Validation: all 38 tests pass against local Supabase. Repository lint, format and type checks pass, and the full Next.js/Mastra build succeeds. The selector transport fixture also verifies an actual Mastra HTTP 429 is preserved as `MODEL_HTTP_429`.
