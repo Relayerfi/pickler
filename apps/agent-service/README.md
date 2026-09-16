@@ -81,18 +81,18 @@ The market ID above illustrates syntax, not a durable recommendation. `config.js
 
 HTTP base: `http://127.0.0.1:4111/pilot`. Send `Authorization: Bearer <tenant-token>` on every endpoint. Tokens resolve to a fixed tenant on the server; neither JSON input nor model context can choose the API tenant.
 
-| Method | Path | Behavior |
-| --- | --- | --- |
-| GET | `/categories` | First 100 provider tags; response states the catalog limit |
-| GET | `/agents` | Only the authenticated tenant's agent |
-| GET | `/agents/:id` | Configuration, version, pause and next occurrence |
-| PUT | `/agents/:id/config` | Full config and `expectedVersion`; stale writes return 409 |
-| POST | `/agents/:id/runs` | `{}` or `{ "marketId": "..." }`; required `Idempotency-Key` header; 202 with `runId` |
-| GET | `/runs/:id` | Poll status, safe failure code and decision |
-| GET | `/runs/:id/events` | Persisted partial evidence and diagnostic events |
-| PUT | `/agents/:id/schedule` | `{ "enabled": true }` or false |
-| PUT | `/agents/:id/pause` | `{ "paused": true }` or false |
-| POST | `/connections/check` | Explicit paid model/Exa diagnostics |
+| Method | Path                   | Behavior                                                                             |
+| ------ | ---------------------- | ------------------------------------------------------------------------------------ |
+| GET    | `/categories`          | First 100 provider tags; response states the catalog limit                           |
+| GET    | `/agents`              | Only the authenticated tenant's agent                                                |
+| GET    | `/agents/:id`          | Configuration, version, pause and next occurrence                                    |
+| PUT    | `/agents/:id/config`   | Full config and `expectedVersion`; stale writes return 409                           |
+| POST   | `/agents/:id/runs`     | `{}` or `{ "marketId": "..." }`; required `Idempotency-Key` header; 202 with `runId` |
+| GET    | `/runs/:id`            | Poll status, safe failure code and decision                                          |
+| GET    | `/runs/:id/events`     | Persisted partial evidence and diagnostic events                                     |
+| PUT    | `/agents/:id/schedule` | `{ "enabled": true }` or false                                                       |
+| PUT    | `/agents/:id/pause`    | `{ "paused": true }` or false                                                        |
+| POST   | `/connections/check`   | Explicit paid model/Exa diagnostics                                                  |
 
 Use the same idempotency key to retry an ambiguous dispatch. Reusing a key with a different market returns 409. Cross-tenant resource access returns 404; missing/invalid tokens return 401. Public schemas live in `@pickler/api-schema`. Times in run/config DTOs are Unix milliseconds; evidence and decision timestamps are ISO UTC. Prices are decimal strings expressing fractions of one unit of outcome payout per share. They are proposals, not executable amounts.
 
