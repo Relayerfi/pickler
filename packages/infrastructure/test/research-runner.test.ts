@@ -1,8 +1,5 @@
 import { test, type TestContext } from "node:test";
 import assert from "node:assert/strict";
-import { mkdtemp, rm } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
 import {
   DEFAULT_CONFIG,
   createResearchRunner,
@@ -13,7 +10,7 @@ import {
   type Decision,
   type MarketData,
 } from "@pickler/core";
-import { SqliteResearchStore } from "../src/persistence/research-store";
+import { createTestStore } from "./database";
 const scope = { tenantId: "alpha", agentId: "pickle-alpha" };
 const market: Market = {
   id: "1",
@@ -53,13 +50,7 @@ const decision: Decision = {
   abstentionReason: "Insufficient evidence",
 };
 async function setup(t: TestContext) {
-  const dir = await mkdtemp(join(tmpdir(), "pickler-run-"));
-  const repository = new SqliteResearchStore(`file:${join(dir, "test.db")}`);
-  await repository.init();
-  t.after(async () => {
-    repository.close();
-    await rm(dir, { recursive: true, force: true });
-  });
+  const repository = await createTestStore(t);
   await repository.updateConfig(scope, 1, { ...DEFAULT_CONFIG, categoryIds: ["7"] });
   await repository.enqueue(scope, "test", null, 100);
   const run = (await repository.claim(101))!;
