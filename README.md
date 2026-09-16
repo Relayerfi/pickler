@@ -63,3 +63,15 @@ npm run contracts:test
 ```
 
 On-chain deployments run explicitly, never as a side effect of `build`. Solidity has its own toolchain; contract commands are independent of web tasks. The current source and test directories are empty.
+
+## Formatting
+
+The monorepo uses Prettier for consistent formatting and ESLint for code quality and architecture boundaries. Editor defaults are in `.editorconfig`; configure your editor to use the repository's Prettier installation when formatting on save.
+
+```sh
+npm run format
+npm run format:check
+npm run lint:fix
+```
+
+Run `format` after applying lint fixes. The pull request formatting check must pass. Generated output, local databases, environment files and the npm lockfile are excluded. Solidity uses `forge fmt --root contracts --check` separately. See the root `AGENTS.md` for readability conventions.
