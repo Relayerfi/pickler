@@ -36,11 +36,11 @@ Monad remains the launcher direction; on-chain contracts, wallets and trading ex
 
 ## Independent agent service
 
-`apps/agent-service` hosts Mastra Studio, local token-authenticated HTTP routes and a separate supervised worker. `src/composition/container.ts` injects Exa, Polymarket, SQLite and a configured Mastra model adapter into the framework-independent research runner. The web frontend is unchanged.
+`apps/agent-service` hosts Mastra Studio, local token-authenticated HTTP routes and a separate supervised worker. `src/composition/container.ts` injects Exa, Polymarket, PostgreSQL and a configured Mastra model adapter into the framework-independent research runner. The web frontend is unchanged.
 
-Core owns profiles, capability ports, config validation, schedule/quota policy and research orchestration. Infrastructure performs scoped SQLite transactions, durable job claims and provider response normalization. Runtime DTO validation lives in `api-schema`. Studio and HTTP enqueue the same persistent jobs; the worker handles manual and periodic jobs with the same runner. Raw model agents are not exposed as an alternative execution path.
+Core owns profiles, capability ports, config validation, schedule/quota policy and research orchestration. Infrastructure performs scoped PostgreSQL transactions, durable job claims and provider response normalization. Runtime DTO validation lives in `api-schema`. Studio and HTTP enqueue the same persistent jobs; the worker handles manual and periodic jobs with the same runner. Raw model agents are not exposed as an alternative execution path.
 
-SQLite stores each tenant's configuration and history, including config snapshots and partial evidence. A local worker lock prevents competing recovery, transactional claims prevent simultaneous work per agent, and persistent occurrence keys deduplicate schedules. The operator supplies separate local tenant tokens; Studio is privileged loopback tooling, not production authentication. External content and model outputs cannot choose tenant scope or enable tools.
+PostgreSQL stores each tenant's configuration and history, including config snapshots and partial evidence. A PostgreSQL session advisory lock prevents competing recovery, transactional claims prevent simultaneous work per agent, and persistent occurrence keys deduplicate schedules. The operator supplies separate local tenant tokens; Studio is privileged loopback tooling, not production authentication. External content and model outputs cannot choose tenant scope or enable tools.
 
 See [the pilot guide](../apps/agent-service/README.md) for current endpoints, limits, readiness and restart semantics. [Runtime V1](specs/agent-runtime-v1.md) remains the broader direction; paper/live trading, wallets, public login and adaptive scheduling are not implemented.
 
@@ -52,7 +52,7 @@ Core, infrastructure and API-schema expose compiled ESM runtime exports and sour
 
 ## Validation and documentation
 
-Turborepo coordinates builds and type checks. ESLint checks conventions and import boundaries. Tests cover the health use case, tenant HTTP authorization, a Mastra tool/structured-output transport fixture, provider contracts, durable SQLite scheduling and research decisions. Provider test fixtures never stand in for a live connection check. Solidity requires unit, fuzz, and invariant testing before deployment; current contract directories are empty.
+Turborepo coordinates builds and type checks. ESLint checks conventions and import boundaries. Tests cover the health use case, tenant HTTP authorization, a Mastra tool/structured-output transport fixture, provider contracts, durable PostgreSQL scheduling and research decisions. Provider test fixtures never stand in for a live connection check. Solidity requires unit, fuzz, and invariant testing before deployment; current contract directories are empty.
 
 Read the root and relevant project `AGENTS.md` before working in any project. Update local instructions alongside changes to structure, exports, commands, or responsibilities. Keep documentation in English and distinguish working code from proposed examples.
 
