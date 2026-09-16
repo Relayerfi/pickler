@@ -7,22 +7,29 @@
     ".": {
       "types": "./src/index.ts",
       "import": "./dist/index.js"
-    }
+    },
+    "./testing": "./test/database.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "build": "tsc -p tsconfig.build.json"
+    "build": "tsc -p tsconfig.build.json",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "node --env-file-if-exists=../../apps/agent-service/.env --import tsx src/persistence/migrate.ts"
   },
   "devDependencies": {
-    "@pickler/typescript-config": "*"
+    "@pickler/typescript-config": "*",
+    "@types/pg": "8.23.1",
+    "drizzle-kit": "0.31.10"
   },
   "dependencies": {
-    "@libsql/client": "0.18.0",
     "@pickler/core": "*",
+    "drizzle-orm": "0.45.2",
+    "pg": "8.20.0",
     "zod": "4.6.5"
   },
   "files": [
     "dist",
-    "src"
+    "src",
+    "drizzle"
   ]
 }
