@@ -49,6 +49,28 @@ Use one PostgreSQL database with separate `pickler` and `mastra` schemas. Supaba
 
 The database schemas are server-only. Do not add `pickler`, `pickler_migrations`, or `mastra` to Supabase's exposed Data API schemas or grant browser roles access. Pickler tables enable RLS without public policies as a default denial for non-owner roles. The privileged backend bypasses RLS and enforces tenant scope in repository queries and the API; these are not Supabase Auth policies. Public login and production role separation remain separate work.
 
+### Full local Supabase stack
+
+Install Docker and the Supabase CLI (verified with version 2.111.0), then run from the repository root:
+
+```sh
+npm run supabase:start
+npm run agent -- init # Once; refuses to overwrite an existing .env
+```
+
+Set both database URLs in `apps/agent-service/.env` to `postgresql://postgres:postgres@127.0.0.1:54522/postgres`, then run:
+
+```sh
+npm run db:migrate
+npm run test:supabase
+```
+
+Studio is at http://127.0.0.1:54523 and the local Supabase API is at http://127.0.0.1:54521. These ports are isolated from the default Supabase ports. `pickler` and `mastra` remain outside the exposed API schemas. Drizzle remains the owner of Pickler migrations; do not duplicate them under `supabase/migrations` or run database resets to apply application changes.
+
+`npm run supabase:stop` preserves local data. `npm run supabase:status` shows service endpoints and local development keys; do not paste its full output into public logs. Database integration tests require no model/Exa credentials. Starting the research agent still requires the four provider variables. Supabase Studio and Mastra Studio are separate applications.
+
+### PostgreSQL-only alternative
+
 For local development without Supabase:
 
 ```sh
