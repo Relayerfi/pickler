@@ -1,10 +1,7 @@
 import { test, type TestContext } from "node:test";
 import assert from "node:assert/strict";
-import { mkdtemp, rm } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
 import { DEFAULT_CONFIG, type Decision } from "@pickler/core";
-import { SqliteResearchStore } from "../src/persistence/research-store";
+import { createTestStore } from "./database";
 const scope = { tenantId: "alpha", agentId: "pickle-alpha" };
 const config = { ...DEFAULT_CONFIG, categoryIds: ["1"] };
 const abstention: Decision = {
@@ -22,13 +19,7 @@ const abstention: Decision = {
   abstentionReason: "Insufficient evidence",
 };
 async function setup(t: TestContext) {
-  const dir = await mkdtemp(join(tmpdir(), "pickler-store-"));
-  const store = new SqliteResearchStore(`file:${join(dir, "test.db")}`);
-  await store.init();
-  t.after(async () => {
-    store.close();
-    await rm(dir, { recursive: true, force: true });
-  });
+  const store = await createTestStore(t);
   await store.updateConfig(scope, 1, config);
   return store;
 }
@@ -131,4 +122,50 @@ test("provider identity changes invalidate readiness, but ordinary restarts pres
 
   assert.equal((await store.agent(scope)).scheduleEnabled, false);
   await assert.rejects(store.schedule(scope, true, 4), { code: "NOT_READY" });
+});
+
+test("independent PostgreSQL connections serialize quota admission and idempotency", async (t) => {
+  const store = await setup(t);
+  const other = store.connectPeer();
+  const attempts = await Promise.allSettled(
+    Array.from({ length: 12 }, (_, i) =>
+      (i % 2 ? store : other).enqueue(scope, `concurrent-${i}`, null, 100),
+    ),
+  );
+  assert.equal(attempts.filter((result) => result.status === "fulfilled").length, 6);
+  for (const result of attempts) {
+    if (result.status === "rejected") {
+      assert.equal(result.reason.code, "QUOTA");
+    }
+  }
+  const claims = await Promise.all([store.claim(101), other.claim(101)]);
+  assert.equal(claims.filter(Boolean).length, 1);
+});
+
+test("worker ownership is database-wide and survives until the session closes", async (t) => {
+  const store = await setup(t);
+  const other = store.connectPeer();
+  const release = await store.acquireWorker(() => {});
+  await assert.rejects(
+    other.acquireWorker(() => {}),
+    /Another worker/,
+  );
+  await release();
+  const releaseOther = await other.acquireWorker(() => {});
+  await releaseOther();
+});
+
+test("simultaneous schedule ticks coalesce into one persisted occurrence", async (t) => {
+  const store = await setup(t);
+  await store.setConnectionsChecked(true);
+  await store.enqueue(scope, "manual-ready", null, 0);
+  const manual = (await store.claim(1))!;
+  await store.finish(manual, abstention, null, 2);
+  await store.schedule(scope, true, 3);
+  const due = (await store.agent(scope)).nextDueAt!;
+  await Promise.all(Array.from({ length: 5 }, () => store.tick(due + 1000)));
+  const scheduled = (await store.claim(due + 1001))!;
+  assert.equal(scheduled.trigger, "schedule");
+  await store.finish(scheduled, abstention, null, due + 1002);
+  assert.equal(await store.claim(due + 1003), null);
 });
