@@ -25,3 +25,7 @@ To complete acceptance, follow the README: configure Supabase direct/session con
 On 2026-09-16, Supabase CLI 2.111.0 started the full local stack using project `pickler-monorepo` and ports 54521/54522/54523. Drizzle migrations applied successfully; all 28 tests passed against this Supabase PostgreSQL instance. The Mastra adapter wrote, loaded and deleted a workflow snapshot in its separate schema. Studio returned HTTP 200. Both laboratory agents were seeded without model/provider calls. The ignored app `.env` contains local database URLs and generated tenant tokens; model and Exa values remain empty.
 
 The first image download was interrupted when Docker stopped responding; reopening Docker and retrying completed successfully. The Supabase stack is left running for operator inspection. Hosted Supabase and paid-provider acceptance remain pending.
+
+## Versioned prompt verification
+
+The research and market-selection instructions are separate versioned modules. The extraction preserves the research text byte-for-byte. The 29-test suite passes against local Supabase, including exact system-prompt metadata/hash checks, user-profile separation in actual Mastra request payloads, and prompt snapshots persisted before provider calls and on failed started runs. Snapshots include full instructions and use existing JSONB runtime events; no migration is needed. Historical runs are not backfilled.
