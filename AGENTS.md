@@ -10,27 +10,28 @@ Keep each project's `AGENTS.md` updated in the same change whenever its structur
 
 ## Project map
 
-| Project | Responsibility | Required local instructions |
-| --- | --- | --- |
-| `apps/web` | Next.js presentation and HTTP entry points | [AGENTS.md](apps/web/AGENTS.md) |
-| `packages/core` | Business rules, use cases, and ports | [AGENTS.md](packages/core/AGENTS.md) |
-| `packages/infrastructure` | Implementations of business ports | [AGENTS.md](packages/infrastructure/AGENTS.md) |
-| `packages/api-schema` | Public HTTP DTOs | [AGENTS.md](packages/api-schema/AGENTS.md) |
-| `packages/ui` | Reusable React components and styles | [AGENTS.md](packages/ui/AGENTS.md) |
-| `packages/chain` | Public blockchain metadata and future generated ABIs | [AGENTS.md](packages/chain/AGENTS.md) |
-| `packages/typescript-config` | Shared compiler configuration | [AGENTS.md](packages/typescript-config/AGENTS.md) |
-| `contracts` | Foundry/Solidity project | [AGENTS.md](contracts/AGENTS.md) |
+| Project                      | Responsibility                                       | Required local instructions                       |
+| ---------------------------- | ---------------------------------------------------- | ------------------------------------------------- |
+| `apps/agent-service`         | Local Mastra Studio, API and research worker         | [AGENTS.md](apps/agent-service/AGENTS.md)         |
+| `apps/web`                   | Next.js presentation and HTTP entry points           | [AGENTS.md](apps/web/AGENTS.md)                   |
+| `packages/core`              | Business rules, use cases, and ports                 | [AGENTS.md](packages/core/AGENTS.md)              |
+| `packages/infrastructure`    | Implementations of business ports                    | [AGENTS.md](packages/infrastructure/AGENTS.md)    |
+| `packages/api-schema`        | Public HTTP DTOs                                     | [AGENTS.md](packages/api-schema/AGENTS.md)        |
+| `packages/ui`                | Reusable React components and styles                 | [AGENTS.md](packages/ui/AGENTS.md)                |
+| `packages/chain`             | Public blockchain metadata and future generated ABIs | [AGENTS.md](packages/chain/AGENTS.md)             |
+| `packages/typescript-config` | Shared compiler configuration                        | [AGENTS.md](packages/typescript-config/AGENTS.md) |
+| `contracts`                  | Foundry/Solidity project                             | [AGENTS.md](contracts/AGENTS.md)                  |
 
-See [README.md](README.md) for setup, [docs/architecture.md](docs/architecture.md) for architectural decisions, and [the agent runtime V1 specification](docs/specs/agent-runtime-v1.md) for the planned Mastra service, capability interfaces, tenant isolation, scheduling, and implementation phases. `apps/agent-service` is proposed and does not exist yet; create its own `AGENTS.md` when scaffolding it.
+See [README.md](README.md) for setup, [docs/architecture.md](docs/architecture.md) for architectural decisions, and [the agent runtime V1 specification](docs/specs/agent-runtime-v1.md) for the planned Mastra service, capability interfaces, tenant isolation, scheduling, and implementation phases. The research-only subset is implemented; read [the pilot guide](apps/agent-service/README.md) for actual commands, limits and exclusions.
 
 ## Architecture invariants
 
 - Maintain three layers: presentation (`apps/web`), business (`packages/core`), and infrastructure (`packages/infrastructure`). Code dependencies point toward business: presentation → business ← infrastructure.
-- Each executable app connects concrete adapters with use cases in its own server composition root. Today this is `apps/web/src/server`, protected with `server-only`. The proposed agent service uses `src/composition/container.ts` and a Node server boundary; it must not depend on Next.js-specific guards.
+- Each executable app connects concrete adapters with use cases in its own server composition root. Today this is `apps/web/src/server`, protected with `server-only`. The agent service uses `src/composition/container.ts` and a Node server boundary; it must not depend on Next.js-specific guards.
 - Keep Next.js, React, transport objects, database clients, and provider SDKs out of core. Use business-owned interfaces and dependency injection.
 - Keep HTTP DTOs in `api-schema`; keep public on-chain artifacts in `chain`. Neither package carries credentials or server implementation details.
 - Use declared workspace dependencies and public package exports. Do not bypass package boundaries with relative imports into another project's source.
-- The planned agent pilot uses Mastra, Exa, and Polymarket; Firecrawl is a later provider option. Monad is the launcher direction. None of these integrations or business contracts is implemented. Auth, storage, queue, hosting, model, credentials, and live execution policy still require concrete choices. Do not document planned integrations as operational.
+- The local agent pilot uses Mastra, Exa, Polymarket and PostgreSQL. Provider credentials and the exact OpenAI-compatible model are operator supplied. No trading, wallets, public login, external queue, contracts or Firecrawl integration exists. Do not describe offline tests as a verified live model run.
 
 ## Branch and pull request workflow
 
@@ -40,19 +41,20 @@ See [README.md](README.md) for setup, [docs/architecture.md](docs/architecture.m
 
 ## Workflow and checks
 
-Use Node 22+ and npm 10.9.3 with the committed lockfile. Install from the root with `npm ci`; use `npm install` when intentionally changing dependencies. Turborepo coordinates workspace tasks. All commands below run from the repository root:
+Use Node 22.22+ and npm 10.9.3 with the committed lockfile. Install from the root with `npm ci`; use `npm install` when intentionally changing dependencies. Turborepo coordinates workspace tasks. All commands below run from the repository root:
 
 ```sh
 npm run dev
 npm run lint
 npm run typecheck
+npm run db:up # Local PostgreSQL for integration tests
 npm test
 npm run build
 npm run contracts:build
 npm run contracts:test
 ```
 
-Run checks relevant to the change. Documentation-only changes require checking links, paths, examples, and command accuracy; they do not require a full application build. `npm test` currently discovers only `packages/core/test/*.test.ts`; extend test discovery if adding tests elsewhere. Foundry commands are separate from the web build and currently have no contracts to compile or test.
+Run checks relevant to the change. Documentation-only changes require checking links, paths, examples, and command accuracy; they do not require a full application build. `npm test` builds shared packages and discovers core, infrastructure and agent-service package-root test files; extend discovery when adding other suites. Core, infrastructure and API schemas export compiled ESM from `dist`; run `npm run build:shared` before direct consumers. `npm run dev:agent` does this automatically. The normal `npm run dev` starts only the web app. Foundry commands are separate from the web build and currently have no contracts to compile or test.
 
 Never commit dependencies, build output, secrets, private keys, or local environment files. Keep changes scoped to the request and preserve unrelated work.
 
@@ -61,3 +63,13 @@ Never commit dependencies, build output, secrets, private keys, or local environ
 - A sub-agent working in a worktree must never delete that worktree. Leave it intact and report its path to the parent.
 - The main agent must ask for confirmation before removing a worktree that is its current working directory.
 - From the repository root, the main agent may clean up only worktrees it created, never another agent's or user's worktree.
+
+## Code formatting and readability
+
+Use the root Prettier configuration for TypeScript, JavaScript, JSON, CSS, YAML and Markdown: two spaces, a 100-column print-width target, double quotes, semicolons and trailing commas. `.editorconfig` supplies matching editor defaults. Generated output, local data, environment files and the npm lockfile are excluded from Prettier. Solidity remains formatted by Foundry.
+
+Run `npm run format` to format files and `npm run format:check` to verify them. Pull requests run the format check in GitHub Actions. `npm run lint:fix` applies supported ESLint fixes, including required braces on all conditional and loop bodies. Run formatting after lint fixes. ESLint retains the architecture restrictions; Prettier handles layout.
+
+Write one statement per line and separate logical phases with blank lines. Expand schemas, transaction blocks and complex callbacks for readability. Prefer named predicates or explicit branches over nested ternaries. Write long SQL queries as multiline template literals without changing query semantics or parameter order. Separate test setup, action and assertions visually. Keep formatting-only changes distinguishable from behavior changes; do not add abstractions solely to satisfy a line-length target.
+
+PostgreSQL is hosted by Supabase in deployed environments. Drizzle and database clients belong only in infrastructure. Use direct or session-pooler connections: worker ownership uses a session advisory lock. Never expose `pickler`, `pickler_migrations`, or `mastra` through the Supabase Data API. Local PostgreSQL runs through `compose.yaml`; credentials there are disposable local development values only.

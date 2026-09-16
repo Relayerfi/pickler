@@ -1,0 +1,128 @@
+import { timingSafeEqual } from "node:crypto";
+import { Hono } from "hono";
+import { bodyLimit } from "hono/body-limit";
+import { z } from "zod";
+import { PilotError, type ResearchRepository, type MarketData } from "@pickler/core";
+import {
+  agentResponseSchema,
+  runResponseSchema,
+  eventResponseSchema,
+  configUpdateSchema,
+  runRequestSchema,
+  scheduleSchema,
+  pauseSchema,
+} from "@pickler/api-schema";
+
+function errorStatus(code: string): 400 | 404 | 409 | 429 | 502 {
+  switch (code) {
+    case "NOT_FOUND":
+      return 404;
+    case "QUOTA":
+      return 429;
+    case "INVALID_INPUT":
+      return 400;
+    case "INVALID_PROVIDER_RESPONSE":
+      return 502;
+    default:
+      return code.startsWith("PROVIDER") ? 502 : 409;
+  }
+}
+
+export function createApi(deps: {
+  repository: ResearchRepository;
+  markets: MarketData;
+  tokens: Record<string, string>;
+  checkConnections(): Promise<unknown>;
+}) {
+  const api = new Hono<{ Variables: { tenant: string } }>();
+  api.use("*", bodyLimit({ maxSize: 16_384 }));
+  api.use("*", async (c, next) => {
+    const token = c.req.header("Authorization")?.replace(/^Bearer /, "") ?? "";
+    const tenant = Object.entries(deps.tokens).find(
+      ([, value]) =>
+        Buffer.byteLength(token) === Buffer.byteLength(value) &&
+        timingSafeEqual(Buffer.from(token), Buffer.from(value)),
+    )?.[0];
+    if (!tenant) {
+      return c.json({ error: "UNAUTHORIZED" }, 401);
+    }
+    c.header("Cache-Control", "no-store");
+    c.set("tenant", tenant);
+    await next();
+  });
+  api.onError((error, c) => {
+    if (error instanceof z.ZodError || error instanceof SyntaxError) {
+      return c.json({ error: "INVALID_INPUT" }, 400);
+    }
+    if (error instanceof PilotError) {
+      return c.json({ error: error.code }, errorStatus(error.code));
+    }
+    return c.json({ error: "INTERNAL_OR_PROVIDER_FAILURE" }, 500);
+  });
+  const repo = deps.repository;
+  api.get("/categories", async (c) =>
+    c.json({
+      categories: await deps.markets.categories(AbortSignal.timeout(20_000)),
+      catalogLimit: 100,
+    }),
+  );
+  api.get("/agents", async (c) =>
+    c.json({ agents: agentResponseSchema.array().parse(await repo.agents(c.get("tenant"))) }),
+  );
+  api.get("/agents/:id", async (c) =>
+    c.json(
+      agentResponseSchema.parse(
+        await repo.agent({ tenantId: c.get("tenant"), agentId: c.req.param("id") }),
+      ),
+    ),
+  );
+  api.put("/agents/:id/config", async (c) => {
+    const body = configUpdateSchema.parse(await c.req.json());
+    return c.json(
+      agentResponseSchema.parse(
+        await repo.updateConfig(
+          { tenantId: c.get("tenant"), agentId: c.req.param("id") },
+          body.expectedVersion,
+          body.config,
+        ),
+      ),
+    );
+  });
+  api.post("/agents/:id/runs", async (c) => {
+    const body = runRequestSchema.parse(await c.req.json());
+    const run = await repo.enqueue(
+      { tenantId: c.get("tenant"), agentId: c.req.param("id") },
+      c.req.header("Idempotency-Key") ?? "",
+      body.marketId ?? null,
+      Date.now(),
+    );
+    return c.json({ runId: run.id, status: run.status }, 202);
+  });
+  api.get("/runs/:id", async (c) =>
+    c.json(runResponseSchema.parse(await repo.run(c.get("tenant"), c.req.param("id")))),
+  );
+  api.get("/runs/:id/events", async (c) =>
+    c.json({
+      events: eventResponseSchema
+        .array()
+        .parse(await repo.events(c.get("tenant"), c.req.param("id"))),
+    }),
+  );
+  api.put("/agents/:id/schedule", async (c) => {
+    const { enabled } = scheduleSchema.parse(await c.req.json());
+    await repo.schedule(
+      { tenantId: c.get("tenant"), agentId: c.req.param("id") },
+      enabled,
+      Date.now(),
+    );
+    return c.json({ ok: true });
+  });
+  api.put("/agents/:id/pause", async (c) => {
+    const { paused } = pauseSchema.parse(await c.req.json());
+    await repo.pause({ tenantId: c.get("tenant"), agentId: c.req.param("id") }, paused);
+    return c.json({ ok: true });
+  });
+  // Explicit operator-triggered paid diagnostics; never called at startup.
+  api.post("/connections/check", async (c) => c.json(await deps.checkConnections()));
+  return api;
+}

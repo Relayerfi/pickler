@@ -1,5 +1,7 @@
 # Pickler agent runtime V1 specification
 
+> Implementation note: the local research-only subset is documented in [the pilot guide](../../apps/agent-service/README.md). This broader specification also includes future capabilities; it is not a claim that trading, wallets or public authentication are implemented.
+
 ## Purpose and status
 
 Build the shortest verifiable path from a configured agent to market research, an explicit trade or abstention decision, and eventually bounded autonomous execution on Polymarket. Run the agent independently of the product frontend so frontend development and agent experimentation can proceed separately.
@@ -10,18 +12,18 @@ The working technology direction is Mastra with Studio for experiments, Exa for 
 
 ## Scope and decisions
 
-| Decision | V1 direction |
-| --- | --- |
-| Agent runtime | One configurable Mastra agent definition serving isolated tenant/agent contexts |
-| Tenant | Creator workspace; a workspace may contain multiple agents and members |
-| Frontend | Existing Next.js app, developed independently |
-| Initial interaction | Internal Mastra Studio and authenticated API requests |
-| Research | Real market data and real web research; record attributable evidence |
-| Trading | Research mode first, explicit paper mode next, separately authorized live mode |
-| Capabilities | Stable domain ports with provider adapters and reviewed plugin manifests |
-| Scheduling | Manual runs, fixed schedules, and bounded agent-requested follow-ups |
-| Autonomy | No approval per order once live mode and its bounded policy are authorized |
-| Exclusions | Launcher economics, token deployment, graduation, LP management, buybacks, arbitrary third-party code installation, and general cross-chain transfers |
+| Decision            | V1 direction                                                                                                                                          |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Agent runtime       | One configurable Mastra agent definition serving isolated tenant/agent contexts                                                                       |
+| Tenant              | Creator workspace; a workspace may contain multiple agents and members                                                                                |
+| Frontend            | Existing Next.js app, developed independently                                                                                                         |
+| Initial interaction | Internal Mastra Studio and authenticated API requests                                                                                                 |
+| Research            | Real market data and real web research; record attributable evidence                                                                                  |
+| Trading             | Research mode first, explicit paper mode next, separately authorized live mode                                                                        |
+| Capabilities        | Stable domain ports with provider adapters and reviewed plugin manifests                                                                              |
+| Scheduling          | Manual runs, fixed schedules, and bounded agent-requested follow-ups                                                                                  |
+| Autonomy            | No approval per order once live mode and its bounded policy are authorized                                                                            |
+| Exclusions          | Launcher economics, token deployment, graduation, LP management, buybacks, arbitrary third-party code installation, and general cross-chain transfers |
 
 Monad remains the product's launcher direction. The initial Polymarket execution account is a separate boundary. Do not imply that funds on Monad are directly spendable on Polymarket or automatically replenished from token purchases.
 
@@ -241,20 +243,20 @@ Do not use an in-memory `setInterval` as the sole scheduling record or an LLM ca
 
 The following endpoints are proposed public Pickler contracts, not currently available routes. Implement shared runtime-validated DTOs in `packages/api-schema`. The existing health endpoint remains unchanged.
 
-| Method and path | Behavior |
-| --- | --- |
-| `POST /api/v1/agents` | Create a workspace-scoped draft agent |
-| `GET /api/v1/agents/:agentId` | Read authorized profile/configuration and state |
-| `PATCH /api/v1/agents/:agentId/config` | Validate and create a config version; require expected version |
-| `POST /api/v1/agents/:agentId/runs` | Manual dispatch; require an idempotency key; return 202 with run ID |
-| `GET /api/v1/runs/:runId` | Read status, safe result, decision references, and mode |
-| `GET /api/v1/runs/:runId/events` | Authorized resumable events with sequence IDs; polling is sufficient for first UI |
-| `POST /api/v1/runs/:runId/cancel` | Request cancellation; does not claim venue orders were cancelled |
-| `PUT /api/v1/agents/:agentId/schedule` | Validate and version a fixed/adaptive schedule |
-| `POST /api/v1/agents/:agentId/pause` | Pause new research and risk-taking; retain reconciliation |
-| `POST /api/v1/agents/:agentId/resume` | Resume only after authorization and configuration checks |
-| `GET /api/v1/agents/:agentId/decisions` | Paginated research and abstention history |
-| `GET /api/v1/agents/:agentId/orders` | Paginated execution status and receipts |
+| Method and path                         | Behavior                                                                          |
+| --------------------------------------- | --------------------------------------------------------------------------------- |
+| `POST /api/v1/agents`                   | Create a workspace-scoped draft agent                                             |
+| `GET /api/v1/agents/:agentId`           | Read authorized profile/configuration and state                                   |
+| `PATCH /api/v1/agents/:agentId/config`  | Validate and create a config version; require expected version                    |
+| `POST /api/v1/agents/:agentId/runs`     | Manual dispatch; require an idempotency key; return 202 with run ID               |
+| `GET /api/v1/runs/:runId`               | Read status, safe result, decision references, and mode                           |
+| `GET /api/v1/runs/:runId/events`        | Authorized resumable events with sequence IDs; polling is sufficient for first UI |
+| `POST /api/v1/runs/:runId/cancel`       | Request cancellation; does not claim venue orders were cancelled                  |
+| `PUT /api/v1/agents/:agentId/schedule`  | Validate and version a fixed/adaptive schedule                                    |
+| `POST /api/v1/agents/:agentId/pause`    | Pause new research and risk-taking; retain reconciliation                         |
+| `POST /api/v1/agents/:agentId/resume`   | Resume only after authorization and configuration checks                          |
+| `GET /api/v1/agents/:agentId/decisions` | Paginated research and abstention history                                         |
+| `GET /api/v1/agents/:agentId/orders`    | Paginated execution status and receipts                                           |
 
 Policy expansion and live activation require separate privileged commands; a generic configuration patch must not grant them. Exact activation DTOs depend on the approved wallet and policy model.
 
@@ -272,14 +274,14 @@ Correlate tenant, agent, run, decision, intent, reservation, and venue order IDs
 
 ## Implementation sequence and acceptance criteria
 
-| Phase | Deliverable | Acceptance criteria |
-| --- | --- | --- |
-| 1 Contracts and isolation | Domain types, validated DTOs, tenant scope, config versions, reviewed plugin resolution | Two fixture tenants cannot access each other's agents or histories; disabled tools fail even during an existing run; unknown/missing scope denies access |
-| 2 Research vertical slice | Mastra host/Studio, Exa search/read, Polymarket reads, persisted decisions | Real market produces a sourced TRADE or ABSTAIN decision; tool/provider provenance and costs recorded; no trading calls available in research mode |
-| 3 Durable scheduling | Queue/outbox, worker, fixed cadence and follow-ups | Duplicate dispatch creates one run; restart preserves due work; pause blocks queued research; follow-up limits and DST behavior tested |
-| 4 Paper execution | Policy, reservations, simulated execution and reconciliation | Concurrent intents cannot overspend; partial fills and unknown outcomes exercised; simulation is clearly labeled and does not imply real fill performance |
-| 5 Bounded live pilot | Approved account/signer, authenticated venue adapter, reconciliation | Eligibility/control checks completed; unknown submission reconciled before retry; no duplicate orders; restrictions/revocation enforced; live mode explicitly authorized |
-| 6 Product integration | Next.js facade and creator-facing views | Authenticated users can trigger/monitor allowed runs; no internal Studio or credentials exposed; agent/order/token states remain distinct |
+| Phase                     | Deliverable                                                                             | Acceptance criteria                                                                                                                                                      |
+| ------------------------- | --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1 Contracts and isolation | Domain types, validated DTOs, tenant scope, config versions, reviewed plugin resolution | Two fixture tenants cannot access each other's agents or histories; disabled tools fail even during an existing run; unknown/missing scope denies access                 |
+| 2 Research vertical slice | Mastra host/Studio, Exa search/read, Polymarket reads, persisted decisions              | Real market produces a sourced TRADE or ABSTAIN decision; tool/provider provenance and costs recorded; no trading calls available in research mode                       |
+| 3 Durable scheduling      | Queue/outbox, worker, fixed cadence and follow-ups                                      | Duplicate dispatch creates one run; restart preserves due work; pause blocks queued research; follow-up limits and DST behavior tested                                   |
+| 4 Paper execution         | Policy, reservations, simulated execution and reconciliation                            | Concurrent intents cannot overspend; partial fills and unknown outcomes exercised; simulation is clearly labeled and does not imply real fill performance                |
+| 5 Bounded live pilot      | Approved account/signer, authenticated venue adapter, reconciliation                    | Eligibility/control checks completed; unknown submission reconciled before retry; no duplicate orders; restrictions/revocation enforced; live mode explicitly authorized |
+| 6 Product integration     | Next.js facade and creator-facing views                                                 | Authenticated users can trigger/monitor allowed runs; no internal Studio or credentials exposed; agent/order/token states remain distinct                                |
 
 The frontend can develop in parallel from the contract after phase 1. Do not wait for token contracts to validate research. Do not interpret approval of this specification as authorization to fund an account or submit live orders.
 

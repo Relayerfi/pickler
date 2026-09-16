@@ -6,7 +6,7 @@ Read [the root instructions](../../AGENTS.md) first. Changes here affect all Typ
 
 - Keep framework-specific plugins and application path aliases out of the shared base.
 - Preserve strictness unless an intentional, documented repository-wide decision changes it. Fix local typing issues rather than disabling checks globally.
-- Internal packages currently export TypeScript source. This configuration does not generate distributable JavaScript; introduce a separate build configuration if a future consumer needs compiled output.
+- The base remains no-emit. Core, infrastructure and API-schema own `tsconfig.build.json` overrides emitting ESM to `dist`; UI and chain retain source exports. Keep emitting behavior out of this shared base.
 - Keep the package free of runtime code and dependencies. Maintain the `./base.json` export when changing layout.
 
 Validate from the root with `npm run typecheck` and `npm run build` after compiler configuration changes. This package has no standalone typecheck or test script. Update these instructions when shared settings or consumption requirements change.
