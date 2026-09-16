@@ -313,3 +313,32 @@ test("API and core accept the research token cap and reject larger values", () =
   assert.throws(() => assertConfig(invalid));
   assert.equal(agentConfigSchema.safeParse(invalid).success, false);
 });
+
+test("model transport allows 180 seconds without overriding caller cancellation", async (t) => {
+  const timeout = AbortSignal.timeout.bind(AbortSignal);
+  const durations: number[] = [];
+  t.mock.method(AbortSignal, "timeout", (duration: number) => {
+    durations.push(duration);
+    return timeout(duration);
+  });
+  const controller = new AbortController();
+  t.mock.method(globalThis, "fetch", async (_url: unknown, init: RequestInit) => {
+    assert.equal(init.signal?.aborted, false);
+    controller.abort(new Error("Operator cancelled"));
+    assert.equal(init.signal?.aborted, true);
+    assert.equal(init.signal?.reason, controller.signal.reason);
+    throw controller.signal.reason;
+  });
+  await assert.rejects(
+    createModel(env).select(
+      [],
+      "Fixture",
+      controller.signal,
+      DEFAULT_CONFIG.limits,
+      new Date().toISOString(),
+    ),
+    { code: "MODEL_CANCELLED" },
+  );
+  assert.ok(durations.includes(180_000));
+  assert.equal(durations.includes(60_000), false);
+});
