@@ -32,7 +32,7 @@ In Studio, open **Workflows**:
 
 1. Run `lab-presets` with `{}` to inspect both agents, their current configuration versions, the first 100 Polymarket tags and the two internal plugins. Tags serve as configurable categories; a known Polymarket tag ID can also be configured directly.
 2. Run `configure-agent` with the preset `alpha` or `beta`, its current `expectedVersion` and a full `config`. Copy the existing config and replace `categoryIds` with selected IDs. Empty categories grant no market access. Each edit increments the version and disables scheduling.
-3. Run `check-connections` with `{"runPaidCheck":true}`. This intentionally calls the model twice, invokes a harmless tool, validates a structured decision, and checks Exa search/read and the public category API. A failed check does not choose another model.
+3. Run `check-connections` with `{"runPaidCheck":true}`. This intentionally calls the model twice, invokes a harmless tool, validates a structured model assessment, and checks Exa search/read and the public category API. A failed check does not choose another model.
 4. Run `research` with `{"preset":"alpha","requestKey":"my-first-research"}`. Use a new request key for new work; reuse it to observe the original job. Optionally add a numeric `marketId` to research a specific market within the same permitted categories.
 5. Inspect the workflow result: run ID, status, decision and persisted events including candidates, selection, rules, quotes, search queries, evidence and reported model usage. `failed` is not a research abstention. If the workflow reports `poll-via-api`, continue polling its run ID; it does not enqueue another job.
 
@@ -115,6 +115,12 @@ The market ID above illustrates syntax, not a durable recommendation. `config.js
     "profile": "Read resolution rules and research both supporting and contrary evidence. Abstain when uncertain.",
     "categoryIds": ["2"],
     "tools": ["searchWeb", "readPage", "getMarketRules", "getOrderBook"],
+    "uncertaintyPolicy": {
+      "blockHighUncertainty": true,
+      "requireCompleteInformation": true,
+      "minProbabilityMargin": 0.01,
+      "maxProbabilityRangeWidth": 0.2
+    },
     "intervalHours": 4,
     "limits": {
       "searches": 3,
@@ -223,3 +229,13 @@ The pilot only researches active markets in the configured categories with a kno
 Inspect failures with `npm run agent -- events alpha RUN_ID` and `npm run agent -- result alpha RUN_ID`. A `model_failure` event identifies `selection` or `research` and includes available HTTP status, finish reason and numeric token counts. Codes distinguish `MODEL_HTTP_<status>`, `MODEL_TIMEOUT`, `MODEL_CANCELLED`, `MODEL_OUTPUT_TRUNCATED`, `MODEL_INVALID_JSON`, `MODEL_INVALID_OUTPUT`, `MODEL_NO_STRUCTURED_OUTPUT`, and `MODEL_CONTENT_FILTERED`. Unrecognized errors remain `MODEL_FAILURE`; never infer a cause from that code alone. Provider error text, response bodies and reasoning text are not persisted. These failures do not create abstention decisions or trigger automatic retries. Historical generic failures cannot be reconstructed retroactively.
 
 For DashScope endpoints (`dashscope.aliyuncs.com` and `dashscope-intl.aliyuncs.com`), market selection explicitly sends `enable_thinking: false` through provider options. Research and connectivity probes retain provider defaults; research allows up to 32,768 output tokens per call while selection and connectivity probes remain capped at 2,000. This is a request setting, not a prompt instruction. Other compatible providers need their own documented controls; do not send DashScope-specific options to them.
+
+## Decision v2 and uncertainty policy
+
+New decisions have `schemaVersion: 2`. Top-level action, explanation, prices and citations describe the final result. `modelAssessment` preserves the model's original proposal, including `probability: { lower, estimate, upper }` (or null), `uncertaintyLevel` and `missingInformation`. `policyEvaluation` stores policy version `1.0.0`, effective configuration, final action, reason codes and evaluation time. Only core creates the policy verdict; model output cannot supply or override it. Top-level `estimatedProbability` mirrors the model's estimate for compatibility, not an independently verified probability.
+
+The conservative defaults block high uncertainty and any reported missing material information. They require a probability range no wider than 0.2 (20 percentage points) and a lower probability estimate strictly greater than the worse of refreshed ask and proposed limit plus 0.01 (one percentage point). These are configurable product thresholds, not evidence of profitability, calibrated confidence intervals or exact fee estimates. Ordering must satisfy `0 <= lower <= estimate <= upper <= 1`. Missing probability blocks a trade; malformed ranges fail the run. A refreshed ask above the proposed limit also forces abstention. A model abstention is never promoted to a trade.
+
+Policy fields are configured through the existing agent configuration endpoint or `configure-agent` workflow. The configuration is versioned per agent, copied into new runs, and edits disable scheduling and invalidate old pending work. Omitted policy settings on legacy configs resolve to conservative defaults, recorded in runtime and evaluation events. Legacy decisions remain unversioned, readable and unchanged; they are not retroactively treated as evaluated by the new policy. JSONB storage requires no SQL migration.
+
+For a Vinicius-like proposal with estimate 0.003, range 0.0005–0.01, HIGH uncertainty, missing facts and a price of 0.001, the final action becomes ABSTAIN with `HIGH_UNCERTAINTY`, `MISSING_INFORMATION` and `INSUFFICIENT_CONSERVATIVE_MARGIN`. The original TRADE proposal remains in `modelAssessment`. Inspect `model_assessment` and `policy_evaluation` through the existing run events endpoint. Provider failures, absent quotes and invalid output remain failed runs, not policy abstentions.
