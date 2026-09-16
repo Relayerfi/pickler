@@ -13,3 +13,7 @@ package-lock.json
 contracts/out/
 contracts/cache/
 contracts/broadcast/
+
+# Generated local Supabase state
+supabase/.temp/
+supabase/.branches/

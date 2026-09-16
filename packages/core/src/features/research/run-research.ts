@@ -1,6 +1,8 @@
 import { decimalPrice } from "./policy.js";
 import {
   PilotError,
+  ModelFailure,
+  isMarketOpen,
   assertMarket,
   type ResearchRepository,
   type ResearchModel,
@@ -63,13 +65,13 @@ export function createResearchRunner(deps: {
       }
     };
     try {
-      await guard("searchWeb");
-      await guard("getMarketRules");
-      await guard("getOrderBook");
       await event("runtime", {
         ...deps.model.metadata(),
         plugins: { research: "1.0.0", "prediction-markets": "1.0.0" },
       });
+      await guard("searchWeb");
+      await guard("getMarketRules");
+      await guard("getOrderBook");
       let marketId = run.marketId;
       if (!run.config.categoryIds.length) {
         throw new PilotError("CATEGORIES_REQUIRED", "Select categories before researching");
@@ -79,9 +81,14 @@ export function createResearchRunner(deps: {
         const candidates = (
           await external("candidates", () => deps.markets.list(run.config.categoryIds, signal))
         )
-          .filter((m) => m.active && m.categoryIds.some((c) => run.config.categoryIds.includes(c)))
+          .filter(
+            (m) =>
+              isMarketOpen(m, now()) &&
+              m.categoryIds.some((c) => run.config.categoryIds.includes(c)),
+          )
           .sort((a, b) => b.liquidity - a.liquidity)
           .slice(0, 20);
+        await event("eligible_candidates", candidates);
         if (!candidates.length) {
           throw new PilotError("NO_MARKETS", "No eligible active markets found");
         }
@@ -90,6 +97,7 @@ export function createResearchRunner(deps: {
           run.config.profile,
           signal,
           run.config.limits,
+          new Date(now()).toISOString(),
         );
         await event("selection", selection);
         if (!candidates.some((m) => m.id === selection.marketId)) {
@@ -99,7 +107,7 @@ export function createResearchRunner(deps: {
       }
       await guard("getMarketRules");
       const market = await external("market", () => deps.markets.get(marketId, signal));
-      assertMarket(market, run.config.categoryIds);
+      assertMarket(market, run.config.categoryIds, now());
       await guard("getOrderBook");
       for (const outcome of market.outcomes) {
         await guard("getOrderBook");
@@ -204,7 +212,7 @@ export function createResearchRunner(deps: {
         const freshMarket = await external("final_market", () =>
           deps.markets.get(market.id, signal),
         );
-        assertMarket(freshMarket, run.config.categoryIds);
+        assertMarket(freshMarket, run.config.categoryIds, now());
         await guard("getOrderBook");
         const fresh = await external("final_quote", () =>
           deps.markets.book(decision.outcomeId!, signal),
@@ -227,6 +235,9 @@ export function createResearchRunner(deps: {
       await guard();
       await repo.finish(run, decision, null, now());
     } catch (error) {
+      if (error instanceof ModelFailure) {
+        await event("model_failure", { code: error.code, ...error.details });
+      }
       const code =
         error instanceof PilotError
           ? error.code

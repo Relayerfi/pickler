@@ -14,6 +14,8 @@ export default defineConfig([
     "**/dist/**",
     "**/.mastra/**",
     "**/.turbo/**",
+    "supabase/.temp/**",
+    "supabase/.branches/**",
     "**/next-env.d.ts",
     "contracts/out/**",
     "contracts/cache/**",

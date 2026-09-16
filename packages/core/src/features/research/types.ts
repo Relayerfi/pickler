@@ -5,7 +5,7 @@ export const MAX_LIMITS = {
   pageReads: 5,
   steps: 12,
   durationMs: 300_000,
-  outputTokens: 2000,
+  outputTokens: 32768,
   dailyRuns: 6,
 } as const;
 export type ResearchLimits = { [K in keyof typeof MAX_LIMITS]: number };
@@ -130,12 +130,21 @@ export interface ResearchTools {
   getOrderBook(outcomeId: string): Promise<OrderBook>;
 }
 
+/** Trusted, versioned system instructions recorded when research starts. */
+export interface PromptSnapshot {
+  id: string;
+  version: string;
+  sha256: string;
+  instructions: string;
+}
+
 export interface ResearchModel {
   select(
     markets: Market[],
     profile: string,
     signal: AbortSignal,
     limits: ResearchLimits,
+    now: string,
   ): Promise<{ marketId: string; reason: string; usage: unknown }>;
   research(input: {
     market: Market;
@@ -145,7 +154,11 @@ export interface ResearchModel {
     limits: ResearchLimits;
     onUsage(usage: unknown): Promise<void>;
   }): Promise<{ decision: Decision; usage: unknown }>;
-  metadata(): { model: string; provider: string };
+  metadata(): {
+    model: string;
+    provider: string;
+    prompts: { research: PromptSnapshot; marketSelection: PromptSnapshot };
+  };
 }
 
 export interface ResearchRepository {
@@ -224,11 +237,36 @@ export function assertConfig(config: AgentConfig): void {
   }
 }
 
-export function assertMarket(market: Market, categories: string[]): void {
+export interface ModelFailureDetails {
+  stage: "selection" | "research";
+  statusCode?: number;
+  finishReason?: string;
+  inputTokens?: number;
+  outputTokens?: number;
+  reasoningTokens?: number;
+}
+
+export class ModelFailure extends PilotError {
+  constructor(
+    code: string,
+    public readonly details: ModelFailureDetails,
+  ) {
+    super(code, "Model execution failed; inspect the model_failure event");
+  }
+}
+
+export function isMarketOpen(market: Market, now: number): boolean {
+  return market.active && market.closesAt !== null && Date.parse(market.closesAt) > now;
+}
+
+export function assertMarket(market: Market, categories: string[], now: number): void {
   if (!market.active || !categories.some((id) => market.categoryIds.includes(id))) {
     throw new PilotError(
       "MARKET_NOT_ALLOWED",
       "Market is inactive or outside the configured categories",
     );
+  }
+  if (!isMarketOpen(market, now)) {
+    throw new PilotError("MARKET_NOT_OPEN", "Market needs a valid future closing date");
   }
 }

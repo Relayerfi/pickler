@@ -4,6 +4,7 @@ import {
   DEFAULT_CONFIG,
   createResearchRunner,
   PilotError,
+  ModelFailure,
   type ResearchModel,
   type Market,
   type Source,
@@ -18,7 +19,7 @@ const market: Market = {
   rules: "Resolve according to the official test source.",
   categoryIds: ["7"],
   active: true,
-  closesAt: null,
+  closesAt: new Date(100000).toISOString(),
   liquidity: 10,
   outcomes: [
     { id: "99", label: "Yes" },
@@ -66,7 +67,24 @@ async function setup(t: TestContext) {
     }),
   };
   const model: ResearchModel = {
-    metadata: () => ({ model: "test", provider: "test" }),
+    metadata: () => ({
+      model: "test",
+      provider: "test",
+      prompts: {
+        research: {
+          id: "fixture-research",
+          version: "1.0.0",
+          sha256: "fixture",
+          instructions: "Fixture research instructions",
+        },
+        marketSelection: {
+          id: "fixture-selection",
+          version: "1.0.0",
+          sha256: "fixture",
+          instructions: "Fixture selection instructions",
+        },
+      },
+    }),
     select: async () => ({ marketId: "1", reason: "Researchable rules", usage: {} }),
     research: async ({ tools }) => {
       await tools.searchWeb!("supporting evidence", "supporting");
@@ -93,6 +111,9 @@ test("decision and attributed evidence persist before completion", async (t) => 
   assert.equal(saved.decision?.action, "ABSTAIN");
   const events = await f.repository.events("alpha", f.run.id);
 
+  assert.equal(events[0]?.type, "runtime");
+  assert.deepEqual((events[0]!.data as { prompts: unknown }).prompts, f.model.metadata().prompts);
+  assert.equal(saved.config.profile, f.run.config.profile);
   assert.ok(events.some((e) => e.type === "sources"));
   assert.ok(events.some((e) => e.type === "selection"));
   assert.ok(events.some((e) => e.type === "market"));
@@ -131,6 +152,9 @@ test("disabled tool blocks work before external requests", async (t) => {
   };
   await f.execute();
 
+  const events = await f.repository.events("alpha", f.run.id);
+  assert.equal(events[0]?.type, "runtime");
+  assert.deepEqual((events[0]!.data as { prompts: unknown }).prompts, f.model.metadata().prompts);
   assert.equal(called, false);
   assert.equal((await f.repository.run("alpha", f.run.id)).status, "failed");
 });
@@ -275,4 +299,103 @@ test("a one-sided search cannot complete and market scope is checked before rese
 
   assert.equal(called, false);
   assert.equal((await f.repository.run("alpha", outside.id)).error, "MARKET_NOT_ALLOWED");
+});
+
+test("discovery filters past, boundary, missing and invalid dates before selecting with the injected clock", async (t) => {
+  const f = await setup(t);
+  f.markets.list = async () => [
+    ...[null, "invalid", new Date(199).toISOString(), new Date(200).toISOString()].map(
+      (closesAt, i) => ({ ...market, id: String(i + 2), closesAt, liquidity: 100 }),
+    ),
+    market,
+  ];
+  f.model.select = async (candidates, _profile, _signal, _limits, now) => {
+    assert.deepEqual(candidates, [market]);
+    assert.equal(now, new Date(200).toISOString());
+    return { marketId: "1", reason: "Future market", usage: {} };
+  };
+  await f.execute();
+  assert.equal((await f.repository.run("alpha", f.run.id)).status, "completed");
+  const events = await f.repository.events("alpha", f.run.id);
+  assert.equal((events.find((e) => e.type === "candidates")!.data as unknown[]).length, 5);
+  assert.deepEqual(events.find((e) => e.type === "eligible_candidates")!.data, [market]);
+});
+
+test("no future candidates fails without a model call", async (t) => {
+  const f = await setup(t);
+  f.markets.list = async () => [{ ...market, closesAt: new Date(200).toISOString() }];
+  f.model.select = async () => {
+    throw new Error("Must not call model");
+  };
+  await f.execute();
+  assert.equal((await f.repository.run("alpha", f.run.id)).error, "NO_MARKETS");
+});
+
+test("manual markets and refreshed selected markets must still be open before research", async (t) => {
+  const f = await setup(t);
+  f.markets.get = async () => ({ ...market, closesAt: new Date(200).toISOString() });
+  let calls = 0;
+  f.model.research = async () => {
+    calls++;
+    throw new Error("Must not research");
+  };
+  await f.execute();
+  assert.equal((await f.repository.run("alpha", f.run.id)).error, "MARKET_NOT_OPEN");
+  await f.repository.enqueue(scope, "manual-expired", "1", 201);
+  const manual = (await f.repository.claim(202))!;
+  await createResearchRunner(f)(manual);
+  assert.equal((await f.repository.run("alpha", manual.id)).error, "MARKET_NOT_OPEN");
+  assert.equal(calls, 0);
+});
+
+test("a market closing during research blocks the final trade proposal", async (t) => {
+  const f = await setup(t);
+  const research = f.model.research;
+  f.model.research = async (input) => {
+    await research(input);
+    f.markets.get = async () => ({ ...market, closesAt: new Date(200).toISOString() });
+    return {
+      decision: {
+        ...decision,
+        action: "TRADE",
+        outcomeId: "99",
+        estimatedProbability: 0.7,
+        limitPrice: "0.5",
+        expiresAt: new Date(1000).toISOString(),
+        abstentionReason: null,
+      },
+      usage: {},
+    };
+  };
+  await f.execute();
+  const saved = await f.repository.run("alpha", f.run.id);
+  assert.equal(saved.error, "MARKET_NOT_OPEN");
+  assert.equal(saved.decision, null);
+});
+
+test("model failures retain stage metadata and partial evidence without becoming abstentions", async (t) => {
+  for (const stage of ["selection", "research"] as const) {
+    const f = await setup(t);
+    const details = { stage, finishReason: "length", outputTokens: 2000 };
+    if (stage === "selection") {
+      f.model.select = async () => {
+        throw new ModelFailure("MODEL_OUTPUT_TRUNCATED", details);
+      };
+    } else {
+      f.model.research = async ({ tools }) => {
+        await tools.searchWeb!("partial evidence", "supporting");
+        throw new ModelFailure("MODEL_OUTPUT_TRUNCATED", details);
+      };
+    }
+    await f.execute();
+    const saved = await f.repository.run("alpha", f.run.id);
+    assert.equal(saved.error, "MODEL_OUTPUT_TRUNCATED");
+    assert.equal(saved.decision, null);
+    const events = await f.repository.events("alpha", f.run.id);
+    assert.deepEqual(events.find((e) => e.type === "model_failure")!.data, {
+      code: "MODEL_OUTPUT_TRUNCATED",
+      ...details,
+    });
+    assert.ok(events.some((e) => e.type === (stage === "selection" ? "candidates" : "sources")));
+  }
 });

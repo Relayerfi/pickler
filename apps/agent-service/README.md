@@ -49,6 +49,28 @@ Use one PostgreSQL database with separate `pickler` and `mastra` schemas. Supaba
 
 The database schemas are server-only. Do not add `pickler`, `pickler_migrations`, or `mastra` to Supabase's exposed Data API schemas or grant browser roles access. Pickler tables enable RLS without public policies as a default denial for non-owner roles. The privileged backend bypasses RLS and enforces tenant scope in repository queries and the API; these are not Supabase Auth policies. Public login and production role separation remain separate work.
 
+### Full local Supabase stack
+
+Install Docker and the Supabase CLI (verified with version 2.111.0), then run from the repository root:
+
+```sh
+npm run supabase:start
+npm run agent -- init # Once; refuses to overwrite an existing .env
+```
+
+Set both database URLs in `apps/agent-service/.env` to `postgresql://postgres:postgres@127.0.0.1:54522/postgres`, then run:
+
+```sh
+npm run db:migrate
+npm run test:supabase
+```
+
+Studio is at http://127.0.0.1:54523 and the local Supabase API is at http://127.0.0.1:54521. These ports are isolated from the default Supabase ports. `pickler` and `mastra` remain outside the exposed API schemas. Drizzle remains the owner of Pickler migrations; do not duplicate them under `supabase/migrations` or run database resets to apply application changes.
+
+`npm run supabase:stop` preserves local data. `npm run supabase:status` shows service endpoints and local development keys; do not paste its full output into public logs. Database integration tests require no model/Exa credentials. Starting the research agent still requires the four provider variables. Supabase Studio and Mastra Studio are separate applications.
+
+### PostgreSQL-only alternative
+
 For local development without Supabase:
 
 ```sh
@@ -99,7 +121,7 @@ The market ID above illustrates syntax, not a durable recommendation. `config.js
       "pageReads": 5,
       "steps": 12,
       "durationMs": 300000,
-      "outputTokens": 2000,
+      "outputTokens": 32768,
       "dailyRuns": 6
     }
   }
@@ -135,9 +157,19 @@ Interrupted running jobs become `failed/INTERRUPTED` on worker restart and retai
 
 Scheduling starts disabled. Enabling it requires a successful connection check plus completed manual research for the agent's current config. Changing model endpoint, model ID or provider credentials invalidates readiness and disables schedules. Restarting with the same settings preserves scheduling. The default interval is four hours, configurable from one hour to seven days.
 
-Limits can be reduced (at least two searches and three model steps) but cannot exceed the pilot caps: three searches, five page reads, twelve total model steps (one reserved for candidate selection), five minutes and 2,000 output tokens per model call; six jobs per rolling day. Market discovery returns at most 20 candidates, ranked by reported liquidity; it queries up to 20 per selected tag, deduplicates and retains the top 20. Selected market tags are independently fetched before research. Rules cannot exceed 16,000 characters; larger rules fail rather than being silently cut. Exa content is capped at 6,000 characters per source and marked when truncated. HTTP provider responses have a two-megabyte cap and 20-second timeout; individual model requests have a 60-second timeout within the overall run deadline. Reported usage is stored when available, not invented when absent. These are usage bounds, not a guaranteed monetary budget.
+Limits can be reduced (at least two searches and three model steps) but cannot exceed the pilot caps: three searches, five page reads, twelve total model steps (one reserved for candidate selection), five minutes and 32,768 output tokens per research model call (selection and connectivity probes remain capped at 2,000); six jobs per rolling day. Market discovery returns at most 20 candidates, ranked by reported liquidity; it queries up to 20 per selected tag, deduplicates and retains the top 20. Selected market tags are independently fetched before research. Rules cannot exceed 16,000 characters; larger rules fail rather than being silently cut. Exa content is capped at 6,000 characters per source and marked when truncated. HTTP provider responses have a two-megabyte cap and 20-second timeout; individual model requests have a 180-second timeout within the overall run deadline. Reported usage is stored when available, not invented when absent. These are usage bounds, not a guaranteed monetary budget.
 
 The runner checks permissions again before every capability call. Mandatory rules, order book and search capabilities must be enabled to begin research. Page reads are restricted to URLs discovered in that run. Provider failures cannot be converted to successful abstentions by the model. A `TRADE` proposal rechecks market eligibility and refreshes the outcome's ask; a missing/stale quote fails the run, and a fresh ask above the proposed limit yields an explained abstention. Source IDs must refer to retrieved evidence. Both a supporting and a contradicting search intent are required before a decision can complete; queries and intent are persisted for review. Research quality still needs human review; the pilot validates operation, not profitability.
+
+## System prompts and user customization
+
+System instructions live in `src/prompts/research-system.ts` and `src/prompts/market-selection-system.ts`. Each definition contains a stable ID, a semantic version and its exact instructions; the service computes a SHA-256 fingerprint of the UTF-8 text. Increment the version whenever editing the instructions. The initial extraction is version `1.0.0` and preserves the previous prompt text.
+
+Every started investigation saves both configured definitions (ID, version, fingerprint and full text) under `prompts` in its first `runtime` event, before permissions/provider calls. Read them with `npm run agent -- events alpha RUN_ID` or the authenticated events endpoint. Snapshots survive subsequent code changes and failed research. Recording a selection prompt does not imply selection occurred: manual-market runs skip that step. Queued jobs use the installed runtime when they start; they do not pin code at enqueue time. Jobs cancelled before starting and historical runs do not acquire new snapshots retroactively.
+
+User customization remains `config.profile`, versioned per agent and copied into each run. It is sent as task data alongside the market/candidates, never appended to the trusted system prompt. Profiles can express research preferences but cannot grant tools, expand categories or change quotas. Evidence is persisted per investigation; this does not introduce automatic memory between runs. Connectivity-check prompts remain separate diagnostic fixtures.
+
+Prompt snapshots use existing JSONB events; no new tables or migration are required.
 
 ## Code map and extension
 
@@ -147,6 +179,7 @@ src/
   api/app.ts               # Token resolution, request validation and HTTP mapping
   composition/container.ts # Wires core, providers, PostgreSQL and the configured model
   composition/model.ts     # Mastra implementation of ResearchModel
+  prompts/                 # Versioned system instructions and SHA-256 snapshots
   config/env.ts            # Required server-only configuration
   plugins/registry.ts      # Reviewed research@1.0.0 and prediction-markets@1.0.0
   workers/main.ts          # Exclusive worker lifecycle and restart recovery
@@ -182,3 +215,11 @@ The production build command still starts a local laboratory host, not a hardene
 Tests use controlled clocks, isolated PostgreSQL databases and explicitly injected test transports. They do not call paid providers or manufacture production results. Run the real `check` and a manual research job after supplying credentials; automated offline tests do not establish compatibility of an untested remote model.
 
 Provider references: [Mastra workflows](https://mastra.ai/docs/workflows/overview), [custom routes](https://mastra.ai/docs/server/custom-api-routes), [PostgreSQL storage](https://mastra.ai/integrations/databases/postgresql), [Exa search](https://exa.ai/docs/reference/search), [Polymarket markets](https://docs.polymarket.com/api-reference/markets/list-markets), [market tags](https://docs.polymarket.com/api-reference/markets/get-market-tags-by-id).
+
+## Market dates and model diagnostics
+
+The pilot only researches active markets in the configured categories with a known, valid future closing date. A date equal to the current time is already closed. Missing dates are excluded conservatively; this also applies to manually supplied market IDs. The runner checks eligibility before selection, when loading the selected market, and again before finalizing a trade proposal. Provider `active` flags alone are insufficient. Discovery retains both the provider candidates and the filtered `eligible_candidates` event. The selector receives the current UTC time from the runner clock.
+
+Inspect failures with `npm run agent -- events alpha RUN_ID` and `npm run agent -- result alpha RUN_ID`. A `model_failure` event identifies `selection` or `research` and includes available HTTP status, finish reason and numeric token counts. Codes distinguish `MODEL_HTTP_<status>`, `MODEL_TIMEOUT`, `MODEL_CANCELLED`, `MODEL_OUTPUT_TRUNCATED`, `MODEL_INVALID_JSON`, `MODEL_INVALID_OUTPUT`, `MODEL_NO_STRUCTURED_OUTPUT`, and `MODEL_CONTENT_FILTERED`. Unrecognized errors remain `MODEL_FAILURE`; never infer a cause from that code alone. Provider error text, response bodies and reasoning text are not persisted. These failures do not create abstention decisions or trigger automatic retries. Historical generic failures cannot be reconstructed retroactively.
+
+For DashScope endpoints (`dashscope.aliyuncs.com` and `dashscope-intl.aliyuncs.com`), market selection explicitly sends `enable_thinking: false` through provider options. Research and connectivity probes retain provider defaults; research allows up to 32,768 output tokens per call while selection and connectivity probes remain capped at 2,000. This is a request setting, not a prompt instruction. Other compatible providers need their own documented controls; do not send DashScope-specific options to them.
