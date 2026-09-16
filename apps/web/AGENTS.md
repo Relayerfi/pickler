@@ -21,11 +21,11 @@ src/
 
 ## Three-layer rules
 
-| Layer | Location | Owns | Must not own |
-| --- | --- | --- | --- |
-| Presentation | `src/app`, future `src/components` and `src/features` | Pages, UI state, input parsing, authentication at the transport boundary, HTTP mapping | Business decisions, database queries, provider SDK calls |
-| Business | `packages/core/src` | Domain rules, use cases, authorization decisions, dependency interfaces | Next.js, React, HTTP objects, ORM/provider SDKs |
-| Infrastructure | `packages/infrastructure/src` | Repositories, provider/RPC adapters, technical error translation | HTTP responses, React components, product policy |
+| Layer          | Location                                              | Owns                                                                                   | Must not own                                             |
+| -------------- | ----------------------------------------------------- | -------------------------------------------------------------------------------------- | -------------------------------------------------------- |
+| Presentation   | `src/app`, future `src/components` and `src/features` | Pages, UI state, input parsing, authentication at the transport boundary, HTTP mapping | Business decisions, database queries, provider SDK calls |
+| Business       | `packages/core/src`                                   | Domain rules, use cases, authorization decisions, dependency interfaces                | Next.js, React, HTTP objects, ORM/provider SDKs          |
+| Infrastructure | `packages/infrastructure/src`                         | Repositories, provider/RPC adapters, technical error translation                       | HTTP responses, React components, product policy         |
 
 `src/server/container.ts` is the composition root, not an additional business layer. It imports use-case factories and concrete adapters, wires them together, and exposes callable services. Its `server-only` import prevents client consumption. Any additional server facade or module that accesses credentials must also be protected with `server-only`.
 
