@@ -2,7 +2,7 @@ import { Agent } from "@mastra/core/agent";
 import { createTool } from "@mastra/core/tools";
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import { z } from "zod";
-import { decisionSchema } from "@pickler/api-schema";
+import { modelAssessmentSchema } from "@pickler/api-schema";
 import { PilotError, type ResearchModel, type Market } from "@pickler/core";
 import { validatedModelOutput } from "./model-output";
 import { buildTools } from "../plugins/registry";
@@ -101,11 +101,11 @@ export function createModel(env: Environment): ResearchModel & { check(): Promis
               onStepFinish: async (step) => {
                 await input.onUsage(step.usage);
               },
-              structuredOutput: { schema: decisionSchema },
+              structuredOutput: { schema: modelAssessmentSchema },
               toolCallConcurrency: 1,
             },
           ),
-        decisionSchema,
+        modelAssessmentSchema,
         "research",
         input.signal,
       );
@@ -146,13 +146,17 @@ export function createModel(env: Environment): ResearchModel & { check(): Promis
         maxRetries: 0,
         id: "schema-check",
         name: "Schema check",
-        instructions: `Return the requested structured sample as JSON; this is a connectivity fixture, not market research. The JSON response must satisfy this schema exactly: ${JSON.stringify(z.toJSONSchema(decisionSchema))}`,
+        instructions: `Return the requested structured sample as JSON; this is a connectivity fixture, not market research. The JSON response must satisfy this schema exactly: ${JSON.stringify(z.toJSONSchema(modelAssessmentSchema))}`,
         model,
       }).generate(
-        "Return an ABSTAIN decision for market connectivity-check, sourceIds [connectivity-check], all nullable fields null except abstentionReason Connection validation only. Explain thesis, counterEvidence and uncertainty as Connection validation only.",
-        { maxSteps: 1, modelSettings: settings, structuredOutput: { schema: decisionSchema } },
+        "Return an ABSTAIN decision for market connectivity-check, sourceIds [connectivity-check], uncertaintyLevel HIGH, missingInformation [], probability null, all other nullable fields null except abstentionReason Connection validation only. Explain thesis, counterEvidence and uncertainty as Connection validation only.",
+        {
+          maxSteps: 1,
+          modelSettings: settings,
+          structuredOutput: { schema: modelAssessmentSchema },
+        },
       );
-      decisionSchema.parse(structured.object);
+      modelAssessmentSchema.parse(structured.object);
       return {
         model: env.MODEL_ID,
         toolCall: true,
