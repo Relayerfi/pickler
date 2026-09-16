@@ -66,7 +66,24 @@ async function setup(t: TestContext) {
     }),
   };
   const model: ResearchModel = {
-    metadata: () => ({ model: "test", provider: "test" }),
+    metadata: () => ({
+      model: "test",
+      provider: "test",
+      prompts: {
+        research: {
+          id: "fixture-research",
+          version: "1.0.0",
+          sha256: "fixture",
+          instructions: "Fixture research instructions",
+        },
+        marketSelection: {
+          id: "fixture-selection",
+          version: "1.0.0",
+          sha256: "fixture",
+          instructions: "Fixture selection instructions",
+        },
+      },
+    }),
     select: async () => ({ marketId: "1", reason: "Researchable rules", usage: {} }),
     research: async ({ tools }) => {
       await tools.searchWeb!("supporting evidence", "supporting");
@@ -93,6 +110,9 @@ test("decision and attributed evidence persist before completion", async (t) => 
   assert.equal(saved.decision?.action, "ABSTAIN");
   const events = await f.repository.events("alpha", f.run.id);
 
+  assert.equal(events[0]?.type, "runtime");
+  assert.deepEqual((events[0]!.data as { prompts: unknown }).prompts, f.model.metadata().prompts);
+  assert.equal(saved.config.profile, f.run.config.profile);
   assert.ok(events.some((e) => e.type === "sources"));
   assert.ok(events.some((e) => e.type === "selection"));
   assert.ok(events.some((e) => e.type === "market"));
@@ -131,6 +151,9 @@ test("disabled tool blocks work before external requests", async (t) => {
   };
   await f.execute();
 
+  const events = await f.repository.events("alpha", f.run.id);
+  assert.equal(events[0]?.type, "runtime");
+  assert.deepEqual((events[0]!.data as { prompts: unknown }).prompts, f.model.metadata().prompts);
   assert.equal(called, false);
   assert.equal((await f.repository.run("alpha", f.run.id)).status, "failed");
 });
