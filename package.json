@@ -19,16 +19,21 @@
     "contracts:test": "forge test --root contracts",
     "dev:agent": "npm run build:shared && npm run dev --workspace=@pickler/agent-service",
     "build:shared": "turbo run build --filter=@pickler/core --filter=@pickler/infrastructure --filter=@pickler/api-schema",
-    "agent": "npm run cli --workspace=@pickler/agent-service --"
+    "agent": "npm run cli --workspace=@pickler/agent-service --",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint:fix": "eslint . --fix"
   },
   "devDependencies": {
-    "turbo": "^2.10.13",
-    "typescript": "^6.0.3",
-    "tsx": "^4.23.13",
-    "eslint": "^9.0.0",
-    "eslint-config-next": "^16.0.0",
     "@types/node": "^22.0.0",
     "@types/react": "^19.0.0",
-    "@types/react-dom": "^19.0.0"
+    "@types/react-dom": "^19.0.0",
+    "eslint": "^9.0.0",
+    "eslint-config-next": "^16.0.0",
+    "eslint-config-prettier": "10.1.8",
+    "prettier": "3.9.7",
+    "tsx": "^4.23.13",
+    "turbo": "^2.10.13",
+    "typescript": "^6.0.3"
   }
 }
