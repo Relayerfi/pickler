@@ -10,17 +10,17 @@ Keep each project's `AGENTS.md` updated in the same change whenever its structur
 
 ## Project map
 
-| Project | Responsibility | Required local instructions |
-| --- | --- | --- |
-| `apps/agent-service` | Local Mastra Studio, API and research worker | [AGENTS.md](apps/agent-service/AGENTS.md) |
-| `apps/web` | Next.js presentation and HTTP entry points | [AGENTS.md](apps/web/AGENTS.md) |
-| `packages/core` | Business rules, use cases, and ports | [AGENTS.md](packages/core/AGENTS.md) |
-| `packages/infrastructure` | Implementations of business ports | [AGENTS.md](packages/infrastructure/AGENTS.md) |
-| `packages/api-schema` | Public HTTP DTOs | [AGENTS.md](packages/api-schema/AGENTS.md) |
-| `packages/ui` | Reusable React components and styles | [AGENTS.md](packages/ui/AGENTS.md) |
-| `packages/chain` | Public blockchain metadata and future generated ABIs | [AGENTS.md](packages/chain/AGENTS.md) |
-| `packages/typescript-config` | Shared compiler configuration | [AGENTS.md](packages/typescript-config/AGENTS.md) |
-| `contracts` | Foundry/Solidity project | [AGENTS.md](contracts/AGENTS.md) |
+| Project                      | Responsibility                                       | Required local instructions                       |
+| ---------------------------- | ---------------------------------------------------- | ------------------------------------------------- |
+| `apps/agent-service`         | Local Mastra Studio, API and research worker         | [AGENTS.md](apps/agent-service/AGENTS.md)         |
+| `apps/web`                   | Next.js presentation and HTTP entry points           | [AGENTS.md](apps/web/AGENTS.md)                   |
+| `packages/core`              | Business rules, use cases, and ports                 | [AGENTS.md](packages/core/AGENTS.md)              |
+| `packages/infrastructure`    | Implementations of business ports                    | [AGENTS.md](packages/infrastructure/AGENTS.md)    |
+| `packages/api-schema`        | Public HTTP DTOs                                     | [AGENTS.md](packages/api-schema/AGENTS.md)        |
+| `packages/ui`                | Reusable React components and styles                 | [AGENTS.md](packages/ui/AGENTS.md)                |
+| `packages/chain`             | Public blockchain metadata and future generated ABIs | [AGENTS.md](packages/chain/AGENTS.md)             |
+| `packages/typescript-config` | Shared compiler configuration                        | [AGENTS.md](packages/typescript-config/AGENTS.md) |
+| `contracts`                  | Foundry/Solidity project                             | [AGENTS.md](contracts/AGENTS.md)                  |
 
 See [README.md](README.md) for setup, [docs/architecture.md](docs/architecture.md) for architectural decisions, and [the agent runtime V1 specification](docs/specs/agent-runtime-v1.md) for the planned Mastra service, capability interfaces, tenant isolation, scheduling, and implementation phases. The research-only subset is implemented; read [the pilot guide](apps/agent-service/README.md) for actual commands, limits and exclusions.
 
@@ -62,3 +62,11 @@ Never commit dependencies, build output, secrets, private keys, or local environ
 - A sub-agent working in a worktree must never delete that worktree. Leave it intact and report its path to the parent.
 - The main agent must ask for confirmation before removing a worktree that is its current working directory.
 - From the repository root, the main agent may clean up only worktrees it created, never another agent's or user's worktree.
+
+## Code formatting and readability
+
+Use the root Prettier configuration for TypeScript, JavaScript, JSON, CSS, YAML and Markdown: two spaces, a 100-column print-width target, double quotes, semicolons and trailing commas. `.editorconfig` supplies matching editor defaults. Generated output, local data, environment files and the npm lockfile are excluded from Prettier. Solidity remains formatted by Foundry.
+
+Run `npm run format` to format files and `npm run format:check` to verify them. Pull requests run the format check in GitHub Actions. `npm run lint:fix` applies supported ESLint fixes, including required braces on all conditional and loop bodies. Run formatting after lint fixes. ESLint retains the architecture restrictions; Prettier handles layout.
+
+Write one statement per line and separate logical phases with blank lines. Expand schemas, transaction blocks and complex callbacks for readability. Prefer named predicates or explicit branches over nested ternaries. Write long SQL queries as multiline template literals without changing query semantics or parameter order. Separate test setup, action and assertions visually. Keep formatting-only changes distinguishable from behavior changes; do not add abstractions solely to satisfy a line-length target.
