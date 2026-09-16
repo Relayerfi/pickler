@@ -130,6 +130,14 @@ export interface ResearchTools {
   getOrderBook(outcomeId: string): Promise<OrderBook>;
 }
 
+/** Trusted, versioned system instructions recorded when research starts. */
+export interface PromptSnapshot {
+  id: string;
+  version: string;
+  sha256: string;
+  instructions: string;
+}
+
 export interface ResearchModel {
   select(
     markets: Market[],
@@ -145,7 +153,11 @@ export interface ResearchModel {
     limits: ResearchLimits;
     onUsage(usage: unknown): Promise<void>;
   }): Promise<{ decision: Decision; usage: unknown }>;
-  metadata(): { model: string; provider: string };
+  metadata(): {
+    model: string;
+    provider: string;
+    prompts: { research: PromptSnapshot; marketSelection: PromptSnapshot };
+  };
 }
 
 export interface ResearchRepository {
