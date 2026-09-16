@@ -1,4 +1,21 @@
-.pk-button { margin-top: 1.5rem; border: 0; border-radius: .4rem; padding: .9rem 1.2rem; background: #172a22; color: white; font: inherit; cursor: pointer; }
-.pk-button:hover { background: #2c503f; }
-.pk-button:focus-visible { outline: 3px solid #bd641e; outline-offset: 4px; }
-.pk-button:disabled { opacity: .5; cursor: not-allowed; }
+.pk-button {
+  margin-top: 1.5rem;
+  border: 0;
+  border-radius: 0.4rem;
+  padding: 0.9rem 1.2rem;
+  background: #172a22;
+  color: white;
+  font: inherit;
+  cursor: pointer;
+}
+.pk-button:hover {
+  background: #2c503f;
+}
+.pk-button:focus-visible {
+  outline: 3px solid #bd641e;
+  outline-offset: 4px;
+}
+.pk-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
