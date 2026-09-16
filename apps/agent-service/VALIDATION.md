@@ -29,3 +29,13 @@ The first image download was interrupted when Docker stopped responding; reopeni
 ## Versioned prompt verification
 
 The research and market-selection instructions are separate versioned modules. The extraction preserves the research text byte-for-byte. The 29-test suite passes against local Supabase, including exact system-prompt metadata/hash checks, user-profile separation in actual Mastra request payloads, and prompt snapshots persisted before provider calls and on failed started runs. Snapshots include full instructions and use existing JSONB runtime events; no migration is needed. Historical runs are not backfilled.
+
+## First live provider check and sports investigation
+
+On 2026-09-16, the configured `deepseek-v4.1-flash` model at DashScope passed the actual tool-call and structured-decision probes. Exa search and page reading passed, and the public Polymarket category API returned 100 entries. This supersedes the earlier pending connection-check status, but not full research acceptance.
+
+The live check exposed JSON-mode compatibility requirements: requests must explicitly mention JSON, and the OpenAI-compatible adapter does not transmit a native JSON Schema by default. Prompt version 1.0.1 includes the output schema in the instructions; diagnostic fixtures also include it. Runtime validation remains enabled and no model fallback was introduced.
+
+The operator selected Sports (verified Polymarket tag ID 1). Alpha configuration version 2 uses that category with scheduling disabled. One manual run, `725b1217-483c-4791-9508-8e995715d4bd`, persisted runtime prompt snapshots and candidates, then failed before selection completed with `PROVIDER_OR_MODEL_FAILURE`. It has no decision and is not a valid abstention. The existing generic failure code does not establish the precise model failure cause; model-stage diagnostics need improvement before another paid attempt. The run was not automatically retried. Full research acceptance and scheduling remain pending.
+
+The 29-test Supabase suite passes after the compatibility change. Tests now require JSON instructions and explicit schema requirements in the configured research prompts and structured connection probe. Offline fixtures still do not establish a completed live research run.
