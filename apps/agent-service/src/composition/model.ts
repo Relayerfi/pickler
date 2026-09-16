@@ -7,7 +7,10 @@ import { PilotError, type ResearchModel, type Market } from "@pickler/core";
 import { buildTools } from "../plugins/registry";
 import type { Environment } from "../config/env";
 import { researchSystemPrompt } from "../prompts/research-system";
-import { marketSelectionSystemPrompt } from "../prompts/market-selection-system";
+import {
+  marketSelectionSystemPrompt,
+  marketSelectionSchema,
+} from "../prompts/market-selection-system";
 
 export function createModel(env: Environment): ResearchModel & { check(): Promise<unknown> } {
   const provider = createOpenAICompatible({
@@ -39,9 +42,7 @@ export function createModel(env: Environment): ResearchModel & { check(): Promis
         instructions: marketSelectionSystemPrompt.instructions,
         model,
       });
-      const schema = z
-        .object({ marketId: z.string(), reason: z.string().min(1).max(2000) })
-        .strict();
+      const schema = marketSelectionSchema;
       const result = await agent.generate(
         JSON.stringify({
           profile,
@@ -124,8 +125,7 @@ export function createModel(env: Environment): ResearchModel & { check(): Promis
         maxRetries: 0,
         id: "schema-check",
         name: "Schema check",
-        instructions:
-          "Return the requested structured sample; this is a connectivity fixture, not market research.",
+        instructions: `Return the requested structured sample as JSON; this is a connectivity fixture, not market research. The JSON response must satisfy this schema exactly: ${JSON.stringify(z.toJSONSchema(decisionSchema))}`,
         model,
       }).generate(
         "Return an ABSTAIN decision for market connectivity-check, sourceIds [connectivity-check], all nullable fields null except abstentionReason Connection validation only. Explain thesis, counterEvidence and uncertainty as Connection validation only.",
