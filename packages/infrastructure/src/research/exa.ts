@@ -27,6 +27,9 @@ export class ExaResearch implements WebSearch, PageReader {
     private readonly fetcher: typeof fetch = fetch,
   ) {}
   private async call(path: string, body: unknown, signal: AbortSignal): Promise<SearchResult> {
+    if (!this.apiKey) {
+      throw new PilotError("PLUGIN_NOT_CONFIGURED", "Exa credentials are required when enabled");
+    }
     const parsed = responseSchema.safeParse(
       await providerJson(
         `https://api.exa.ai/${path}`,
