@@ -1,5 +1,12 @@
 import { z } from "zod";
-export const toolNameSchema = z.enum(["searchWeb", "readPage", "getMarketRules", "getOrderBook"]);
+export const toolNameSchema = z.enum([
+  "searchWeb",
+  "readPage",
+  "getMarketRules",
+  "getOrderBook",
+  "getSportsContext",
+  "getExternalOdds",
+]);
 export const uncertaintyPolicySchema = z
   .object({
     blockHighUncertainty: z.boolean(),
@@ -30,7 +37,17 @@ export const agentConfigSchema = z
       .strict(),
     profile: z.string().trim().min(1).max(4000),
     categoryIds: z.array(z.string().regex(/^\d+$/)).max(10),
-    tools: z.array(toolNameSchema).max(4),
+    tools: z.array(toolNameSchema).max(6),
+    plugins: z
+      .object({
+        version: z.literal(1),
+        enabled: z
+          .array(z.enum(["polymarket", "exa", "balldontlie", "the-odds-api", "paper-trading"]))
+          .max(5),
+      })
+      .strict()
+      .optional(),
+    researchProtocol: z.literal("nfl-winner-v1").optional(),
     intervalHours: z.number().int().min(1).max(168),
     uncertaintyPolicy: uncertaintyPolicySchema.optional(),
     discoveryPolicy: discoveryPolicySchema.optional(),
@@ -100,7 +117,52 @@ export const decisionV2Schema = legacyDecisionSchema
       .strict(),
   })
   .strict();
-export const decisionSchema = z.union([decisionV2Schema, legacyDecisionSchema]);
+export const researchReportSchema = z
+  .object({
+    protocol: z.literal("nfl-winner-v1"),
+    forecast: z
+      .object({
+        outcomeId: z.string().nullable(),
+        probability: modelAssessmentSchema.shape.probability,
+        inabilityReason: z.string().min(1).max(2000).nullable(),
+      })
+      .strict(),
+    sections: z
+      .array(
+        z
+          .object({
+            section: z.enum([
+              "identity",
+              "schedule",
+              "rules",
+              "teamContext",
+              "injuries",
+              "supporting",
+              "contradicting",
+              "quotes",
+              "limitations",
+            ]),
+            status: z.enum(["supported", "conflicting", "missing", "not_applicable"]),
+            explanation: z.string().min(1).max(2000),
+            sourceIds: z.array(z.string()).max(20),
+          })
+          .strict(),
+      )
+      .length(9),
+  })
+  .strict();
+export const nflAssessmentSchema = modelAssessmentSchema
+  .extend({ report: researchReportSchema })
+  .strict();
+export const decisionV3Schema = decisionV2Schema
+  .extend({
+    schemaVersion: z.literal(3),
+    modelAssessment: nflAssessmentSchema,
+    forecast: researchReportSchema.shape.forecast,
+    coverage: researchReportSchema.shape.sections,
+  })
+  .strict();
+export const decisionSchema = z.union([decisionV3Schema, decisionV2Schema, legacyDecisionSchema]);
 export type ResearchDecisionDto = z.infer<typeof decisionSchema>;
 export const agentResponseSchema = z.object({
   id: z.string(),
