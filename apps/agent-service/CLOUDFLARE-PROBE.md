@@ -47,7 +47,7 @@ node apps/agent-service/src/cloudflare/client.mjs check
 node apps/agent-service/src/cloudflare/client.mjs research
 ```
 
-The client saves full responses under ignored `.data/` and prints only a summary. Each research request starts a new run. Do not automatically retry ambiguous requests. Keep the HTTP request open until the result arrives. This probe deliberately does not return 202 and continue with `waitUntil()`.
+The client saves full responses under ignored `.data/` and prints only a summary. Each research request starts a new run. Under exclusive worker ownership, the database probe first marks orphan queued requests `PROBE_REQUEST_INTERRUPTED` without calling providers; previously running jobs become `INTERRUPTED`. This prevents an abandoned request from being claimed in place of the new one. Recovery retains records and their quota usage, and does not retry paid research. Do not automatically retry ambiguous requests. Keep the HTTP request open until the result arrives. This probe deliberately does not return 202 and continue with `waitUntil()`.
 
 To reproduce process interruption without paid calls, start `node apps/agent-service/src/cloudflare/client.mjs hold`, wait for its `probe_wait` event in the isolated database, stop workerd, restart it and invoke `interrupt`. The held run must become `INTERRUPTED` with its event preserved. This test endpoint never contacts providers.
 
