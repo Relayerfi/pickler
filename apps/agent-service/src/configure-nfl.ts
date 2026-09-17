@@ -25,8 +25,11 @@ try {
         }
       }
     }
+    const { marketScope: _scope, ...legacy } = agent.config;
+    void _scope;
     const updated = await repository.updateConfig(scope, agent.version, {
-      ...agent.config,
+      ...legacy,
+      categoryIds: agent.config.categoryIds ?? ["450"],
       tools,
       plugins: { version: 1, enabled },
       researchProtocol: "nfl-winner-v1",
