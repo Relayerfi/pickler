@@ -8,7 +8,7 @@ export async function providerJson(
 ): Promise<unknown> {
   const signal = AbortSignal.any([parent, AbortSignal.timeout(20_000)]);
   try {
-    const response = await fetcher(url, { ...init, signal, redirect: "error" });
+    const response = await fetcher(url, { ...init, signal, redirect: "manual" });
     if (!response.ok) {
       throw new PilotError(`PROVIDER_HTTP_${response.status}`, "Provider request failed");
     }

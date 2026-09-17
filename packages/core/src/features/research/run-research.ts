@@ -18,7 +18,7 @@ import {
 
 /** The only research entry point: API, worker and Studio all dispatch through it. */
 export function createResearchRunner(deps: {
-  repository: ResearchRepository;
+  repository: Pick<ResearchRepository, "agent" | "event" | "finish">;
   model: ResearchModel;
   search: WebSearch;
   reader: PageReader;

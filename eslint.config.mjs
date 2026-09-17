@@ -14,6 +14,7 @@ export default defineConfig([
     "**/dist/**",
     "**/.mastra/**",
     "**/.turbo/**",
+    "**/.wrangler/**",
     "supabase/.temp/**",
     "supabase/.branches/**",
     "**/next-env.d.ts",
