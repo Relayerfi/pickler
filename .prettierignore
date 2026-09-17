@@ -17,3 +17,6 @@ contracts/broadcast/
 # Generated local Supabase state
 supabase/.temp/
 supabase/.branches/
+
+**/.wrangler/
+**/.dev.vars*
