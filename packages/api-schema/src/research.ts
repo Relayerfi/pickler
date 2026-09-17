@@ -8,6 +8,14 @@ export const uncertaintyPolicySchema = z
     maxProbabilityRangeWidth: z.number().min(0).max(1),
   })
   .strict();
+export const discoveryPolicySchema = z
+  .object({
+    version: z.literal(1),
+    mode: z.enum(["open-market", "pre-event"]),
+    minLeadMinutes: z.number().int().min(15).max(1440),
+    maxHorizonDays: z.number().int().min(1).max(7),
+  })
+  .strict();
 export const agentConfigSchema = z
   .object({
     limits: z
@@ -25,6 +33,7 @@ export const agentConfigSchema = z
     tools: z.array(toolNameSchema).max(4),
     intervalHours: z.number().int().min(1).max(168),
     uncertaintyPolicy: uncertaintyPolicySchema.optional(),
+    discoveryPolicy: discoveryPolicySchema.optional(),
   })
   .strict();
 export const configUpdateSchema = z
