@@ -4,6 +4,7 @@ import { drizzle, type NodePgDatabase } from "drizzle-orm/node-postgres";
 import { and, asc, count, eq, gt, inArray, lte, sql, getTableColumns } from "drizzle-orm";
 import {
   DEFAULT_CONFIG,
+  effectivePlugins,
   PilotError,
   assertConfig,
   assertCanQueue,
@@ -200,6 +201,7 @@ export class PostgresResearchStore implements ResearchRepository {
     config: AgentConfig,
   ): Promise<AgentRecord> {
     assertConfig(config);
+    config = { ...config, plugins: effectivePlugins(config) };
     return this.db.transaction(async (tx) => {
       const agent = await this.getAgent(scope, tx, true);
       if (agent.version !== expectedVersion) {
@@ -342,6 +344,10 @@ export class PostgresResearchStore implements ResearchRepository {
 
   async event(run: RunRecord, type: string, data: unknown, now: number): Promise<void> {
     await this.db.transaction(async (tx) => {
+      const agent = await this.getAgent(run, tx, true);
+      if (agent.version !== run.configVersion || agent.paused) {
+        throw new PilotError("CONFIG_CHANGED", "Research authorization changed");
+      }
       // Serialize writes with finalization and recovery, then check the current DB time.
       await tx
         .select({ id: runs.id })
@@ -437,6 +443,10 @@ export class PostgresResearchStore implements ResearchRepository {
     now: number,
   ): Promise<void> {
     await this.db.transaction(async (tx) => {
+      const current = await this.getAgent(run, tx, true);
+      if (decision && (current.version !== run.configVersion || current.paused)) {
+        throw new PilotError("CONFIG_CHANGED", "Research authorization changed");
+      }
       await tx.execute(
         sql`select set_config('pickler.execution_owner', ${this.owners.get(run.id) ?? ""}, true)`,
       );
