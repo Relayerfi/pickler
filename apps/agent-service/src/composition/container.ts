@@ -4,17 +4,21 @@ import { PostgresResearchStore, ExaResearch, PolymarketData } from "@pickler/inf
 import { readEnv } from "../config/env";
 import { createModel } from "./model";
 
-export async function createContainer() {
-  const env = readEnv();
+export async function createContainer(env = readEnv()) {
   const repository = new PostgresResearchStore(env.DATABASE_URL);
-  await repository.init();
-  await repository.bindConnectionIdentity(
-    createHash("sha256")
-      .update(
-        JSON.stringify([env.MODEL_BASE_URL, env.MODEL_ID, env.MODEL_API_KEY, env.EXA_API_KEY]),
-      )
-      .digest("hex"),
-  );
+  try {
+    await repository.init();
+    await repository.bindConnectionIdentity(
+      createHash("sha256")
+        .update(
+          JSON.stringify([env.MODEL_BASE_URL, env.MODEL_ID, env.MODEL_API_KEY, env.EXA_API_KEY]),
+        )
+        .digest("hex"),
+    );
+  } catch (error) {
+    await repository.close();
+    throw error;
+  }
   const search = new ExaResearch(env.EXA_API_KEY);
   const markets = new PolymarketData();
   const model = createModel(env);
