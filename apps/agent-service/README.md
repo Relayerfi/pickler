@@ -243,3 +243,5 @@ For a Vinicius-like proposal with estimate 0.003, range 0.0005–0.01, HIGH unce
 ## Cloudflare compatibility experiment
 
 See [CLOUDFLARE-PROBE.md](CLOUDFLARE-PROBE.md) for the isolated workerd experiment, verified live local research, interruption behavior and remaining remote/production boundaries. This does not change the normal Studio or worker startup.
+
+For the separate local `202 + runId` → Queue consumer → PostgreSQL → status polling experiment, see [Cloudflare background research](CLOUDFLARE-BACKGROUND.md). It uses an isolated Supabase database and does not change the retained remote probe or the normal Node pilot.
