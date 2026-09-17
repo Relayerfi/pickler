@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { z } from "zod";
 import { ModelFailure, PilotError } from "@pickler/core";
-import { validatedModelOutput } from "../src/composition/model-output";
+import { validatedModelOutput, classifyModelFailure } from "../src/composition/model-output";
 
 const schema = z.object({ marketId: z.string() }).strict();
 
@@ -125,4 +125,24 @@ test("valid and invalid structured outputs, cancellation, and business errors re
     ),
     (error) => error === businessError,
   );
+});
+
+test("NFL diagnostic paths expose known schema names but redact unknown keys and values", () => {
+  const failure = classifyModelFailure(
+    {
+      name: "ZodError",
+      issues: [
+        { code: "invalid_type", path: ["report", "sections", 0, "sourceIds"], message: "private" },
+        { code: "invalid_type", path: ["secret-key"], input: "secret-value" },
+      ],
+    },
+    "decision",
+    new AbortController().signal,
+  );
+  assert.ok(failure instanceof ModelFailure);
+  assert.deepEqual(failure.details.validation, [
+    { code: "invalid_type", path: "report.sections.[].sourceIds" },
+    { code: "invalid_type", path: "[unknown]" },
+  ]);
+  assert.equal(JSON.stringify(failure).includes("secret"), false);
 });
