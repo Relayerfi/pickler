@@ -16,3 +16,6 @@ contracts/broadcast/
 *.db
 *.db-shm
 *.db-wal
+
+**/.wrangler/
+**/.dev.vars*
