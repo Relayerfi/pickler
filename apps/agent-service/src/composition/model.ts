@@ -4,8 +4,9 @@ import { Agent } from "@mastra/core/agent";
 import { createTool } from "@mastra/core/tools";
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import { z } from "zod";
-import { modelAssessmentSchema } from "@pickler/api-schema";
+import { modelAssessmentSchema, nflAssessmentSchema } from "@pickler/api-schema";
 import { PilotError, type ResearchModel, type Market } from "@pickler/core";
+import { nflDecisionSystemPrompt } from "../prompts/nfl-decision-system";
 import { decisionSystemPrompt } from "../prompts/decision-system";
 import { modelDiagnostic } from "./model-diagnostics";
 import {
@@ -53,6 +54,7 @@ export function createModel(env: Environment): ResearchModel & {
         research: researchSystemPrompt,
         marketSelection: marketSelectionSystemPrompt,
         decision: decisionSystemPrompt,
+        nflDecision: nflDecisionSystemPrompt,
       },
     }),
     async select(
@@ -141,6 +143,7 @@ export function createModel(env: Environment): ResearchModel & {
       }
     },
     async research(input) {
+      const assessmentSchema = input.protocol ? nflAssessmentSchema : modelAssessmentSchema;
       const agent = new Agent({
         maxRetries: 0,
         id: "researcher",
@@ -178,7 +181,7 @@ export function createModel(env: Environment): ResearchModel & {
           }
           if (phase === "decision") {
             try {
-              await validateStructuredStep(step, modelAssessmentSchema, phase, input.signal);
+              await validateStructuredStep(step, assessmentSchema, phase, input.signal);
             } catch (error) {
               stepFailure = classifyModelFailure(error, phase, input.signal, step);
             }
@@ -191,6 +194,9 @@ export function createModel(env: Environment): ResearchModel & {
             now: new Date().toISOString(),
             market: input.market,
             profile: input.profile,
+            protocol: input.protocol,
+            availability: input.availability,
+            evidence: input.evidence?.(),
           }),
           {
             maxSteps: input.limits.steps - (input.selectionSteps ?? 1) - 1,
@@ -229,7 +235,9 @@ export function createModel(env: Environment): ResearchModel & {
           maxRetries: 0,
           id: "research-decision",
           name: "Research decision",
-          instructions: decisionSystemPrompt.instructions,
+          instructions: input.protocol
+            ? nflDecisionSystemPrompt.instructions
+            : decisionSystemPrompt.instructions,
           model,
         });
         finalizer.__setLogger(noopLogger);
@@ -240,6 +248,8 @@ export function createModel(env: Environment): ResearchModel & {
                 now: new Date().toISOString(),
                 market: input.market,
                 profile: input.profile,
+                protocol: input.protocol,
+                availability: input.availability,
                 evidence: input.evidence?.(),
                 untrustedResearchSummary: research.text,
               }),
@@ -248,10 +258,10 @@ export function createModel(env: Environment): ResearchModel & {
                 abortSignal: input.signal,
                 modelSettings: { maxOutputTokens: input.limits.outputTokens },
                 ...callbacks("decision"),
-                structuredOutput: { schema: modelAssessmentSchema, logger: noopLogger },
+                structuredOutput: { schema: assessmentSchema, logger: noopLogger },
               },
             ),
-          modelAssessmentSchema,
+          assessmentSchema,
           "decision",
           input.signal,
         );
