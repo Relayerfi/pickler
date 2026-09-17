@@ -1,3 +1,4 @@
+import type { ResearchProtocol } from "./market-scope.js";
 import {
   ModelFailure,
   type Market,
@@ -16,15 +17,25 @@ export const NFL_SECTIONS = [
   "quotes",
   "limitations",
 ] as const;
+export const GENERAL_SECTIONS = [
+  "identity",
+  "timing",
+  "rules",
+  "context",
+  "supporting",
+  "contradicting",
+  "quotes",
+  "limitations",
+] as const;
 export interface ResearchReport {
-  protocol: "nfl-winner-v1";
+  protocol: ResearchProtocol;
   forecast: {
     outcomeId: string | null;
     probability: { lower: number; estimate: number; upper: number } | null;
     inabilityReason: string | null;
   };
   sections: {
-    section: (typeof NFL_SECTIONS)[number];
+    section: (typeof NFL_SECTIONS)[number] | (typeof GENERAL_SECTIONS)[number];
     status: "supported" | "conflicting" | "missing" | "not_applicable";
     explanation: string;
     sourceIds: string[];
@@ -46,7 +57,7 @@ export function researchReferences(
     {
       id: `context:market:${market.id}`,
       kind: "market",
-      sections: ["identity", "schedule", "rules", "quotes", "limitations"],
+      sections: ["identity", "schedule", "timing", "rules", "quotes", "limitations"],
       data: market,
     },
     {
@@ -80,6 +91,7 @@ export function validateReport(
   market: Market,
   sources: Source[],
   references: ResearchReference[] = [],
+  protocol: ResearchProtocol = "nfl-winner-v1",
 ): ResearchReport {
   const report = assessment.report;
   const fail = (reason: string, path = "report") => {
@@ -88,19 +100,21 @@ export function validateReport(
       validation: [{ code: reason.toLowerCase(), path }],
     });
   };
-  if (!report || report.protocol !== "nfl-winner-v1") {
+  if (!report || report.protocol !== protocol) {
     return fail("PROTOCOL", "report.protocol");
   }
+  const required: readonly string[] =
+    protocol === "nfl-winner-v1" ? NFL_SECTIONS : GENERAL_SECTIONS;
   if (
-    new Set(report.sections.map((s) => s.section)).size !== NFL_SECTIONS.length ||
-    report.sections.length !== NFL_SECTIONS.length
+    new Set(report.sections.map((s) => s.section)).size !== required.length ||
+    report.sections.length !== required.length
   ) {
     return fail("SECTIONS", "report.sections");
   }
   const ids = new Set(sources.map((s) => s.id));
   for (const [index, section] of report.sections.entries()) {
     if (
-      !NFL_SECTIONS.includes(section.section) ||
+      !required.includes(section.section) ||
       !section.explanation.trim() ||
       section.sourceIds.some(
         (id) =>
