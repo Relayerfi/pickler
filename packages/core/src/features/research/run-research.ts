@@ -1,3 +1,5 @@
+import { PLUGINS, effectivePlugins, requireTool, toolEnabled, pluginEnabled } from "./plugins.js";
+import { nflMarketEligible, validateReport, uniqueSources, type SportsData } from "./nfl.js";
 import { marketExclusion } from "./eligibility.js";
 import { publicSourceUrl } from "./source-url.js";
 import { evaluateDecision } from "./decision-policy.js";
@@ -25,6 +27,9 @@ export function createResearchRunner(deps: {
   search: WebSearch;
   reader: PageReader;
   markets: MarketData;
+  configured?: { exa: boolean };
+  sports?: SportsData;
+  odds?: SportsData;
   now?: () => number;
 }) {
   const { repository: repo } = deps;
@@ -51,8 +56,8 @@ export function createResearchRunner(deps: {
       if (current.version !== run.configVersion) {
         throw new PilotError("CONFIG_CHANGED", "Configuration changed during research");
       }
-      if (tool && !current.config.tools.includes(tool)) {
-        throw new PilotError("TOOL_DISABLED", "Tool is disabled");
+      if (tool) {
+        requireTool(current.config, tool);
       }
     };
     const external = async <T>(name: string, fn: () => Promise<T>): Promise<T> => {
@@ -76,11 +81,33 @@ export function createResearchRunner(deps: {
           version: "1.0.0",
           config: run.config.uncertaintyPolicy ?? DEFAULT_UNCERTAINTY_POLICY,
         },
-        plugins: { research: "1.0.0", "prediction-markets": "1.0.0" },
+        plugins: PLUGINS.filter((p) => effectivePlugins(run.config).enabled.includes(p.id)),
       });
       await guard("searchWeb");
+      if (deps.configured && !deps.configured.exa) {
+        throw new PilotError("PLUGIN_NOT_CONFIGURED", "Exa requires credentials");
+      }
       await guard("getMarketRules");
       await guard("getOrderBook");
+      const availability: Record<string, string> = {};
+      for (const [id, tool, adapter] of [
+        ["balldontlie", "getSportsContext", deps.sports],
+        ["the-odds-api", "getExternalOdds", deps.odds],
+      ] as const) {
+        availability[id] =
+          !pluginEnabled(run.config, id) || !toolEnabled(run.config, tool)
+            ? "disabled"
+            : adapter
+              ? "available"
+              : "not_configured";
+        if (availability[id] === "not_configured") {
+          throw new PilotError(
+            "PLUGIN_NOT_CONFIGURED",
+            "Enabled sports plugin requires operator credentials",
+          );
+        }
+      }
+      await event("plugin_availability", availability);
       let marketId = run.marketId;
       if (!run.config.categoryIds.length) {
         throw new PilotError("CATEGORIES_REQUIRED", "Select categories before researching");
@@ -96,7 +123,9 @@ export function createResearchRunner(deps: {
         const exclusions = discovered.map((m) => ({
           marketId: m.id,
           reason: m.categoryIds.some((c) => run.config.categoryIds.includes(c))
-            ? marketExclusion(m, selectionTime, run.config.discoveryPolicy)
+            ? run.config.researchProtocol && !nflMarketEligible(m)
+              ? "UNSUPPORTED_NFL_MARKET"
+              : marketExclusion(m, selectionTime, run.config.discoveryPolicy)
             : "CATEGORY_NOT_ALLOWED",
         }));
         await event(
@@ -132,9 +161,35 @@ export function createResearchRunner(deps: {
       await guard("getMarketRules");
       const market = await external("market", () => deps.markets.get(marketId, signal));
       assertMarket(market, run.config.categoryIds, now());
+      if (run.config.researchProtocol && !nflMarketEligible(market)) {
+        throw new PilotError(
+          "UNSUPPORTED_NFL_MARKET",
+          "Only NFL full-game moneylines are supported",
+        );
+      }
       const exclusion = marketExclusion(market, now(), run.config.discoveryPolicy);
       if (exclusion) {
         throw new PilotError("NO_ELIGIBLE_MARKETS", exclusion);
+      }
+      if (run.config.researchProtocol) {
+        const rules: Source = {
+          id: `polymarket:${market.id}:rules`,
+          externalId: market.id,
+          pluginVersion: "1.0.0",
+          provider: "polymarket",
+          url: `https://gamma-api.polymarket.com/markets/${market.id}`,
+          title: "Market resolution rules and schedule",
+          content: JSON.stringify({
+            rules: market.rules,
+            startsAt: market.startsAt,
+            timingSource: market.timingSource,
+          }).slice(0, 6000),
+          truncated: market.rules.length > 5700,
+          retrievedAt: new Date(now()).toISOString(),
+          publishedAt: null,
+        };
+        sources.set(rules.id, rules);
+        await event("source", rules);
       }
       await guard("getOrderBook");
       for (const outcome of market.outcomes) {
@@ -142,7 +197,7 @@ export function createResearchRunner(deps: {
         quotes.push(await external("initial_quote", () => deps.markets.book(outcome.id, signal)));
       }
       const tools: Partial<ResearchTools> = {};
-      if (run.config.tools.includes("searchWeb")) {
+      if (toolEnabled(run.config, "searchWeb")) {
         tools.searchWeb = async (query, intent) => {
           await guard("searchWeb");
           if (++searches > run.config.limits.searches) {
@@ -179,13 +234,15 @@ export function createResearchRunner(deps: {
               ),
           );
           searchIntents.add(intent);
-          for (const source of result.sources) {
+          const deduplicated = uniqueSources([...sources.values(), ...result.sources]);
+          const accepted = new Set(deduplicated.map((s) => s.id));
+          for (const source of result.sources.filter((s) => accepted.has(s.id))) {
             sources.set(source.id, source);
           }
-          return result.sources;
+          return result.sources.filter((s) => accepted.has(s.id));
         };
       }
-      if (run.config.tools.includes("readPage")) {
+      if (toolEnabled(run.config, "readPage")) {
         tools.readPage = async (url) => {
           await guard("readPage");
           if (++reads > run.config.limits.pageReads) {
@@ -214,13 +271,13 @@ export function createResearchRunner(deps: {
           return source;
         };
       }
-      if (run.config.tools.includes("getMarketRules")) {
+      if (toolEnabled(run.config, "getMarketRules")) {
         tools.getMarketRules = async () => {
           await guard("getMarketRules");
           return market;
         };
       }
-      if (run.config.tools.includes("getOrderBook")) {
+      if (toolEnabled(run.config, "getOrderBook")) {
         tools.getOrderBook = async (outcomeId) => {
           await guard("getOrderBook");
           if (++bookReads > 6) {
@@ -234,8 +291,39 @@ export function createResearchRunner(deps: {
           return quote;
         };
       }
+      for (const [id, tool, adapter, cap] of [
+        ["balldontlie", "getSportsContext", deps.sports, 6],
+        ["the-odds-api", "getExternalOdds", deps.odds, 2],
+      ] as const) {
+        if (!toolEnabled(run.config, tool) || !adapter) {
+          continue;
+        }
+        let calls = 0;
+        tools[tool] = async () => {
+          await guard(tool);
+          const context = await external("sports_evidence", () =>
+            adapter.context(market, signal, async (network) => {
+              await guard(tool);
+              if (network && ++calls > cap) {
+                throw new PilotError("TOOL_LIMIT", "Sports request budget exhausted");
+              }
+            }),
+          );
+          availability[id] = context.status;
+          for (const source of context.sources) {
+            sources.set(source.id, source);
+          }
+          return context;
+        };
+        // Establish structured context before the model, without spending another model step.
+        if (run.config.researchProtocol) {
+          await tools[tool]!();
+        }
+      }
       await guard();
       const result = await deps.model.research({
+        ...(run.config.researchProtocol ? { protocol: run.config.researchProtocol } : {}),
+        availability,
         beforeStep: async () => {
           await guard();
           if (providerFailure) {
@@ -314,12 +402,23 @@ export function createResearchRunner(deps: {
         observedPrice = null;
       }
       await guard();
-      const finalDecision = evaluateDecision(
+      const evaluated = evaluateDecision(
         decision,
         observedPrice,
         run.config.uncertaintyPolicy,
         now(),
       );
+      const report = run.config.researchProtocol
+        ? validateReport(decision, market, [...sources.values()])
+        : undefined;
+      const finalDecision = report
+        ? {
+            ...evaluated,
+            schemaVersion: 3 as const,
+            forecast: report.forecast,
+            coverage: report.sections,
+          }
+        : evaluated;
       await event("policy_evaluation", finalDecision.policyEvaluation);
       await repo.finish(run, finalDecision, null, now());
     } catch (error) {
