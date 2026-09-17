@@ -26,3 +26,5 @@ Optional `discoveryPolicy` is versioned independently: version 1 accepts `open-m
 Plugin configuration is optional for historical reads. New NFL output uses `nflAssessmentSchema` and `decisionV3Schema`; v1/v2 remain accepted. A v3 forecast is distinct from action and includes an explicit inability reason when probability cannot be estimated. Coverage has exactly nine protocol sections. Configuration adds two optional sports tools and per-plugin activation; no credentials belong in these DTOs.
 
 `src/paper.ts` exports the manual simulation response schema. The POST body accepts no size, price override, credentials or tenant identity. Public orders include virtual budget and fill evidence but no internal lease columns. Research DTOs retain their shape.
+
+NFL coverage `sourceIds` may identify retrieved sources or section-scoped execution context references recorded in the `research_references` event. Market/quote/availability references are not independent sports evidence. Top-level decision `sourceIds` remain retrieved-source identifiers; the public DTO shape is unchanged. Core enforces reference scope and quote attribution.
