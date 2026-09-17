@@ -1,6 +1,6 @@
 import { test } from "node:test";
-import { DEFAULT_CONFIG, assertConfig } from "@pickler/core";
-import { agentConfigSchema } from "@pickler/api-schema";
+import { DEFAULT_CONFIG, assertConfig, evaluateDecision } from "@pickler/core";
+import { agentConfigSchema, decisionSchema, modelAssessmentSchema } from "@pickler/api-schema";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { researchSystemPrompt } from "../src/prompts/research-system";
@@ -25,7 +25,9 @@ const sample = {
   counterEvidence: "Connection validation only",
   uncertainty: "Connection validation only",
   sourceIds: ["connectivity-check"],
-  estimatedProbability: null,
+  probability: null,
+  uncertaintyLevel: "LOW" as const,
+  missingInformation: [],
   observedPrice: null,
   limitPrice: null,
   expiresAt: null,
@@ -341,4 +343,38 @@ test("model transport allows 180 seconds without overriding caller cancellation"
   );
   assert.ok(durations.includes(180_000));
   assert.equal(durations.includes(60_000), false);
+});
+
+test("v2 results and legacy history are readable while the model cannot supply policy decisions", () => {
+  const legacy = {
+    action: sample.action,
+    marketId: sample.marketId,
+    outcomeId: sample.outcomeId,
+    thesis: sample.thesis,
+    counterEvidence: sample.counterEvidence,
+    uncertainty: sample.uncertainty,
+    sourceIds: sample.sourceIds,
+    estimatedProbability: null,
+    observedPrice: null,
+    limitPrice: null,
+    expiresAt: null,
+    abstentionReason: sample.abstentionReason,
+  };
+  assert.equal(decisionSchema.safeParse(legacy).success, true);
+  const assessment = modelAssessmentSchema.parse(sample);
+  const v2 = evaluateDecision(assessment, null, undefined, 100);
+  assert.equal(decisionSchema.safeParse(v2).success, true);
+  assert.equal(
+    modelAssessmentSchema.safeParse({ ...sample, policyEvaluation: v2.policyEvaluation }).success,
+    false,
+  );
+  assert.equal(decisionSchema.safeParse({ ...v2, schemaVersion: 3 }).success, false);
+  for (const minProbabilityMargin of [-1, 1.01]) {
+    const config = {
+      ...DEFAULT_CONFIG,
+      uncertaintyPolicy: { ...v2.policyEvaluation.config, minProbabilityMargin },
+    };
+    assert.equal(agentConfigSchema.safeParse(config).success, false);
+    assert.throws(() => assertConfig(config));
+  }
 });

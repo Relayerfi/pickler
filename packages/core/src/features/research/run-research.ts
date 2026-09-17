@@ -1,7 +1,8 @@
-import { decimalPrice } from "./policy.js";
+import { evaluateDecision } from "./decision-policy.js";
 import {
   PilotError,
   ModelFailure,
+  DEFAULT_UNCERTAINTY_POLICY,
   isMarketOpen,
   assertMarket,
   type ResearchRepository,
@@ -67,6 +68,10 @@ export function createResearchRunner(deps: {
     try {
       await event("runtime", {
         ...deps.model.metadata(),
+        uncertaintyPolicy: {
+          version: "1.0.0",
+          config: run.config.uncertaintyPolicy ?? DEFAULT_UNCERTAINTY_POLICY,
+        },
         plugins: { research: "1.0.0", "prediction-markets": "1.0.0" },
       });
       await guard("searchWeb");
@@ -178,6 +183,8 @@ export function createResearchRunner(deps: {
         throw new PilotError("PROVIDER_FAILURE", "A provider failed; research is incomplete");
       }
       const decision = result.decision;
+      await event("model_assessment", decision);
+      let observedPrice: string | null = null;
       if (
         decision.marketId !== market.id ||
         decision.sourceIds.some((id) => !sources.has(id)) ||
@@ -197,7 +204,6 @@ export function createResearchRunner(deps: {
       if (decision.action === "TRADE") {
         if (
           !market.outcomes.some((o) => o.id === decision.outcomeId) ||
-          decision.estimatedProbability === null ||
           !decision.limitPrice ||
           !decision.expiresAt ||
           !Number.isFinite(Date.parse(decision.expiresAt)) ||
@@ -221,19 +227,22 @@ export function createResearchRunner(deps: {
         if (!ask) {
           throw new PilotError("NO_QUOTE", "No executable ask available");
         }
-        decision.observedPrice = ask.price; // Never accept a model-invented observed price.
-        if (decimalPrice(ask.price) > decimalPrice(decision.limitPrice)) {
-          decision.action = "ABSTAIN";
-          decision.abstentionReason = "Fresh ask exceeds proposed limit price";
-        }
+        observedPrice = ask.price;
       } else {
         if (!decision.abstentionReason) {
           throw new PilotError("INVALID_DECISION", "Abstention requires a reason");
         }
-        decision.observedPrice = null;
+        observedPrice = null;
       }
       await guard();
-      await repo.finish(run, decision, null, now());
+      const finalDecision = evaluateDecision(
+        decision,
+        observedPrice,
+        run.config.uncertaintyPolicy,
+        now(),
+      );
+      await event("policy_evaluation", finalDecision.policyEvaluation);
+      await repo.finish(run, finalDecision, null, now());
     } catch (error) {
       if (error instanceof ModelFailure) {
         await event("model_failure", { code: error.code, ...error.details });

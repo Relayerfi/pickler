@@ -169,3 +169,29 @@ test("simultaneous schedule ticks coalesce into one persisted occurrence", async
   await store.finish(scheduled, abstention, null, due + 1002);
   assert.equal(await store.claim(due + 1003), null);
 });
+
+test("policy config updates are versioned and do not rewrite historical decisions", async (t) => {
+  const store = await setup(t);
+  await store.enqueue(scope, "legacy", null, 10);
+  const run = (await store.claim(11))!;
+  await store.finish(run, abstention, null, 12);
+  const agent = await store.agent(scope);
+  const changed = {
+    ...agent.config,
+    uncertaintyPolicy: {
+      blockHighUncertainty: true,
+      requireCompleteInformation: true,
+      minProbabilityMargin: 0.02,
+      maxProbabilityRangeWidth: 0.1,
+    },
+  };
+  const updated = await store.updateConfig(scope, agent.version, changed);
+  assert.equal(updated.version, agent.version + 1);
+  assert.deepEqual(updated.config.uncertaintyPolicy, changed.uncertaintyPolicy);
+  assert.equal(updated.scheduleEnabled, false);
+  const historical = await store.run("alpha", run.id);
+  assert.deepEqual(historical.decision, abstention);
+  assert.deepEqual(historical.config, run.config);
+  const next = await store.enqueue(scope, "new-policy", null, 13);
+  assert.deepEqual(next.config.uncertaintyPolicy, changed.uncertaintyPolicy);
+});
