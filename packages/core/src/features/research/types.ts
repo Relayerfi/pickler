@@ -1,3 +1,9 @@
+import {
+  assertMarketScope,
+  type MarketScope,
+  type MarketClassification,
+  type ResearchProtocol,
+} from "./market-scope.js";
 import type { PluginConfig } from "./plugins.js";
 import type { ResearchReport, SportsContext, ResearchReference } from "./nfl.js";
 export const TOOL_NAMES = [
@@ -25,12 +31,13 @@ export interface DiscoveryPolicy {
   maxHorizonDays: number;
 }
 export interface AgentConfig {
+  marketScope?: MarketScope | undefined;
   plugins?: PluginConfig | undefined;
   researchProtocol?: "nfl-winner-v1" | undefined;
   discoveryPolicy?: DiscoveryPolicy | undefined;
   limits: ResearchLimits;
   profile: string;
-  categoryIds: string[];
+  categoryIds?: string[] | undefined;
   tools: ToolName[];
   intervalHours: number;
   uncertaintyPolicy?: UncertaintyPolicy | undefined;
@@ -57,6 +64,7 @@ export interface Category {
 }
 
 export interface Market {
+  classification?: MarketClassification | undefined;
   id: string;
   question: string;
   rules: string;
@@ -151,7 +159,11 @@ export interface DecisionV3 extends Omit<DecisionV2, "schemaVersion"> {
   forecast: ResearchReport["forecast"];
   coverage: ResearchReport["sections"];
 }
-export type Decision = LegacyDecision | DecisionV2 | DecisionV3;
+export interface DecisionV4 extends Omit<DecisionV3, "schemaVersion"> {
+  schemaVersion: 4;
+  protocol: ResearchProtocol;
+}
+export type Decision = LegacyDecision | DecisionV2 | DecisionV3 | DecisionV4;
 
 export interface RunRecord extends Scope {
   id: string;
@@ -188,6 +200,11 @@ export interface PageReader {
 }
 
 export interface MarketData {
+  listScope?(
+    scope: MarketScope,
+    signal: AbortSignal,
+    report?: (data: unknown) => Promise<void>,
+  ): Promise<Market[]>;
   categories(signal: AbortSignal): Promise<Category[]>;
   list(
     categoryIds: string[],
@@ -226,7 +243,7 @@ export interface ResearchModel {
   ): Promise<{ marketId: string; reason: string; usage: unknown }>;
   research(input: {
     market: Market;
-    protocol?: "nfl-winner-v1";
+    protocol?: ResearchProtocol;
     availability?: Record<string, string>;
     profile: string;
     tools: Partial<ResearchTools>;
@@ -246,6 +263,7 @@ export interface ResearchModel {
       marketSelection: PromptSnapshot;
       decision?: PromptSnapshot;
       nflDecision?: PromptSnapshot;
+      generalDecision?: PromptSnapshot;
     };
   };
 }
@@ -315,6 +333,18 @@ export function assertUncertaintyPolicy(policy: UncertaintyPolicy): void {
 }
 
 export function assertConfig(config: AgentConfig): void {
+  if (config.marketScope) {
+    assertMarketScope(config.marketScope);
+    if (
+      config.categoryIds !== undefined ||
+      config.researchProtocol !== undefined ||
+      config.discoveryPolicy !== undefined
+    ) {
+      throw new PilotError("INVALID_INPUT", "Do not mix marketScope with legacy selection fields");
+    }
+  } else if (!Array.isArray(config.categoryIds)) {
+    throw new PilotError("INVALID_INPUT", "Market selection is required");
+  }
   const discovery = config.discoveryPolicy;
   if (
     config.researchProtocol &&
@@ -363,9 +393,9 @@ export function assertConfig(config: AgentConfig): void {
   if (
     !config.profile.trim() ||
     config.profile.length > 4000 ||
-    config.categoryIds.length > 10 ||
-    config.categoryIds.some((id) => !/^\d+$/.test(id)) ||
-    new Set(config.categoryIds).size !== config.categoryIds.length ||
+    (config.categoryIds?.length ?? 0) > 10 ||
+    config.categoryIds?.some((id) => !/^\d+$/.test(id)) ||
+    new Set(config.categoryIds).size !== (config.categoryIds?.length ?? 0) ||
     config.tools.some((tool) => !TOOL_NAMES.includes(tool)) ||
     new Set(config.tools).size !== config.tools.length ||
     !Number.isInteger(config.intervalHours) ||
