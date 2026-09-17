@@ -11,6 +11,7 @@ import {
   runRequestSchema,
   scheduleSchema,
   pauseSchema,
+  paperOrderSchema,
 } from "@pickler/api-schema";
 
 function errorStatus(code: string): 400 | 404 | 409 | 429 | 502 {
@@ -34,6 +35,10 @@ export function createApi(deps: {
   tokens: Record<string, string>;
   checkConnections(): Promise<unknown>;
   notifyQueued?(): Promise<void>;
+  paper?: {
+    create(tenantId: string, runId: string, key: string): Promise<unknown>;
+    get(tenantId: string, runId: string): Promise<unknown>;
+  };
   checkPlugin?(scope: { tenantId: string; agentId: string }, plugin: string): Promise<unknown>;
 }) {
   const api = new Hono<{ Variables: { tenant: string } }>();
@@ -111,6 +116,29 @@ export function createApi(deps: {
   api.get("/runs/:id", async (c) =>
     c.json(runResponseSchema.parse(await repo.run(c.get("tenant"), c.req.param("id")))),
   );
+  api.post("/runs/:id/paper-order", async (c) => {
+    if (!deps.paper) {
+      throw new PilotError("PLUGIN_NOT_CONFIGURED", "Paper service unavailable");
+    }
+    const raw = await c.req.text();
+    if (raw) {
+      z.object({}).strict().parse(JSON.parse(raw));
+    }
+    const result = paperOrderSchema.parse(
+      await deps.paper.create(
+        c.get("tenant"),
+        c.req.param("id"),
+        c.req.header("Idempotency-Key") ?? "",
+      ),
+    );
+    return c.json(result, result.status === "pending" ? 202 : 200);
+  });
+  api.get("/runs/:id/paper-order", async (c) => {
+    if (!deps.paper) {
+      throw new PilotError("PLUGIN_NOT_CONFIGURED", "Paper service unavailable");
+    }
+    return c.json(paperOrderSchema.parse(await deps.paper.get(c.get("tenant"), c.req.param("id"))));
+  });
   api.get("/runs/:id/events", async (c) =>
     c.json({
       events: eventResponseSchema
