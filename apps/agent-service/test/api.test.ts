@@ -4,7 +4,7 @@ import { createTestStore } from "@pickler/infrastructure/testing";
 import { DEFAULT_CONFIG, type MarketData } from "@pickler/core";
 import { createApi } from "../src/api/app";
 import { buildTools } from "../src/plugins/registry";
-import { decisionSchema } from "@pickler/api-schema";
+import { agentConfigSchema, decisionSchema } from "@pickler/api-schema";
 
 test("HTTP authorization, scoped writes, async run dispatch and polling", async (t) => {
   const repository = await createTestStore(t);
@@ -33,6 +33,10 @@ test("HTTP authorization, scoped writes, async run dispatch and polling", async 
       },
       ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
     });
+  assert.equal((await app.request("/market-categories")).status, 401);
+  const catalog = await request("/market-categories");
+  assert.equal(catalog.status, 200);
+  assert.equal((await catalog.json()).categories[0].subcategories.length, 4);
   assert.equal((await app.request("/agents")).status, 401);
   assert.equal((await request("/agents/pickle-alpha", "b")).status, 404);
   const update = { expectedVersion: 1, config: { ...DEFAULT_CONFIG, categoryIds: ["7"] } };
@@ -122,4 +126,24 @@ test("paper transport authenticates tenant and rejects executable sizes or tenan
   assert.equal(calls, 0);
   assert.equal((await request({})).status, 202);
   assert.equal(calls, 1);
+});
+
+test("new configuration DTOs reject ambiguous scope while preserving legacy reads", () => {
+  const { categoryIds: legacyCategories, ...defaults } = DEFAULT_CONFIG;
+  assert.ok(Array.isArray(legacyCategories));
+  assert.ok(agentConfigSchema.safeParse(DEFAULT_CONFIG).success);
+  for (const subcategories of [["soccer"], ["soccer", "tennis"], "all"]) {
+    const config = { ...defaults, marketScope: { version: 1, category: "sports", subcategories } };
+    assert.ok(agentConfigSchema.safeParse(config).success);
+    assert.equal(agentConfigSchema.safeParse({ ...config, categoryIds: [] }).success, false);
+  }
+  for (const subcategories of [[], ["soccer", "soccer"], ["unknown"]]) {
+    assert.equal(
+      agentConfigSchema.safeParse({
+        ...defaults,
+        marketScope: { version: 1, category: "sports", subcategories },
+      }).success,
+      false,
+    );
+  }
 });
