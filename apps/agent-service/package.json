@@ -12,7 +12,8 @@
     "cli": "node --import tsx src/cli.ts",
     "diagnose": "node --import tsx src/diagnose.ts",
     "configure:nfl": "node --import tsx src/configure-nfl.ts",
-    "evaluate:nfl": "node --import tsx src/evaluate-nfl.ts"
+    "evaluate:nfl": "node --import tsx src/evaluate-nfl.ts",
+    "configure:categories": "node --import tsx src/configure-categories.ts"
   },
   "dependencies": {
     "@ai-sdk/openai-compatible": "3.0.48",
