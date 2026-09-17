@@ -22,6 +22,13 @@
       "when": 1789643609497,
       "tag": "0002_legacy_executor_guard",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1789651574774,
+      "tag": "0003_needy_sebastian_shaw",
+      "breakpoints": true
     }
   ]
 }
