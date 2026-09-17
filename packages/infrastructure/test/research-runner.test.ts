@@ -156,8 +156,7 @@ test("disabled tool blocks work before external requests", async (t) => {
   await f.execute();
 
   const events = await f.repository.events("alpha", f.run.id);
-  assert.equal(events[0]?.type, "runtime");
-  assert.deepEqual((events[0]!.data as { prompts: unknown }).prompts, f.model.metadata().prompts);
+  assert.equal(events.length, 0, "Revoked configuration cannot append new runtime events");
   assert.equal(called, false);
   assert.equal((await f.repository.run("alpha", f.run.id)).status, "failed");
 });
