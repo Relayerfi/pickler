@@ -192,6 +192,7 @@ export interface ResearchModel {
     signal: AbortSignal;
     limits: ResearchLimits;
     onUsage(usage: unknown): Promise<void>;
+    beforeStep?(): Promise<void>;
   }): Promise<{ decision: ModelAssessment; usage: unknown }>;
   metadata(): {
     model: string;
@@ -211,6 +212,9 @@ export interface ResearchRepository {
   events(tenantId: string, runId: string): Promise<RunEvent[]>;
   event(run: RunRecord, type: string, data: unknown, now: number): Promise<void>;
   claim(now: number): Promise<RunRecord | null>;
+  assertOwnership(run: RunRecord): Promise<void>;
+  renew(run: RunRecord): Promise<void>;
+  setConcurrency(globalLimit: number, tenantLimit: number): Promise<void>;
   finish(
     run: RunRecord,
     decision: Decision | null,
