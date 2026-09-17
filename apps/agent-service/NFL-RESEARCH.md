@@ -47,6 +47,20 @@ Run format, lint, types, PostgreSQL/Supabase tests and Node/Cloudflare builds. A
 
 Deferred work: #11 resolution/settlement, #12 calibration, #13 automatic portfolio lifecycle, #14 verified injury/advanced data, #15 additional protocols, #16 tenant credentials/UI. Shared observability remains #5.
 
-## Validation record (2026-09-17)
+## Citation contract
 
-PostgreSQL and Supabase suites passed 97 tests before the final diagnostic refinements. One of six paid fixture evaluations was attempted: `clear-edge` returned structured output but failed core report validation after 66.848 seconds (`INVALID_RESEARCH_REPORT`). The initial evaluator did not preserve the rejected assessment or usage, so the exact violated invariant is unproven. The evaluator now preserves step diagnostics and usage; report validation distinguishes protocol, section, attribution, forecast and trade-consistency errors. No case was repeated, and the other five were not consumed. Live acceptance remains pending; no claim of model reliability is made. The two sports keys were absent when checked, and no full live investigation was launched for this delivery.
+Retrieved `sources` and execution `references` are separate. Core creates context references for the selected market, each observed quote, and plugin availability. These data were already supplied to the model but previously lacked consistent citable identifiers. References are accepted only for their declared report sections: market identity/schedule/rules, quotes, or limitations. They cannot establish injuries or sporting advantages. Top-level `sourceIds` still require retrieved evidence. Core persists `research_references` alongside the assessment; original market and quote events remain available. No historical decisions are rewritten.
+
+The NFL final prompt is version 1.2.0; research is version 3.2.0. Both distinguish concrete missing material facts from ordinary outcome/execution risk and mere optional-plugin absence. This clarifies the existing policy inputs without changing its thresholds. Both phases receive references with the original evidence; the summary is never a replacement for it. Unknown IDs, empty supported citations, and context references in sporting-evidence sections still fail validation.
+
+## Explicit diagnostic attempts
+
+The default six-case command preserves the original ledger and refuses to overwrite attempted cases. A new explicitly authorized attempt requires a unique label; this is never an automatic production retry:
+
+```sh
+npm run evaluate:nfl --workspace=@pickler/agent-service -- --all-six --attempt citation-fix --case clear-edge
+```
+
+Omit `--case` to evaluate all six. Failed evaluations preserve the rejected assessment, safe step diagnostics and reported usage in ignored local files. Expected-action mismatches return a nonzero exit status even when the output is structurally valid. A valid schema does not imply that the decision matches the expected scenario: inspect `matches` and the policy verdict separately.
+
+See [live validation](NFL-LIVE-VALIDATION.md) for the reproduced failure and real-run results, and [sports source assessment](NFL-SOURCES.md) for provider tradeoffs.
