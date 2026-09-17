@@ -98,6 +98,9 @@ export function createModel(env: Environment): ResearchModel & { check(): Promis
               maxSteps: input.limits.steps - 1,
               abortSignal: input.signal,
               modelSettings: { maxOutputTokens: input.limits.outputTokens },
+              prepareStep: async () => {
+                await input.beforeStep?.();
+              },
               onStepFinish: async (step) => {
                 await input.onUsage(step.usage);
               },
