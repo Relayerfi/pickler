@@ -6,6 +6,8 @@ import {
   type MarketData,
   type Category,
   type OrderBook,
+  type PaperConditions,
+  type PaperMarketData,
 } from "@pickler/core";
 import { providerJson } from "../research/http.js";
 const tag = z.object({ id: z.string().regex(/^\d+$/), label: z.string().min(1) });
@@ -102,7 +104,7 @@ function mapMarket(m: z.infer<typeof wireMarket>, categories: string[]): Market 
   };
 }
 
-export class PolymarketData implements MarketData {
+export class PolymarketData implements MarketData, PaperMarketData {
   constructor(private readonly fetcher: typeof fetch = fetch) {}
   private getJson(path: string, signal: AbortSignal) {
     return providerJson(`https://gamma-api.polymarket.com${path}`, {}, signal, this.fetcher);
@@ -185,6 +187,51 @@ export class PolymarketData implements MarketData {
       row,
       tags.map((t) => t.id),
     );
+  }
+
+  async conditions(
+    marketId: string,
+    outcomeId: string,
+    signal: AbortSignal,
+  ): Promise<PaperConditions> {
+    if (!/^\d+$/.test(marketId) || !/^\d+$/.test(outcomeId)) {
+      throw new PilotError("INVALID_INPUT", "Invalid market or outcome");
+    }
+    const schema = wireMarket.extend({
+      feesEnabled: z.boolean(),
+      feeSchedule: z
+        .object({
+          rate: z.number().finite().min(0).max(1),
+          exponent: z.literal(1),
+          takerOnly: z.boolean(),
+        })
+        .nullish(),
+      orderPriceMinTickSize: z.number().finite().positive().lt(1),
+      orderMinSize: z.number().finite().nonnegative(),
+    });
+    const row = parse(schema, await this.getJson(`/markets/${marketId}`, signal));
+    const market = mapMarket(row, []);
+    if (
+      row.id !== marketId ||
+      !market.active ||
+      !market.outcomes.some((o) => o.id === outcomeId) ||
+      (row.feesEnabled && !row.feeSchedule)
+    ) {
+      throw new PilotError(
+        "PAPER_INVALID_CONDITIONS",
+        "Missing or inconsistent trading conditions",
+      );
+    }
+    return {
+      marketId,
+      outcomeId,
+      observedAt: new Date().toISOString(),
+      minimumNotional: String(row.orderMinSize),
+      tickSize: String(row.orderPriceMinTickSize),
+      feeRate: row.feesEnabled ? String(row.feeSchedule!.rate) : "0",
+      feeExponent: 1,
+      provenance: `https://gamma-api.polymarket.com/markets/${marketId}`,
+    };
   }
 
   async book(outcomeId: string, signal: AbortSignal): Promise<OrderBook> {
