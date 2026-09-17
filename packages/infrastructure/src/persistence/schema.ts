@@ -127,3 +127,24 @@ export const executionPolicy = pickler
     ],
   )
   .enableRLS();
+
+// Public normalized data; never store credentials, tenant profiles or generated research here.
+export const providerCache = pickler
+  .table("provider_cache", {
+    key: text("key").primaryKey(),
+    value: jsonb("value").$type<unknown>().notNull(),
+    retrievedAt: text("retrieved_at").notNull(),
+    expiresAt: milliseconds("expires_at").notNull(),
+  })
+  .enableRLS();
+export const providerQuotas = pickler
+  .table(
+    "provider_quotas",
+    {
+      key: text("key").notNull(),
+      windowStart: text("window_start").notNull(),
+      used: integer("used").notNull(),
+    },
+    (t) => [primaryKey({ columns: [t.key, t.windowStart] })],
+  )
+  .enableRLS();
