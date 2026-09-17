@@ -1,11 +1,25 @@
 import { createTool } from "@mastra/core/tools";
 import { z } from "zod";
-import type { ResearchTools } from "@pickler/core";
+import { PLUGINS, type ResearchTools } from "@pickler/core";
 
-export const plugins = [
-  { id: "research", version: "1.0.0", tools: ["searchWeb", "readPage"] },
-  { id: "prediction-markets", version: "1.0.0", tools: ["getMarketRules", "getOrderBook"] },
-] as const;
+export const plugins = PLUGINS.map((plugin) => ({
+  ...plugin,
+  credentialVariables:
+    plugin.id === "exa"
+      ? ["EXA_API_KEY"]
+      : plugin.id === "balldontlie"
+        ? ["BALLDONTLIE_API_KEY"]
+        : plugin.id === "the-odds-api"
+          ? ["THE_ODDS_API_KEY"]
+          : [],
+  limits:
+    plugin.id === "balldontlie"
+      ? { requestsPerRun: 6, requestsPerMinute: 5 }
+      : plugin.id === "the-odds-api"
+        ? { requestsPerRun: 2, monthlyCredits: 500 }
+        : {},
+  connectionCheck: `/agents/:id/plugins/${plugin.id}/check`,
+}));
 const sourceSchema = z.object({
   id: z.string(),
   url: z.string().url(),
@@ -17,6 +31,8 @@ const sourceSchema = z.object({
   truncated: z.boolean(),
   requestedUrl: z.string().url().optional(),
   provenance: z.enum(["search", "resolution-rule-link"]).optional(),
+  pluginVersion: z.string().optional(),
+  externalId: z.string().optional(),
   providerUsage: z.unknown().optional(),
 });
 const marketSchema = z.object({
@@ -43,7 +59,30 @@ const bookSchema = z.object({
 
 /** Closed registry of reviewed code. No downloaded or model-selected executable plugins. */
 export function buildTools(capabilities: Partial<ResearchTools>) {
+  const contextSchema = z
+    .object({
+      status: z.enum(["available", "no_coverage", "stale"]),
+      sources: z.array(sourceSchema),
+      usage: z.unknown().optional(),
+    })
+    .strict();
+  const sportsTools = Object.fromEntries(
+    (["getSportsContext", "getExternalOdds"] as const)
+      .filter((name) => capabilities[name])
+      .map((name) => [
+        name,
+        createTool({
+          id: name,
+          description:
+            "Read structured NFL context for the selected game. External odds are reference data, not a forecast; rules may differ.",
+          inputSchema: z.object({}).strict(),
+          outputSchema: contextSchema,
+          execute: async () => contextSchema.parse(await capabilities[name]!()),
+        }),
+      ]),
+  );
   return {
+    ...sportsTools,
     ...(capabilities.searchWeb
       ? {
           searchWeb: createTool({
