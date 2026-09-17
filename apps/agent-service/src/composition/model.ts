@@ -1,10 +1,15 @@
+import { generalDecisionSystemPrompt } from "../prompts/general-decision-system";
 import { diagnoseModel } from "./model-probe";
 import { noopLogger } from "@mastra/core/logger";
 import { Agent } from "@mastra/core/agent";
 import { createTool } from "@mastra/core/tools";
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import { z } from "zod";
-import { modelAssessmentSchema, nflAssessmentSchema } from "@pickler/api-schema";
+import {
+  modelAssessmentSchema,
+  nflAssessmentSchema,
+  generalAssessmentSchema,
+} from "@pickler/api-schema";
 import { PilotError, type ResearchModel, type Market } from "@pickler/core";
 import { nflDecisionSystemPrompt } from "../prompts/nfl-decision-system";
 import { decisionSystemPrompt } from "../prompts/decision-system";
@@ -55,6 +60,7 @@ export function createModel(env: Environment): ResearchModel & {
         marketSelection: marketSelectionSystemPrompt,
         decision: decisionSystemPrompt,
         nflDecision: nflDecisionSystemPrompt,
+        generalDecision: generalDecisionSystemPrompt,
       },
     }),
     async select(
@@ -143,7 +149,12 @@ export function createModel(env: Environment): ResearchModel & {
       }
     },
     async research(input) {
-      const assessmentSchema = input.protocol ? nflAssessmentSchema : modelAssessmentSchema;
+      const assessmentSchema =
+        input.protocol === "general-market-v1"
+          ? generalAssessmentSchema
+          : input.protocol === "nfl-winner-v1"
+            ? nflAssessmentSchema
+            : modelAssessmentSchema;
       const agent = new Agent({
         maxRetries: 0,
         id: "researcher",
@@ -235,9 +246,12 @@ export function createModel(env: Environment): ResearchModel & {
           maxRetries: 0,
           id: "research-decision",
           name: "Research decision",
-          instructions: input.protocol
-            ? nflDecisionSystemPrompt.instructions
-            : decisionSystemPrompt.instructions,
+          instructions:
+            input.protocol === "general-market-v1"
+              ? generalDecisionSystemPrompt.instructions
+              : input.protocol === "nfl-winner-v1"
+                ? nflDecisionSystemPrompt.instructions
+                : decisionSystemPrompt.instructions,
           model,
         });
         finalizer.__setLogger(noopLogger);
