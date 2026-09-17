@@ -1,5 +1,11 @@
 import { PLUGINS, effectivePlugins, requireTool, toolEnabled, pluginEnabled } from "./plugins.js";
-import { nflMarketEligible, validateReport, uniqueSources, type SportsData } from "./nfl.js";
+import {
+  nflMarketEligible,
+  validateReport,
+  uniqueSources,
+  researchReferences,
+  type SportsData,
+} from "./nfl.js";
 import { marketExclusion } from "./eligibility.js";
 import { publicSourceUrl } from "./source-url.js";
 import { evaluateDecision } from "./decision-policy.js";
@@ -331,7 +337,13 @@ export function createResearchRunner(deps: {
           }
         },
         selectionSteps: run.marketId ? 0 : 1,
-        evidence: () => ({ sources: [...sources.values()], quotes }),
+        evidence: () => ({
+          sources: [...sources.values()],
+          quotes,
+          ...(run.config.researchProtocol
+            ? { references: researchReferences(market, quotes, availability) }
+            : {}),
+        }),
         onDiagnostic: (data) => event("model_diagnostic", data),
         market,
         profile: run.config.profile,
@@ -346,6 +358,9 @@ export function createResearchRunner(deps: {
         throw new PilotError("PROVIDER_FAILURE", "A provider failed; research is incomplete");
       }
       const decision = result.decision;
+      if (run.config.researchProtocol) {
+        await event("research_references", researchReferences(market, quotes, availability));
+      }
       await event("model_assessment", decision);
       let observedPrice: string | null = null;
       if (
@@ -409,7 +424,12 @@ export function createResearchRunner(deps: {
         now(),
       );
       const report = run.config.researchProtocol
-        ? validateReport(decision, market, [...sources.values()])
+        ? validateReport(
+            decision,
+            market,
+            [...sources.values()],
+            researchReferences(market, quotes, availability),
+          )
         : undefined;
       const finalDecision = report
         ? {
