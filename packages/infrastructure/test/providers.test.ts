@@ -123,3 +123,14 @@ test("empty Exa search preserves reported usage without fabricating evidence", a
 
   assert.deepEqual(result, { sources: [], usage: { total: 0.01 } });
 });
+
+test("provider redirects are rejected without forwarding credentials", async () => {
+  let calls = 0;
+  const exa = new ExaResearch("test-only", async (_url, init) => {
+    calls++;
+    assert.equal(init?.redirect, "manual");
+    return new Response(null, { status: 302, headers: { Location: "https://example.com" } });
+  });
+  await assert.rejects(exa.search("probe", signal()), { code: "PROVIDER_HTTP_302" });
+  assert.equal(calls, 1);
+});
