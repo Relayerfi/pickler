@@ -1,7 +1,14 @@
 import { createHash } from "node:crypto";
-import { createResearchRunner, effectivePlugins, PilotError, type PluginId } from "@pickler/core";
+import {
+  createResearchRunner,
+  createPaperService,
+  effectivePlugins,
+  PilotError,
+  type PluginId,
+} from "@pickler/core";
 import {
   PostgresResearchStore,
+  PostgresPaperStore,
   ExaResearch,
   PolymarketData,
   BallDontLieSports,
@@ -39,6 +46,7 @@ export async function createContainer(env = readEnv()) {
     env,
     repository,
     markets,
+    paper: createPaperService(new PostgresPaperStore(repository.pool), markets),
     execute: createResearchRunner({
       repository,
       search,
@@ -69,6 +77,10 @@ export async function createContainer(env = readEnv()) {
         await markets.categories(signal);
       } else if (plugin === "exa") {
         await search.search("NFL official schedule", signal);
+      } else if (plugin === "paper-trading") {
+        if (!effectivePlugins(agent.config).enabled.includes("polymarket")) {
+          throw new PilotError("PLUGIN_DISABLED", "Paper requires Polymarket");
+        }
       } else {
         throw new PilotError("INVALID_INPUT", "Unknown research plugin");
       }
