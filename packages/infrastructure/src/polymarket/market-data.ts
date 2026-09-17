@@ -1,6 +1,7 @@
 import { z } from "zod";
 import {
   PilotError,
+  publicSourceUrl,
   type Market,
   type MarketData,
   type Category,
@@ -17,6 +18,9 @@ const wireMarket = z.object({
   enableOrderBook: z.boolean().optional(),
   acceptingOrders: z.boolean().optional(),
   endDate: z.string().nullish(),
+  gameStartTime: z.string().nullish(),
+  sportsMarketType: z.string().nullish(),
+  resolutionSource: z.string().nullish(),
   liquidityNum: z.number().nonnegative().nullish(),
   outcomes: z.string(),
   clobTokenIds: z.string(),
@@ -36,6 +40,26 @@ function parse<T>(schema: z.ZodType<T>, data: unknown): T {
     throw new PilotError("INVALID_PROVIDER_RESPONSE", "Invalid Polymarket response");
   }
   return result.data;
+}
+
+/** Gamma supplies PostgreSQL timestamps such as 2026-09-18 00:15:00+00. */
+function parseGameStart(value: string | null | undefined): string | null {
+  if (
+    !value ||
+    !/^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}(?::?\d{2})?)$/.test(value)
+  ) {
+    return null;
+  }
+  let normalized = value.replace(" ", "T");
+  if (/[+-]\d{2}$/.test(normalized)) {
+    normalized += ":00";
+  }
+  normalized = normalized.replace(/([+-]\d{2})(\d{2})$/, "$1:$2");
+  if (!z.iso.datetime({ offset: true }).safeParse(normalized).success) {
+    return null;
+  }
+  const timestamp = Date.parse(normalized);
+  return Number.isFinite(timestamp) ? new Date(timestamp).toISOString() : null;
 }
 
 function mapMarket(m: z.infer<typeof wireMarket>, categories: string[]): Market {
@@ -63,6 +87,16 @@ function mapMarket(m: z.infer<typeof wireMarket>, categories: string[]): Market 
     categoryIds: categories,
     active: m.active && !m.closed && m.enableOrderBook !== false && m.acceptingOrders !== false,
     closesAt: m.endDate ?? null,
+    startsAt: parseGameStart(m.gameStartTime),
+    timingSource: m.gameStartTime ? "polymarket.gameStartTime" : null,
+    sportsMarketType: m.sportsMarketType ?? null,
+    resolutionUrls: [
+      ...new Set(
+        (`${m.description} ${m.resolutionSource ?? ""}`.match(/https?:\/\/[^\s<>"'\])]+/g) ?? [])
+          .map((url) => publicSourceUrl(url.replace(/[.,;]+$/, "")))
+          .filter((url): url is string => url !== null),
+      ),
+    ].slice(0, 20),
     liquidity: m.liquidityNum ?? 0,
     outcomes: ids.map((id, i) => ({ id, label: labels[i]! })),
   };
@@ -82,7 +116,11 @@ export class PolymarketData implements MarketData {
     }));
   }
 
-  async list(categoryIds: string[], signal: AbortSignal): Promise<Market[]> {
+  async list(
+    categoryIds: string[],
+    signal: AbortSignal,
+    report?: (data: unknown) => Promise<void>,
+  ): Promise<Market[]> {
     if (
       !categoryIds.length ||
       categoryIds.length > 10 ||
@@ -91,14 +129,28 @@ export class PolymarketData implements MarketData {
       throw new PilotError("CATEGORIES_REQUIRED", "Select categories");
     }
     const candidates = new Map<string, Market>();
-    for (const id of categoryIds) {
+    const offsets = new Map(categoryIds.map((id) => [id, 0]));
+    const exhausted = new Set<string>();
+    let pages = 0;
+    let cursor = 0;
+    while (pages < 5 && exhausted.size < categoryIds.length) {
+      const id = categoryIds[cursor++ % categoryIds.length]!;
+      if (exhausted.has(id)) {
+        continue;
+      }
+      const offset = offsets.get(id)!;
       const rows = parse(
         z.array(wireMarket).max(20),
         await this.getJson(
-          `/markets?tag_id=${id}&closed=false&active=true&limit=20&order=liquidityNum&ascending=false&include_tag=true`,
+          `/markets?tag_id=${id}&closed=false&active=true&limit=20&offset=${offset}&order=liquidityNum&ascending=false&include_tag=true`,
           signal,
         ),
       );
+      pages++;
+      offsets.set(id, offset + 20);
+      if (rows.length < 20) {
+        exhausted.add(id);
+      }
       for (const row of rows) {
         // The filter is provider provenance; independently revalidate tags on the selected market.
         const old = candidates.get(row.id);
@@ -110,10 +162,14 @@ export class PolymarketData implements MarketData {
         );
       }
     }
-    return [...candidates.values()]
-      .filter((m) => m.active)
-      .sort((a, b) => b.liquidity - a.liquidity)
-      .slice(0, 20);
+    await report?.({
+      pages,
+      rawCandidates: candidates.size,
+      pageLimit: 5,
+      exhaustedBudget: pages === 5,
+      unvisitedCategories: categoryIds.filter((id) => offsets.get(id) === 0),
+    });
+    return [...candidates.values()].sort((a, b) => b.liquidity - a.liquidity);
   }
 
   async get(id: string, signal: AbortSignal): Promise<Market> {

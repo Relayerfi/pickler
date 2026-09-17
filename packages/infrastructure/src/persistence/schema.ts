@@ -50,6 +50,8 @@ export const runs = pickler
       status: text("status").$type<RunRecord["status"]>().notNull(),
       createdAt: milliseconds("created_at").notNull(),
       startedAt: milliseconds("started_at"),
+      leaseOwner: text("lease_owner"),
+      leaseExpiresAt: milliseconds("lease_expires_at"),
       finishedAt: milliseconds("finished_at"),
       configVersion: integer("config_version").notNull(),
       config: jsonb("config").$type<AgentConfig>().notNull(),
@@ -72,6 +74,13 @@ export const runs = pickler
       check(
         "run_status",
         sql`${t.status} in ('queued','running','completed','failed','cancelled')`,
+      ),
+      index("expired_leases")
+        .on(t.leaseExpiresAt)
+        .where(sql`${t.status} = 'running'`),
+      check(
+        "running_requires_lease",
+        sql`${t.status} <> 'running' OR (${t.leaseOwner} IS NOT NULL AND ${t.leaseExpiresAt} IS NOT NULL)`,
       ),
       check("run_trigger", sql`${t.trigger} in ('manual','schedule')`),
     ],
@@ -99,4 +108,22 @@ export const metadata = pickler
     key: text("key").primaryKey(),
     value: text("value").notNull(),
   })
+  .enableRLS();
+
+export const executionPolicy = pickler
+  .table(
+    "execution_policy",
+    {
+      id: integer("id").primaryKey().default(1),
+      globalLimit: integer("global_limit").notNull().default(5),
+      tenantLimit: integer("tenant_limit").notNull().default(2),
+    },
+    (t) => [
+      check("singleton_policy", sql`${t.id} = 1`),
+      check(
+        "valid_execution_limits",
+        sql`${t.globalLimit} BETWEEN 1 AND 250 AND ${t.tenantLimit} BETWEEN 1 AND ${t.globalLimit}`,
+      ),
+    ],
+  )
   .enableRLS();
