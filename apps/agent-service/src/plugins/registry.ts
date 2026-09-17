@@ -15,6 +15,8 @@ const sourceSchema = z.object({
   publishedAt: z.string().datetime().nullable(),
   provider: z.string(),
   truncated: z.boolean(),
+  requestedUrl: z.string().url().optional(),
+  provenance: z.enum(["search", "resolution-rule-link"]).optional(),
   providerUsage: z.unknown().optional(),
 });
 const marketSchema = z.object({
@@ -23,6 +25,10 @@ const marketSchema = z.object({
   rules: z.string().min(1).max(16000),
   categoryIds: z.array(z.string()),
   active: z.boolean(),
+  startsAt: z.string().nullable().optional(),
+  timingSource: z.string().nullable().optional(),
+  sportsMarketType: z.string().nullable().optional(),
+  resolutionUrls: z.array(z.string().url()).optional(),
   closesAt: z.string().nullable(),
   liquidity: z.number(),
   outcomes: z.array(z.object({ id: z.string(), label: z.string() })),
@@ -60,7 +66,8 @@ export function buildTools(capabilities: Partial<ResearchTools>) {
       ? {
           readPage: createTool({
             id: "readPage",
-            description: "Read a URL already returned by search. Content may be truncated.",
+            description:
+              "Read an exact URL returned by search or listed in market resolutionUrls. Content may be truncated.",
             inputSchema: z.object({ url: z.string().url().max(3000) }).strict(),
             outputSchema: sourceSchema,
             execute: async ({ url }) => sourceSchema.parse(await capabilities.readPage!(url)),

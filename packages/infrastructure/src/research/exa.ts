@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { z } from "zod";
 import {
   PilotError,
+  publicSourceUrl,
   type WebSearch,
   type PageReader,
   type Source,
@@ -42,8 +43,8 @@ export class ExaResearch implements WebSearch, PageReader {
       throw new PilotError("INVALID_PROVIDER_RESPONSE", "Exa returned incomplete evidence");
     }
     const sources = parsed.data.results.map((item, index) => {
-      const url = new URL(item.url);
-      if (!["https:", "http:"].includes(url.protocol) || url.username || url.password) {
+      const url = publicSourceUrl(item.url);
+      if (!url) {
         throw new PilotError("INVALID_PROVIDER_RESPONSE", "Invalid source URL");
       }
       const date = item.publishedDate;
@@ -74,11 +75,11 @@ export class ExaResearch implements WebSearch, PageReader {
   }
 
   async read(url: string, signal: AbortSignal): Promise<Source> {
-    if (!z.string().url().safeParse(url).success || !/^https?:\/\//.test(url)) {
+    if (!publicSourceUrl(url)) {
       throw new PilotError("INVALID_INPUT", "Invalid page URL");
     }
     const result = await this.call("contents", { urls: [url], text: true }, signal);
-    const source = result.sources.find((s) => s.url === url);
+    const source = result.sources.find((s) => publicSourceUrl(s.url) === publicSourceUrl(url));
     if (!source) {
       throw new PilotError("INVALID_PROVIDER_RESPONSE", "Exa did not return the requested page");
     }

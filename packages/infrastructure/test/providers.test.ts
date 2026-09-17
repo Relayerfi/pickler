@@ -134,3 +134,56 @@ test("provider redirects are rejected without forwarding credentials", async () 
   await assert.rejects(exa.search("probe", signal()), { code: "PROVIDER_HTTP_302" });
   assert.equal(calls, 1);
 });
+
+test("discovery shares five pages across categories, preserving verified start and exact rule links", async () => {
+  const paths: URL[] = [];
+  const reports: unknown[] = [];
+  const provider = new PolymarketData(async (input) => {
+    const url = new URL(String(input));
+    paths.push(url);
+    return Response.json(
+      Array.from({ length: 20 }, (_, index) => ({
+        id: String(paths.length * 20 + index),
+        question: "Game",
+        active: true,
+        closed: false,
+        description: "Resolve using https://example.com/rules. Never use http://127.0.0.1/private",
+        resolutionSource: "https://scores.example.org/event#result",
+        outcomes: '["Yes","No"]',
+        clobTokenIds: '["99","100"]',
+        liquidityNum: index,
+        gameStartTime:
+          index === 0
+            ? "2026-09-18 00:15:00+00"
+            : index === 2
+              ? "2026-02-31T00:15:00Z"
+              : "2026-09-18 00:15:00",
+        endDate: "2026-09-20T00:00:00Z",
+        sportsMarketType: "moneyline",
+      })),
+    );
+  });
+  const candidates = await provider.list(["1", "2"], signal(), async (data) => {
+    reports.push(data);
+  });
+  assert.equal(paths.length, 5);
+  assert.equal(candidates.length, 100);
+  assert.deepEqual(
+    paths.map((url) => [url.searchParams.get("tag_id"), url.searchParams.get("offset")]),
+    [
+      ["1", "0"],
+      ["2", "0"],
+      ["1", "20"],
+      ["2", "20"],
+      ["1", "40"],
+    ],
+  );
+  assert.equal(candidates.find((m) => m.id === "20")?.startsAt, "2026-09-18T00:15:00.000Z");
+  assert.equal(candidates.find((m) => m.id === "21")?.startsAt, null);
+  assert.equal(candidates.find((m) => m.id === "22")?.startsAt, null);
+  assert.deepEqual(candidates[0]?.resolutionUrls, [
+    "https://example.com/rules",
+    "https://scores.example.org/event",
+  ]);
+  assert.equal((reports[0] as { exhaustedBudget: boolean }).exhaustedBudget, true);
+});
