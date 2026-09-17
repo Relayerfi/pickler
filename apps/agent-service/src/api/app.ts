@@ -33,6 +33,7 @@ export function createApi(deps: {
   markets: MarketData;
   tokens: Record<string, string>;
   checkConnections(): Promise<unknown>;
+  notifyQueued?(): Promise<void>;
 }) {
   const api = new Hono<{ Variables: { tenant: string } }>();
   api.use("*", bodyLimit({ maxSize: 16_384 }));
@@ -96,6 +97,14 @@ export function createApi(deps: {
       body.marketId ?? null,
       Date.now(),
     );
+    if (run.status === "queued" && deps.notifyQueued) {
+      try {
+        await deps.notifyQueued();
+      } catch {
+        // Admission is durable. The scheduler will retry the wakeup, not the research.
+        console.error("Research wakeup failed; durable job awaits reconciliation");
+      }
+    }
     return c.json({ runId: run.id, status: run.status }, 202);
   });
   api.get("/runs/:id", async (c) =>
