@@ -93,12 +93,25 @@ for (const disabled of [false, true]) {
       select: async () => {
         throw new Error("Manual fixture");
       },
-      research: async ({ tools, availability }) => {
+      research: async ({ tools, availability, evidence }) => {
         modelCalls++;
         assert.equal(tools.getSportsContext, undefined);
         assert.equal(availability?.balldontlie, "disabled");
         await tools.searchWeb!("support", "supporting");
         await tools.searchWeb!("against", "contradicting");
+        const references = evidence!().references!;
+        assert.equal(references.find((r) => r.kind === "availability")!.data !== undefined, true);
+        for (const section of assessment.report!.sections) {
+          const reference = references.find(
+            (r) =>
+              r.sections.includes(section.section) &&
+              (section.section !== "quotes" || r.kind === "quote"),
+          );
+          if (reference) {
+            section.status = "supported";
+            section.sourceIds = [reference.id];
+          }
+        }
         return { decision: assessment, usage: {} };
       },
     };
@@ -137,6 +150,11 @@ for (const disabled of [false, true]) {
       assert.ok(result.decision && "forecast" in result.decision);
       assert.equal(result.decision.schemaVersion, 3);
       assert.equal(result.decision.forecast.outcomeId, "2");
+      const events = await repository.events("alpha", run.id);
+      const references = events.find((event) => event.type === "research_references");
+      assert.ok(references);
+      assert.ok(JSON.stringify(references.data).includes("context:market:1"));
+      await assert.rejects(repository.events("beta", run.id), { code: "NOT_FOUND" });
     }
     await assert.rejects(repository.run("beta", run.id), { code: "NOT_FOUND" });
   });
