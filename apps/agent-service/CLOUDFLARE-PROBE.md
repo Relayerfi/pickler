@@ -53,21 +53,32 @@ To reproduce process interruption without paid calls, start `node apps/agent-ser
 
 ## Remote experiment boundary
 
-`wrangler.probe.jsonc` defines the dedicated temporary Worker `pickler-mastra-runtime-probe`. Every endpoint requires `Authorization: Bearer PROBE_TOKEN`; no Studio or tenant-token API is exposed. Missing authentication returns 401. Provider calls never happen at startup.
+`wrangler.probe.jsonc` defines the dedicated development Worker `pickler-mastra-runtime-probe`. Every endpoint requires `Authorization: Bearer PROBE_TOKEN`; no Studio or tenant-token API is exposed. Missing authentication returns 401. Provider calls never happen at startup.
 
-A remote `/research-ephemeral` request executes the same core runner with real providers and request-local records. It returns all evidence to the caller but **does not persist it remotely**, enforce production tenant admission, or recover interrupted requests. This endpoint is only suitable for a temporary operator-controlled compatibility test. `/research` and `/interrupt` instead require the isolated PostgreSQL connection; local PostgreSQL cannot be reached from the deployed Worker.
+A remote `/research-ephemeral` request executes the same core runner with real providers and request-local records. It returns all evidence to the caller but **does not persist it remotely**, enforce production tenant admission, or recover interrupted requests. This endpoint is only suitable for an operator-controlled compatibility test. `/research` and `/interrupt` instead require the isolated PostgreSQL connection; local PostgreSQL cannot be reached from the deployed Worker.
 
-Before remote provider calls, obtain explicit authorization to put `MODEL_API_KEY` and `EXA_API_KEY` into the temporary Worker's secrets. Prepare an ignored `.data/cf-remote-secrets.json` containing only `MODEL_BASE_URL`, `MODEL_ID`, `MODEL_API_KEY`, `EXA_API_KEY`, and a fresh `PROBE_TOKEN`. Never upload database URLs or the pilot's tenant tokens for the ephemeral test.
+On 2026-09-17, the operator explicitly authorized uploading `MODEL_API_KEY` and `EXA_API_KEY` to this Worker and retaining both the deployment and its secrets for continued development. Do not delete them as automatic probe cleanup. Prepare an ignored `.data/cf-remote-secrets.json` containing only `MODEL_BASE_URL`, `MODEL_ID`, `MODEL_API_KEY`, `EXA_API_KEY`, and a fresh `PROBE_TOKEN`. Never upload database URLs or the pilot's tenant tokens for the ephemeral test.
 
 ```sh
 npx wrangler deploy --config apps/agent-service/wrangler.probe.jsonc
 npx wrangler secret bulk apps/agent-service/.data/cf-remote-secrets.json --config apps/agent-service/wrangler.probe.jsonc
 PROBE_BASE_URL=https://YOUR-PROBE.YOUR-SUBDOMAIN.workers.dev node apps/agent-service/src/cloudflare/client.mjs research-ephemeral
-# Remove the temporary Worker and its secrets after verification:
-npx wrangler delete --config apps/agent-service/wrangler.probe.jsonc
 ```
 
-Cloudflare deployment succeeded and its unauthenticated endpoint returned HTTP 401. Real remote provider calls remain pending explicit secret-upload authorization. This is separate from the completed local workerd investigation. Do not treat a successful bundle or deployment as a successful remote provider run.
+## Verified on the deployed Cloudflare Worker
+
+After explicit authorization on 2026-09-17, the configured model and Exa credentials were stored as Cloudflare secrets alongside model configuration and a dedicated probe token. No database credentials or normal tenant tokens were uploaded. The operator requested that the Worker and secrets remain deployed for continued development.
+
+Remote run `fc315df0-3a11-419e-9890-5052b18cd169` completed with HTTP 200 in 89.002 seconds at `https://pickler-mastra-runtime-probe.gilbertsahumada.workers.dev`. It used the actual Mastra model adapter and core runner on Cloudflare, without Containers or Cloudflare Workflows, to research whether Vinicius Junior wins the 2026 Ballon d'Or.
+
+- Valid decision v2: model `ABSTAIN`, final `ABSTAIN`, policy reason `MODEL_ABSTAINED`.
+- Three real Exa searches; all 11 cited source IDs match retrieved evidence. No page-reader calls occurred.
+- Original assessment and policy evaluation match their corresponding returned events structurally.
+- Reported research usage: 50,606 input and 6,187 output tokens, including 4,553 reasoning tokens; selection usage is separate.
+- Unauthenticated health access returned 401; authenticated access returned 200 while research was running.
+- Full response saved to the operator's ignored `.data/cf-remote-research-ephemeral-1789635993793.json`.
+
+This verifies actual remote execution with real providers. The HTTP request remained open. Evidence was returned and saved locally by the client, not persisted in remote PostgreSQL. Hosted Supabase connectivity, detached execution, crash resumption and production tenant/concurrency controls remain unverified. The retained deployment is still an authenticated development probe, not a production API.
 
 ## What remains before production
 
