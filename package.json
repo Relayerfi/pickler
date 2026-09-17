@@ -7,25 +7,41 @@
     "packages/*"
   ],
   "engines": {
-    "node": ">=22.0.0"
+    "node": ">=22.22.0"
   },
   "scripts": {
-    "dev": "turbo run dev",
+    "dev": "turbo run dev --filter=@pickler/web",
     "build": "turbo run build",
     "typecheck": "turbo run typecheck",
     "lint": "eslint .",
-    "test": "node --import tsx --test packages/core/test/*.test.ts",
+    "test": "npm run build:shared && node --import tsx --test packages/core/test/*.test.ts packages/infrastructure/test/*.test.ts apps/agent-service/test/*.test.ts",
     "contracts:build": "forge build --root contracts",
-    "contracts:test": "forge test --root contracts"
+    "contracts:test": "forge test --root contracts",
+    "dev:agent": "npm run build:shared && npm run dev --workspace=@pickler/agent-service",
+    "build:shared": "turbo run build --filter=@pickler/core --filter=@pickler/infrastructure --filter=@pickler/api-schema",
+    "agent": "npm run cli --workspace=@pickler/agent-service --",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint:fix": "eslint . --fix",
+    "db:generate": "npm run db:generate --workspace=@pickler/infrastructure",
+    "db:migrate": "npm run db:migrate --workspace=@pickler/infrastructure",
+    "db:up": "docker compose up -d --wait postgres",
+    "db:down": "docker compose stop postgres",
+    "supabase:start": "supabase start",
+    "supabase:stop": "supabase stop",
+    "supabase:status": "supabase status",
+    "test:supabase": "TEST_DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54522/postgres npm test"
   },
   "devDependencies": {
-    "turbo": "^2.10.13",
-    "typescript": "^6.0.3",
-    "tsx": "^4.23.13",
-    "eslint": "^9.0.0",
-    "eslint-config-next": "^16.0.0",
     "@types/node": "^22.0.0",
     "@types/react": "^19.0.0",
-    "@types/react-dom": "^19.0.0"
+    "@types/react-dom": "^19.0.0",
+    "eslint": "^9.0.0",
+    "eslint-config-next": "^16.0.0",
+    "eslint-config-prettier": "10.1.8",
+    "prettier": "3.9.7",
+    "tsx": "^4.23.13",
+    "turbo": "^2.10.13",
+    "typescript": "^6.0.3"
   }
 }

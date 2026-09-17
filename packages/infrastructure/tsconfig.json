@@ -1,7 +1,7 @@
 {
   "extends": "@pickler/typescript-config/base.json",
-  "include": [
-    "src/**/*.ts",
-    "src/**/*.tsx"
-  ]
+  "include": ["src/**/*.ts", "test/**/*.ts", "drizzle.config.ts"],
+  "compilerOptions": {
+    "types": ["node"]
+  }
 }

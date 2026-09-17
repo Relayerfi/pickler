@@ -4,9 +4,9 @@ Read [the root instructions](../../AGENTS.md) and [core instructions](../core/AG
 
 ## Responsibility and current state
 
-`@pickler/infrastructure` implements interfaces owned by core. Its only current implementation is `systemClock`, exported from `src/index.ts` and implementing core's `Clock` port. No database, provider SDK, RPC client, or credentials are configured.
+`@pickler/infrastructure` implements interfaces owned by core. It exports `systemClock`, `ExaResearch` (`WebSearch`/`PageReader`), `PolymarketData` (`MarketData`) and `PostgresResearchStore` (scoped configuration, runs, evidence, decisions and job persistence). Constructors accept configuration; no credentials are embedded.
 
-As concrete capabilities are introduced, organize adapters by feature, for example `src/bookings/booking-repository.ts` or `src/blockchain/<capability>.ts`. These are proposed paths, not existing integrations.
+Actual adapters live in `src/research`, `src/polymarket` and `src/persistence`. Business policy comes from core; SQL implements transactional admission, idempotency, claims and scoped access. Drizzle defines tables in `src/persistence/schema.ts` and versioned SQL migrations in `drizzle/`. Admission, configuration, claims and scheduling lock agent rows in transactions. Never retry ambiguous research automatically. New providers must pass capability contract tests. Public runtime exports use compiled `dist`; relative source imports include `.js` extensions.
 
 ## Rules
 
@@ -22,4 +22,8 @@ As concrete capabilities are introduced, organize adapters by feature, for examp
 
 ## Checks
 
-From the root: `npm run typecheck --workspace=@pickler/infrastructure` and `npm run lint`. Add adapter contract tests when real integrations exist, covering failures and timeouts as well as success. There is no infrastructure test script yet; explicitly wire new tests into the root checks. Use `npm run build` when changing exports consumed by Next.js.
+Run `npm test`, `npm run typecheck`, `npm run lint` and `npm run build` from root. Tests in `test/*.test.ts` cover provider normalization/errors, PostgreSQL isolation/concurrency/recovery/schedules, and core research with injected providers. No paid calls occur in tests. Shared package builds precede runtime consumption. Use the private `pickler` schema; Mastra owns the separate `mastra` schema in the same PostgreSQL database. `@pickler/infrastructure/testing` is a test-only helper that creates and removes isolated databases; never import it from runtime code. Run `npm run db:up` before integration tests. Generate schema migrations with `npm run db:generate` and apply them explicitly with `npm run db:migrate`; startup must not migrate Pickler tables.
+
+Decision v2 and uncertainty-policy settings use the existing JSONB columns; no database migration or historical backfill is required. Preserve old decision/config documents on reads. Policy updates use the existing versioned config transaction and disable scheduling. Integration tests verify proposal/final-verdict persistence, policy version snapshots and tenant isolation.
+
+Provider HTTP calls use `redirect: "manual"` and reject all non-success responses, including redirects. This preserves credential isolation and works in both Node.js and Cloudflare Workers, which does not support the `error` redirect mode.
