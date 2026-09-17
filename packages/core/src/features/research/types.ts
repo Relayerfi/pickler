@@ -9,7 +9,14 @@ export const MAX_LIMITS = {
   dailyRuns: 6,
 } as const;
 export type ResearchLimits = { [K in keyof typeof MAX_LIMITS]: number };
+export interface DiscoveryPolicy {
+  version: 1;
+  mode: "open-market" | "pre-event";
+  minLeadMinutes: number;
+  maxHorizonDays: number;
+}
 export interface AgentConfig {
+  discoveryPolicy?: DiscoveryPolicy | undefined;
   limits: ResearchLimits;
   profile: string;
   categoryIds: string[];
@@ -45,6 +52,10 @@ export interface Market {
   categoryIds: string[];
   active: boolean;
   closesAt: string | null;
+  startsAt?: string | null;
+  timingSource?: string | null;
+  sportsMarketType?: string | null;
+  resolutionUrls?: string[];
   liquidity: number;
   outcomes: { id: string; label: string }[];
 }
@@ -66,6 +77,8 @@ export interface Source {
   provider: string;
   truncated: boolean;
   providerUsage?: unknown;
+  requestedUrl?: string;
+  provenance?: "search" | "resolution-rule-link";
 }
 
 export interface LegacyDecision {
@@ -157,7 +170,11 @@ export interface PageReader {
 
 export interface MarketData {
   categories(signal: AbortSignal): Promise<Category[]>;
-  list(categoryIds: string[], signal: AbortSignal): Promise<Market[]>;
+  list(
+    categoryIds: string[],
+    signal: AbortSignal,
+    report?: (data: unknown) => Promise<void>,
+  ): Promise<Market[]>;
   get(id: string, signal: AbortSignal): Promise<Market>;
   book(outcomeId: string, signal: AbortSignal): Promise<OrderBook>;
 }
@@ -184,6 +201,7 @@ export interface ResearchModel {
     signal: AbortSignal,
     limits: ResearchLimits,
     now: string,
+    onDiagnostic?: (data: unknown) => Promise<void>,
   ): Promise<{ marketId: string; reason: string; usage: unknown }>;
   research(input: {
     market: Market;
@@ -193,11 +211,18 @@ export interface ResearchModel {
     limits: ResearchLimits;
     onUsage(usage: unknown): Promise<void>;
     beforeStep?(): Promise<void>;
+    onDiagnostic?(data: unknown): Promise<void>;
+    evidence?(): { sources: Source[]; quotes: OrderBook[] };
+    selectionSteps?: number;
   }): Promise<{ decision: ModelAssessment; usage: unknown }>;
   metadata(): {
     model: string;
     provider: string;
-    prompts: { research: PromptSnapshot; marketSelection: PromptSnapshot };
+    prompts: {
+      research: PromptSnapshot;
+      marketSelection: PromptSnapshot;
+      decision?: PromptSnapshot;
+    };
   };
 }
 
@@ -266,6 +291,20 @@ export function assertUncertaintyPolicy(policy: UncertaintyPolicy): void {
 }
 
 export function assertConfig(config: AgentConfig): void {
+  const discovery = config.discoveryPolicy;
+  if (
+    discovery &&
+    (discovery.version !== 1 ||
+      !["open-market", "pre-event"].includes(discovery.mode) ||
+      !Number.isInteger(discovery.minLeadMinutes) ||
+      discovery.minLeadMinutes < 15 ||
+      discovery.minLeadMinutes > 1440 ||
+      !Number.isInteger(discovery.maxHorizonDays) ||
+      discovery.maxHorizonDays < 1 ||
+      discovery.maxHorizonDays > 7)
+  ) {
+    throw new PilotError("INVALID_INPUT", "Invalid discovery policy");
+  }
   assertUncertaintyPolicy(config.uncertaintyPolicy ?? DEFAULT_UNCERTAINTY_POLICY);
   if (
     !config.limits ||
@@ -298,7 +337,8 @@ export function assertConfig(config: AgentConfig): void {
 }
 
 export interface ModelFailureDetails {
-  stage: "selection" | "research";
+  stage: "selection" | "research" | "decision";
+  validation?: { code: string; path: string }[];
   statusCode?: number;
   finishReason?: string;
   inputTokens?: number;
