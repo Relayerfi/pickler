@@ -18,7 +18,7 @@ import {
 
 /** The only research entry point: API, worker and Studio all dispatch through it. */
 export function createResearchRunner(deps: {
-  repository: Pick<ResearchRepository, "agent" | "event" | "finish">;
+  repository: Pick<ResearchRepository, "agent" | "event" | "finish" | "assertOwnership">;
   model: ResearchModel;
   search: WebSearch;
   reader: PageReader;
@@ -40,6 +40,7 @@ export function createResearchRunner(deps: {
     const event = (type: string, data: unknown) => repo.event(run, type, data, now());
     const guard = async (tool?: ToolName) => {
       signal.throwIfAborted();
+      await repo.assertOwnership(run);
       const current = await repo.agent(run);
       if (current.paused) {
         throw new PilotError("PAUSED", "Agent is paused");
@@ -97,6 +98,7 @@ export function createResearchRunner(deps: {
         if (!candidates.length) {
           throw new PilotError("NO_MARKETS", "No eligible active markets found");
         }
+        await guard();
         const selection = await deps.model.select(
           candidates,
           run.config.profile,
@@ -169,7 +171,9 @@ export function createResearchRunner(deps: {
           return external("quote", () => deps.markets.book(outcomeId, signal));
         };
       }
+      await guard();
       const result = await deps.model.research({
+        beforeStep: () => guard(),
         market,
         profile: run.config.profile,
         tools,
@@ -244,6 +248,10 @@ export function createResearchRunner(deps: {
       await event("policy_evaluation", finalDecision.policyEvaluation);
       await repo.finish(run, finalDecision, null, now());
     } catch (error) {
+      if (error instanceof PilotError && error.code === "LEASE_LOST") {
+        throw error;
+      }
+      await repo.assertOwnership(run);
       if (error instanceof ModelFailure) {
         await event("model_failure", { code: error.code, ...error.details });
       }
