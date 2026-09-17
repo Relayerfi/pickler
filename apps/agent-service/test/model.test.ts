@@ -3,6 +3,7 @@ import { DEFAULT_CONFIG, assertConfig, evaluateDecision } from "@pickler/core";
 import { agentConfigSchema, decisionSchema, modelAssessmentSchema } from "@pickler/api-schema";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
+import { nflDecisionSystemPrompt } from "../src/prompts/nfl-decision-system";
 import { decisionSystemPrompt } from "../src/prompts/decision-system";
 import { researchSystemPrompt } from "../src/prompts/research-system";
 import { marketSelectionSystemPrompt } from "../src/prompts/market-selection-system";
@@ -246,6 +247,7 @@ test("runtime metadata identifies the exact immutable system prompts without cre
     research: researchSystemPrompt,
     marketSelection: marketSelectionSystemPrompt,
     decision: decisionSystemPrompt,
+    nflDecision: nflDecisionSystemPrompt,
   });
   for (const prompt of Object.values(metadata.prompts)) {
     if (prompt.id !== "research-system") {
