@@ -31,7 +31,7 @@ See [README.md](README.md) for setup, [docs/architecture.md](docs/architecture.m
 - Keep Next.js, React, transport objects, database clients, and provider SDKs out of core. Use business-owned interfaces and dependency injection.
 - Keep HTTP DTOs in `api-schema`; keep public on-chain artifacts in `chain`. Neither package carries credentials or server implementation details.
 - Use declared workspace dependencies and public package exports. Do not bypass package boundaries with relative imports into another project's source.
-- The local agent pilot uses Mastra, Exa, Polymarket and PostgreSQL. Provider credentials and the exact OpenAI-compatible model are operator supplied. No trading, wallets, public login, external queue, contracts or Firecrawl integration exists. Do not describe offline tests as a verified live model run.
+- The local agent pilot uses Mastra, Exa, Polymarket and PostgreSQL. Provider credentials and the exact OpenAI-compatible model are operator supplied. No trading, wallets, public login, deployed external queue, contracts or Firecrawl integration exists. A separate local Cloudflare Queue experiment is documented in `apps/agent-service/CLOUDFLARE-BACKGROUND.md`. Do not describe offline tests as a verified live model run.
 
 ## Branch and pull request workflow
 
