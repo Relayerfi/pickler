@@ -239,3 +239,7 @@ The conservative defaults block high uncertainty and any reported missing materi
 Policy fields are configured through the existing agent configuration endpoint or `configure-agent` workflow. The configuration is versioned per agent, copied into new runs, and edits disable scheduling and invalidate old pending work. Omitted policy settings on legacy configs resolve to conservative defaults, recorded in runtime and evaluation events. Legacy decisions remain unversioned, readable and unchanged; they are not retroactively treated as evaluated by the new policy. JSONB storage requires no SQL migration.
 
 For a Vinicius-like proposal with estimate 0.003, range 0.0005–0.01, HIGH uncertainty, missing facts and a price of 0.001, the final action becomes ABSTAIN with `HIGH_UNCERTAINTY`, `MISSING_INFORMATION` and `INSUFFICIENT_CONSERVATIVE_MARGIN`. The original TRADE proposal remains in `modelAssessment`. Inspect `model_assessment` and `policy_evaluation` through the existing run events endpoint. Provider failures, absent quotes and invalid output remain failed runs, not policy abstentions.
+
+## Cloudflare compatibility experiment
+
+See [CLOUDFLARE-PROBE.md](CLOUDFLARE-PROBE.md) for the isolated workerd experiment, verified live local research, interruption behavior and remaining remote/production boundaries. This does not change the normal Studio or worker startup.
