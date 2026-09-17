@@ -40,6 +40,9 @@ if (command === "init") {
     case "agents":
       path = "/agents";
       break;
+    case "market-categories":
+      path = "/market-categories";
+      break;
     case "categories":
       path = "/categories";
       break;
@@ -87,7 +90,7 @@ if (command === "init") {
       break;
     default:
       throw new Error(
-        "Commands: init, agents, categories, check, configure, run, result, events, paper-buy, paper-result, schedule, pause, resume. Each accepts alpha|beta (default alpha).",
+        "Commands: init, agents, categories, market-categories, check, configure, run, result, events, paper-buy, paper-result, schedule, pause, resume. Each accepts alpha|beta (default alpha).",
       );
   }
   const response = await fetch(`http://127.0.0.1:4111/pilot${path}`, {
