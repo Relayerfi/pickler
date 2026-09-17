@@ -20,7 +20,7 @@ test("structured model failures are classified without storing sensitive error f
       error: { name: "AI_NoObjectGeneratedError", cause: { name: "AI_JSONParseError" } },
       code: "MODEL_INVALID_JSON",
     },
-    { error: { name: "AI_TypeValidationError" }, code: "MODEL_INVALID_OUTPUT" },
+    { error: { name: "AI_TypeValidationError" }, code: "MODEL_INVALID_SCHEMA" },
     { error: { name: "AI_NoObjectGeneratedError" }, code: "MODEL_NO_STRUCTURED_OUTPUT" },
     { error: { name: "secret", message: "secret" }, code: "MODEL_FAILURE" },
   ];
@@ -86,7 +86,7 @@ test("valid and invalid structured outputs, cancellation, and business errors re
   );
   await assert.rejects(
     validatedModelOutput(async () => ({ object: { marketId: 1 } }), schema, "selection", signal),
-    { code: "MODEL_INVALID_OUTPUT" },
+    { code: "MODEL_INVALID_SCHEMA" },
   );
   await assert.rejects(
     validatedModelOutput(
