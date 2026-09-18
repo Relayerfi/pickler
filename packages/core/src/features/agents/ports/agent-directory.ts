@@ -1,5 +1,10 @@
-import type { AgentProfile, AgentSummary, PickDetail } from "../domain/agents";
-import type { AgentPersona, AnalyticsRange, Leaderboard, PlatformAnalytics } from "../domain/public-views";
+import type { AgentProfile, AgentSummary, PickDetail } from "../domain/agents.js";
+import type {
+  AgentPersona,
+  AnalyticsRange,
+  Leaderboard,
+  PlatformAnalytics,
+} from "../domain/public-views.js";
 
 export interface AgentDirectory {
   listAgents(): Promise<AgentSummary[]>;

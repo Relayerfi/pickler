@@ -25,29 +25,51 @@ export class DecryptionError extends Error {
 
 function toHex(bytes: Uint8Array): string {
   let hex = "";
-  for (const byte of bytes) hex += byte.toString(16).padStart(2, "0");
+  for (const byte of bytes) {
+    hex += byte.toString(16).padStart(2, "0");
+  }
   return hex;
 }
 
 function fromHex(hex: string): Uint8Array<ArrayBuffer> {
-  if (hex.length % 2 !== 0 || /[^0-9a-f]/i.test(hex)) throw new DecryptionError();
+  if (hex.length % 2 !== 0 || /[^0-9a-f]/i.test(hex)) {
+    throw new DecryptionError();
+  }
   const bytes = new Uint8Array(hex.length / 2);
-  for (let i = 0; i < bytes.length; i++) bytes[i] = Number.parseInt(hex.slice(i * 2, i * 2 + 2), 16);
+  for (let i = 0; i < bytes.length; i++) {
+    bytes[i] = Number.parseInt(hex.slice(i * 2, i * 2 + 2), 16);
+  }
   return bytes;
 }
 
 async function deriveKey(secret: string, salt: Uint8Array | string): Promise<CryptoKey> {
-  const raw = await scryptAsync(encoder.encode(secret), typeof salt === "string" ? encoder.encode(salt) : salt, SCRYPT);
-  return crypto.subtle.importKey("raw", new Uint8Array(raw), "AES-GCM", false, ["encrypt", "decrypt"]);
+  const raw = await scryptAsync(
+    encoder.encode(secret),
+    typeof salt === "string" ? encoder.encode(salt) : salt,
+    SCRYPT,
+  );
+  return crypto.subtle.importKey("raw", new Uint8Array(raw), "AES-GCM", false, [
+    "encrypt",
+    "decrypt",
+  ]);
 }
 
-async function open(key: CryptoKey, iv: Uint8Array<ArrayBuffer>, ciphertext: Uint8Array, authTag: Uint8Array): Promise<string> {
+async function open(
+  key: CryptoKey,
+  iv: Uint8Array<ArrayBuffer>,
+  ciphertext: Uint8Array,
+  authTag: Uint8Array,
+): Promise<string> {
   // WebCrypto expects the tag appended to the ciphertext.
   const sealed = new Uint8Array(ciphertext.length + authTag.length);
   sealed.set(ciphertext);
   sealed.set(authTag, ciphertext.length);
   try {
-    const plain = await crypto.subtle.decrypt({ name: "AES-GCM", iv, tagLength: AUTH_TAG_LENGTH * 8 }, key, sealed);
+    const plain = await crypto.subtle.decrypt(
+      { name: "AES-GCM", iv, tagLength: AUTH_TAG_LENGTH * 8 },
+      key,
+      sealed,
+    );
     return decoder.decode(plain);
   } catch (cause) {
     throw new DecryptionError({ cause });
@@ -59,7 +81,13 @@ export async function encryptAes256Gcm(plaintext: string, secret: string): Promi
   const salt = crypto.getRandomValues(new Uint8Array(SALT_LENGTH));
   const iv = crypto.getRandomValues(new Uint8Array(IV_LENGTH));
   const key = await deriveKey(secret, salt);
-  const sealed = new Uint8Array(await crypto.subtle.encrypt({ name: "AES-GCM", iv, tagLength: AUTH_TAG_LENGTH * 8 }, key, encoder.encode(plaintext)));
+  const sealed = new Uint8Array(
+    await crypto.subtle.encrypt(
+      { name: "AES-GCM", iv, tagLength: AUTH_TAG_LENGTH * 8 },
+      key,
+      encoder.encode(plaintext),
+    ),
+  );
   const out = new Uint8Array(SALT_LENGTH + IV_LENGTH + sealed.length);
   out.set(salt);
   out.set(iv, SALT_LENGTH);
@@ -69,7 +97,9 @@ export async function encryptAes256Gcm(plaintext: string, secret: string): Promi
 
 export async function decryptAes256Gcm(ciphertextHex: string, secret: string): Promise<string> {
   const data = fromHex(ciphertextHex);
-  if (data.length < SALT_LENGTH + IV_LENGTH + AUTH_TAG_LENGTH) throw new DecryptionError();
+  if (data.length < SALT_LENGTH + IV_LENGTH + AUTH_TAG_LENGTH) {
+    throw new DecryptionError();
+  }
   const salt = data.subarray(0, SALT_LENGTH);
   const iv = data.slice(SALT_LENGTH, SALT_LENGTH + IV_LENGTH);
   const ciphertext = data.subarray(SALT_LENGTH + IV_LENGTH, data.length - AUTH_TAG_LENGTH);
@@ -78,20 +108,39 @@ export async function decryptAes256Gcm(ciphertextHex: string, secret: string): P
 }
 
 /** Legacy JSON format {"iv","data","tag"} (hex fields) with a static scrypt salt. Read-only. */
-export async function decryptLegacyAes256Gcm(encryptedJson: string, secret: string): Promise<string> {
+export async function decryptLegacyAes256Gcm(
+  encryptedJson: string,
+  secret: string,
+): Promise<string> {
   let parsed: { iv?: unknown; data?: unknown; tag?: unknown };
   try {
     parsed = JSON.parse(encryptedJson) as typeof parsed;
   } catch (cause) {
     throw new DecryptionError({ cause });
   }
-  if (typeof parsed.iv !== "string" || typeof parsed.data !== "string" || typeof parsed.tag !== "string") throw new DecryptionError();
+  if (
+    typeof parsed.iv !== "string" ||
+    typeof parsed.data !== "string" ||
+    typeof parsed.tag !== "string"
+  ) {
+    throw new DecryptionError();
+  }
   return decryptLegacySeparateColumns(parsed.data, parsed.iv, parsed.tag, secret);
 }
 
 /** Legacy format stored across three hex columns with a static scrypt salt. Read-only. */
-export async function decryptLegacySeparateColumns(encryptedHex: string, ivHex: string, authTagHex: string, secret: string): Promise<string> {
-  return open(await deriveKey(secret, LEGACY_STATIC_SALT), fromHex(ivHex), fromHex(encryptedHex), fromHex(authTagHex));
+export async function decryptLegacySeparateColumns(
+  encryptedHex: string,
+  ivHex: string,
+  authTagHex: string,
+  secret: string,
+): Promise<string> {
+  return open(
+    await deriveKey(secret, LEGACY_STATIC_SALT),
+    fromHex(ivHex),
+    fromHex(encryptedHex),
+    fromHex(authTagHex),
+  );
 }
 
 export const isLegacyFormat = (stored: string) => stored.startsWith("{");

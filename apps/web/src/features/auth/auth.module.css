@@ -168,7 +168,9 @@
   font: 700 13px/1 var(--body);
   color: var(--lime-ink);
   cursor: pointer;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 0 26px rgba(200, 240, 58, 0.38);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    0 0 26px rgba(200, 240, 58, 0.38);
 }
 
 .page a.primary,
@@ -652,7 +654,9 @@
 .cellOn {
   border: 1px solid rgba(255, 255, 255, 0.45);
   background: var(--accent);
-  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.4), 0 0 13px rgba(var(--accent-rgb), 0.55);
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.4),
+    0 0 13px rgba(var(--accent-rgb), 0.55);
 }
 
 .dropText strong {
@@ -698,7 +702,11 @@
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: radial-gradient(110% 70% at 50% 0%, rgba(155, 123, 255, 0.18) 0%, rgba(8, 8, 10, 0) 62%);
+  background: radial-gradient(
+    110% 70% at 50% 0%,
+    rgba(155, 123, 255, 0.18) 0%,
+    rgba(8, 8, 10, 0) 62%
+  );
 }
 
 .signinStars {
@@ -709,8 +717,12 @@
   background-image:
     radial-gradient(rgba(255, 255, 255, 0.7) 1px, transparent 1px),
     radial-gradient(rgba(255, 255, 255, 0.45) 1px, transparent 1px);
-  background-size: 120px 120px, 70px 70px;
-  background-position: 0 0, 35px 45px;
+  background-size:
+    120px 120px,
+    70px 70px;
+  background-position:
+    0 0,
+    35px 45px;
   animation: stars 90s linear infinite;
 }
 
@@ -760,7 +772,10 @@
   border-radius: 18px;
   background: rgba(13, 13, 16, 0.82);
   backdrop-filter: blur(18px);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14), 0 24px 60px rgba(0, 0, 0, 0.6), 0 0 50px rgba(155, 123, 255, 0.14);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    0 24px 60px rgba(0, 0, 0, 0.6),
+    0 0 50px rgba(155, 123, 255, 0.14);
 }
 
 .cardTitle {
@@ -976,53 +991,122 @@
 }
 
 @keyframes grid {
-  from { background-position: 0 0, 0 0; }
-  to { background-position: 0 64px, 64px 0; }
+  from {
+    background-position:
+      0 0,
+      0 0;
+  }
+  to {
+    background-position:
+      0 64px,
+      64px 0;
+  }
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-6px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.25; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.25;
+  }
 }
 
 @keyframes fallSpin {
-  0% { transform: translateY(-70px) rotate(0deg); opacity: 0; }
-  9% { opacity: 0.6; }
-  90% { opacity: 0.6; }
-  100% { transform: translateY(860px) rotate(270deg); opacity: 0; }
+  0% {
+    transform: translateY(-70px) rotate(0deg);
+    opacity: 0;
+  }
+  9% {
+    opacity: 0.6;
+  }
+  90% {
+    opacity: 0.6;
+  }
+  100% {
+    transform: translateY(860px) rotate(270deg);
+    opacity: 0;
+  }
 }
 
 @keyframes fall {
-  0% { transform: translateY(-60px); opacity: 0; }
-  9% { opacity: 0.6; }
-  90% { opacity: 0.6; }
-  100% { transform: translateY(860px); opacity: 0; }
+  0% {
+    transform: translateY(-60px);
+    opacity: 0;
+  }
+  9% {
+    opacity: 0.6;
+  }
+  90% {
+    opacity: 0.6;
+  }
+  100% {
+    transform: translateY(860px);
+    opacity: 0;
+  }
 }
 
 @keyframes stars {
-  from { background-position: 0 0, 35px 45px; }
-  to { background-position: 0 1200px, 35px 745px; }
+  from {
+    background-position:
+      0 0,
+      35px 45px;
+  }
+  to {
+    background-position:
+      0 1200px,
+      35px 745px;
+  }
 }
 
 @keyframes drop {
-  0% { transform: translateY(-220px); }
-  72% { transform: translateY(0); }
-  84% { transform: translateY(-7px); }
-  100% { transform: translateY(0); }
+  0% {
+    transform: translateY(-220px);
+  }
+  72% {
+    transform: translateY(0);
+  }
+  84% {
+    transform: translateY(-7px);
+  }
+  100% {
+    transform: translateY(0);
+  }
 }
 
 @keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-7px); }
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-7px);
+  }
 }
 
 @keyframes pop {
-  0% { transform: scale(0.5); opacity: 0; }
-  60% { transform: scale(1.14); opacity: 1; }
-  100% { transform: scale(1); opacity: 1; }
+  0% {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.14);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }

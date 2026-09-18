@@ -1,0 +1,30 @@
+{
+  "name": "@pickler/agent-service",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node launch.mjs dev",
+    "build": "mastra build",
+    "start": "node launch.mjs start",
+    "typecheck": "tsc --noEmit",
+    "test": "node --import tsx --test test/*.test.ts",
+    "cli": "node --import tsx src/cli.ts"
+  },
+  "dependencies": {
+    "@ai-sdk/openai-compatible": "3.0.48",
+    "@mastra/core": "1.67.0",
+    "@mastra/pg": "1.25.0",
+    "@pickler/api-schema": "*",
+    "@pickler/core": "*",
+    "@pickler/infrastructure": "*",
+    "dotenv": "17.4.2",
+    "hono": "4.13.8",
+    "zod": "4.6.5"
+  },
+  "devDependencies": {
+    "@pickler/typescript-config": "*",
+    "mastra": "1.30.0",
+    "wrangler": "4.133.0"
+  }
+}

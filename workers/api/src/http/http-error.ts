@@ -14,5 +14,6 @@ export class HttpError extends Error {
   }
 }
 
-export const badRequest = (message: string, extras?: ErrorExtras) => new HttpError(400, message, extras);
+export const badRequest = (message: string, extras?: ErrorExtras) =>
+  new HttpError(400, message, extras);
 export const notFound = (resource: string) => new HttpError(404, `${resource} not found`);

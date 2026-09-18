@@ -10,6 +10,9 @@ export function toApplicantResponse(applicant: Applicant): ApplicantResponse {
     referralCode: applicant.referralCode,
     referrals: applicant.referrals,
     placesGained: applicant.linePosition - position,
-    application: applicant.application && { ...applicant.application, submittedAt: applicant.application.submittedAt.toISOString() },
+    application: applicant.application && {
+      ...applicant.application,
+      submittedAt: applicant.application.submittedAt.toISOString(),
+    },
   };
 }

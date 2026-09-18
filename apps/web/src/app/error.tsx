@@ -1,6 +1,11 @@
 "use client";
 
-export default function Error({ reset }: { error: Error & { digest?: string }; reset: () => void }) {
+export default function Error({
+  reset,
+}: {
+  error: Error & { digest?: string };
+  reset: () => void;
+}) {
   return (
     <main className="fallback">
       <p className="fallback-eyebrow">PICKLER</p>

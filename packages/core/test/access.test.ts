@@ -13,7 +13,7 @@ import {
   parseEmailAllowlist,
   type Actions,
   type Subjects,
-} from "../src/index.ts";
+} from "../src/index.js";
 
 test("CIDR cases from Relayer's spec", () => {
   assert.equal(isIpAllowed("192.168.1.5", ["192.168.1.0/24"]), true);
@@ -58,11 +58,36 @@ test("malformed CIDRs and addresses fail closed", () => {
 });
 
 const matrix: Record<string, [Actions, Subjects, boolean][]> = {
-  admin: [["manage", "Agent", true], ["manage", "Admin", true], ["read", "AuditLog", true]],
-  manager: [["read", "Agent", true], ["manage", "Agent", false], ["create", "Signing", true], ["delete", "Action", false], ["read", "AuditLog", false], ["read", "SignoffRules", false]],
-  developer: [["read", "Signing", true], ["manage", "ApiKeys", true], ["create", "Signing", false], ["read", "AuditLog", false]],
-  auditor: [["read", "AuditLog", true], ["read", "Agent", true], ["manage", "Admin", false], ["update", "Signing", false]],
-  viewer: [["read", "Signing", true], ["read", "Agent", false], ["read", "AuditLog", false]],
+  admin: [
+    ["manage", "Agent", true],
+    ["manage", "Admin", true],
+    ["read", "AuditLog", true],
+  ],
+  manager: [
+    ["read", "Agent", true],
+    ["manage", "Agent", false],
+    ["create", "Signing", true],
+    ["delete", "Action", false],
+    ["read", "AuditLog", false],
+    ["read", "SignoffRules", false],
+  ],
+  developer: [
+    ["read", "Signing", true],
+    ["manage", "ApiKeys", true],
+    ["create", "Signing", false],
+    ["read", "AuditLog", false],
+  ],
+  auditor: [
+    ["read", "AuditLog", true],
+    ["read", "Agent", true],
+    ["manage", "Admin", false],
+    ["update", "Signing", false],
+  ],
+  viewer: [
+    ["read", "Signing", true],
+    ["read", "Agent", false],
+    ["read", "AuditLog", false],
+  ],
   stranger: [["read", "Signing", false]],
 };
 
@@ -85,30 +110,54 @@ test("API keys never manage, even with a manage:* scope stored", () => {
 
 test("principals and permission decisions follow Relayer's guard", () => {
   const required = { action: "manage", subject: "Agent" } as const;
-  const owner = buildUserPrincipal({ user: { id: "u1", email: "Ana@x.io" }, integrator: { id: "i1" }, memberRole: "admin", superAdminEmails: parseEmailAllowlist(" ana@x.io , ") });
+  const owner = buildUserPrincipal({
+    user: { id: "u1", email: "Ana@x.io" },
+    integrator: { id: "i1" },
+    memberRole: "admin",
+    superAdminEmails: parseEmailAllowlist(" ana@x.io , "),
+  });
   assert.equal(owner.isSuperAdmin, true);
   assert.deepEqual(checkPermission(owner, required), { allowed: true });
 
   const noTenant = buildUserPrincipal({ user: { id: "u2" } });
-  assert.deepEqual(checkPermission(noTenant, required), { allowed: false, reason: "No integrator context" });
+  assert.deepEqual(checkPermission(noTenant, required), {
+    allowed: false,
+    reason: "No integrator context",
+  });
   assert.equal(noTenant.isSuperAdmin, false);
 
   const notMember = buildUserPrincipal({ user: { id: "u3" }, integrator: { id: "i1" } });
-  assert.deepEqual(checkPermission(notMember, required), { allowed: false, reason: "Not a member" });
+  assert.deepEqual(checkPermission(notMember, required), {
+    allowed: false,
+    reason: "Not a member",
+  });
 
-  const manager = buildUserPrincipal({ user: { id: "u4" }, integrator: { id: "i1" }, memberRole: "manager" });
+  const manager = buildUserPrincipal({
+    user: { id: "u4" },
+    integrator: { id: "i1" },
+    memberRole: "manager",
+  });
   assert.equal(checkPermission(manager, required).allowed, false);
 
   const scopedKey = buildApiKeyPrincipal({ id: "k1", scopes: ["integrator"] }, "i1");
   assert.equal(scopedKey.kind, "apikey");
   assert.equal(checkPermission(scopedKey, required).allowed, true);
 
-  const adminKey = buildApiKeyPrincipal({ id: "k2", scopes: ["admin", "internal", "read:wallets"] }, "i1");
+  const adminKey = buildApiKeyPrincipal(
+    { id: "k2", scopes: ["admin", "internal", "read:wallets"] },
+    "i1",
+  );
   assert.equal(adminKey.kind, "service");
   assert.equal(checkPermission(adminKey, required).allowed, false);
   assert.equal(checkPermission(adminKey, { action: "read", subject: "Signing" }).allowed, true);
 
-  assert.equal(checkPermission(buildAgentPrincipal({ id: "a1", integrator_id: "i1", status: "active" }), required).allowed, true);
+  assert.equal(
+    checkPermission(
+      buildAgentPrincipal({ id: "a1", integrator_id: "i1", status: "active" }),
+      required,
+    ).allowed,
+    true,
+  );
   assert.equal(checkPermission(null, required).allowed, false);
   assert.equal(checkPermission(null, null).allowed, true);
 });

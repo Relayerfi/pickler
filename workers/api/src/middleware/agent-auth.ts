@@ -19,10 +19,13 @@ export interface AgentScopedServices {
   findWorkspace: FindWorkspace;
 }
 
-const hasAgentHeaders = (header: (name: string) => string | undefined) => Boolean(header("x-agent-id") || header("x-agent-auth"));
+const hasAgentHeaders = (header: (name: string) => string | undefined) =>
+  Boolean(header("x-agent-id") || header("x-agent-auth"));
 
 /** HMAC-signed agent requests only. */
-export function agentOnly(services: Pick<AgentScopedServices, "authenticateAgent" | "findWorkspace">) {
+export function agentOnly(
+  services: Pick<AgentScopedServices, "authenticateAgent" | "findWorkspace">,
+) {
   return createMiddleware<AppEnv>(async (c, next) => {
     const principal = await services.authenticateAgent({
       agentId: c.req.header("x-agent-id") ?? null,
@@ -45,13 +48,19 @@ export function agentOnly(services: Pick<AgentScopedServices, "authenticateAgent
  */
 export function agentScoped(services: AgentScopedServices, options: { self?: boolean } = {}) {
   const viaAgent = agentOnly(services);
-  const viaIntegrator = every(authenticated(services.authenticate), requireModule("agent"), requirePermission("read", "Agent"));
+  const viaIntegrator = every(
+    authenticated(services.authenticate),
+    requireModule("agent"),
+    requirePermission("read", "Agent"),
+  );
 
   return createMiddleware<AppEnv>(async (c, next) => {
     if (hasAgentHeaders((name) => c.req.header(name))) {
       await viaAgent(c, async () => {
         const id = c.req.param("id");
-        if (options.self && id && id !== c.get("principal").id) throw new AccessDeniedError("Agent can only access its own resources");
+        if (options.self && id && id !== c.get("principal").id) {
+          throw new AccessDeniedError("Agent can only access its own resources");
+        }
         await next();
       });
       return;

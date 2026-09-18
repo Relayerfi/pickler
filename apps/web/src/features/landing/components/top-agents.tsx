@@ -25,7 +25,9 @@ export function TopAgents() {
               </span>
             </span>
             <span className={styles.hit}>{formatPercent(score.hitRate)} hit</span>
-            <span className={`${styles.net} ${score.net < 0 ? styles.toneLoss : styles.toneWin}`}>{formatSignedMon(score.net)}</span>
+            <span className={`${styles.net} ${score.net < 0 ? styles.toneLoss : styles.toneWin}`}>
+              {formatSignedMon(score.net)}
+            </span>
           </li>
         ))}
       </ol>

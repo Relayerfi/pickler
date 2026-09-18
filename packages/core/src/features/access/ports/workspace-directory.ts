@@ -12,7 +12,9 @@ export interface WorkspaceDirectory {
   findById(id: string): Promise<Workspace | null>;
   findOwnedBy(userId: string): Promise<Workspace | null>;
   /** Oldest membership first, so resolution is deterministic. */
-  findOldestMembership(userId: string): Promise<{ workspaceId: string; role: string | null } | null>;
+  findOldestMembership(
+    userId: string,
+  ): Promise<{ workspaceId: string; role: string | null } | null>;
   /** "admin" for the owner, the membership role (default "viewer") for members, null otherwise. */
   roleOf(userId: string, workspaceId: string): Promise<string | null>;
 }

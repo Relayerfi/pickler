@@ -2,13 +2,27 @@
 // @JwtOnly / @RequireModule / @RequirePermission decorators (commit bb6bb1226e92), as Hono
 // middleware. Decisions live in @pickler/core; this file only reads HTTP and maps results.
 
-import { AccessDeniedError, checkPermission, hasActiveModule, type Actions, type Authenticated, type AuthenticateOptions, type RequestCredentials, type Subjects } from "@pickler/core";
+import {
+  AccessDeniedError,
+  checkPermission,
+  hasActiveModule,
+  type Actions,
+  type Authenticated,
+  type AuthenticateOptions,
+  type RequestCredentials,
+  type Subjects,
+} from "@pickler/core";
 import { createMiddleware } from "hono/factory";
 import type { AppEnv } from "../env";
 
-export type Authenticate = (credentials: RequestCredentials, options?: AuthenticateOptions) => Promise<Authenticated>;
+export type Authenticate = (
+  credentials: RequestCredentials,
+  options?: AuthenticateOptions,
+) => Promise<Authenticated>;
 
-function credentialsFrom(headers: { header(name: string): string | undefined }): RequestCredentials {
+function credentialsFrom(headers: {
+  header(name: string): string | undefined;
+}): RequestCredentials {
   const authorization = headers.header("authorization") ?? "";
   const [scheme, value] = authorization.split(" ");
   return {
@@ -34,8 +48,12 @@ export function authenticated(authenticate: Authenticate, options: AuthenticateO
 export function requireModule(...modules: string[]) {
   return createMiddleware<AppEnv>(async (c, next) => {
     const workspace = c.get("workspace");
-    if (!workspace) throw new AccessDeniedError("No integrator context");
-    if (!hasActiveModule(modules, workspace.activeModules)) throw new AccessDeniedError("Module not enabled for this workspace");
+    if (!workspace) {
+      throw new AccessDeniedError("No integrator context");
+    }
+    if (!hasActiveModule(modules, workspace.activeModules)) {
+      throw new AccessDeniedError("Module not enabled for this workspace");
+    }
     await next();
   });
 }
@@ -43,7 +61,9 @@ export function requireModule(...modules: string[]) {
 export function requirePermission(action: Actions, subject: Subjects) {
   return createMiddleware<AppEnv>(async (c, next) => {
     const decision = checkPermission(c.get("principal"), { action, subject });
-    if (!decision.allowed) throw new AccessDeniedError(decision.reason);
+    if (!decision.allowed) {
+      throw new AccessDeniedError(decision.reason);
+    }
     await next();
   });
 }

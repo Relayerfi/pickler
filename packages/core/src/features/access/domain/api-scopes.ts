@@ -13,6 +13,11 @@ export const API_SCOPES = {
 export type ApiScope = (typeof API_SCOPES)[keyof typeof API_SCOPES];
 
 /** Narrow scopes an API key may be issued with. */
-export const ALLOWED_API_KEY_SCOPES = ["read:wallets", "read:transactions", "sign:prepare"] as const;
+export const ALLOWED_API_KEY_SCOPES = [
+  "read:wallets",
+  "read:transactions",
+  "sign:prepare",
+] as const;
 
-export const isValidScope = (scope: string): scope is ApiScope => (Object.values(API_SCOPES) as string[]).includes(scope);
+export const isValidScope = (scope: string): scope is ApiScope =>
+  (Object.values(API_SCOPES) as string[]).includes(scope);

@@ -11,7 +11,11 @@ export function LaunchingNow() {
   const target = formatInteger(graduationTarget);
 
   return (
-    <section id="launching" className={`${styles.layer} ${styles.ruleBottom}`} aria-labelledby="launching-title">
+    <section
+      id="launching"
+      className={`${styles.layer} ${styles.ruleBottom}`}
+      aria-labelledby="launching-title"
+    >
       <div className={`${styles.container} ${styles.launchHead}`}>
         <h2 id="launching-title" className={styles.launchTitle}>
           LAUNCHING NOW
@@ -21,8 +25,12 @@ export function LaunchingNow() {
       <ul className={`${styles.container} ${styles.launchGrid}`}>
         {launches.map((launch) => {
           const graduated = launch.stage === "graduated";
-          const progress = graduated ? 1 : Math.min(1, graduationTarget > 0 ? launch.raised / graduationTarget : 0);
-          const stageStyle = graduated ? accentVars("lime") : { ...accentVars("cyan"), "--stage-ink": "#7FE3FF" };
+          const progress = graduated
+            ? 1
+            : Math.min(1, graduationTarget > 0 ? launch.raised / graduationTarget : 0);
+          const stageStyle = graduated
+            ? accentVars("lime")
+            : { ...accentVars("cyan"), "--stage-ink": "#7FE3FF" };
           return (
             <li key={launch.agent.ticker} className={`${styles.glass} ${styles.launchCard}`}>
               <div className={styles.launchTop}>

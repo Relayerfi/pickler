@@ -17,10 +17,16 @@ export interface AgentRouteServices extends AgentScopedServices {
 }
 
 export function agentRoutes(services: AgentRouteServices) {
-  const readAgents = [authenticated(services.authenticate), requireModule("agent"), requirePermission("read", "Agent")] as const;
+  const readAgents = [
+    authenticated(services.authenticate),
+    requireModule("agent"),
+    requirePermission("read", "Agent"),
+  ] as const;
   const workspaceId = (c: { get(key: "workspace"): { id: string } | null }) => {
     const workspace = c.get("workspace");
-    if (!workspace) throw new AccessDeniedError("No integrator context");
+    if (!workspace) {
+      throw new AccessDeniedError("No integrator context");
+    }
     return workspace.id;
   };
 
@@ -34,13 +40,23 @@ export function agentRoutes(services: AgentRouteServices) {
       return c.json(successEnvelope(status, c.req.path, "Agent status retrieved"));
     })
     .get("/:id/analytics", agentScoped(services, { self: true }), async (c) => {
-      const analytics = await services.agentQueries.getAnalytics(workspaceId(c), c.req.param("id"), c.req.query("period") ?? null);
+      const analytics = await services.agentQueries.getAnalytics(
+        workspaceId(c),
+        c.req.param("id"),
+        c.req.query("period") ?? null,
+      );
       return c.json(successEnvelope(analyticsDto(analytics), c.req.path, "Analytics retrieved"));
     })
     .get("/:id/budget", agentScoped(services, { self: true }), async (c) => {
       // Tenant check first, so a ledger is never created for an agent outside the workspace.
       const agent = await services.agentQueries.getAgent(workspaceId(c), c.req.param("id"));
-      return c.json(successEnvelope(budgetDto(agent.id, await services.budgets.snapshot(agent.id)), c.req.path, "Budget retrieved"));
+      return c.json(
+        successEnvelope(
+          budgetDto(agent.id, await services.budgets.snapshot(agent.id)),
+          c.req.path,
+          "Budget retrieved",
+        ),
+      );
     })
     .get("/:id/audit", ...readAgents, async (c) => {
       const page = await services.agentQueries.getAudit(workspaceId(c), c.req.param("id"), {

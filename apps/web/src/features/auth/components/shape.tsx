@@ -3,7 +3,15 @@ import { accentVars } from "@/lib/accent";
 import styles from "../auth.module.css";
 import { SHAPES, type ShapeKey } from "../lib/shapes";
 
-export function Shape({ shape, accent, className }: { shape: ShapeKey; accent: AccentDto; className?: string | undefined }) {
+export function Shape({
+  shape,
+  accent,
+  className,
+}: {
+  shape: ShapeKey;
+  accent: AccentDto;
+  className?: string | undefined;
+}) {
   return (
     <span className={className ?? styles.shape} style={accentVars(accent)} aria-hidden="true">
       {SHAPES[shape].map((row, r) => (

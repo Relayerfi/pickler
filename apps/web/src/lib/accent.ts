@@ -10,7 +10,15 @@ export const ACCENT_COLORS: Record<AccentDto, { color: string; rgb: string }> = 
   blue: { color: "#5B8CFF", rgb: "91,140,255" },
 };
 
-export const ACCENT_ORDER: AccentDto[] = ["lime", "cyan", "amber", "orange", "magenta", "blue", "violet"];
+export const ACCENT_ORDER: AccentDto[] = [
+  "lime",
+  "cyan",
+  "amber",
+  "orange",
+  "magenta",
+  "blue",
+  "violet",
+];
 
 /** CSS custom properties consumed by `.accent`-aware classes in landing.module.css. */
 export function accentVars(accent: AccentDto): React.CSSProperties {

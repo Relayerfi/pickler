@@ -4,7 +4,15 @@ import type { AgentSummaryDto } from "@pickler/api-schema";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import styles from "../agents.module.css";
-import { boardSearch, SORTS, STAGES, VIEWS, type BoardFilters, type Sort, type StageFilter } from "../lib/board-filters";
+import {
+  boardSearch,
+  SORTS,
+  STAGES,
+  VIEWS,
+  type BoardFilters,
+  type Sort,
+  type StageFilter,
+} from "../lib/board-filters";
 import { formatChange, formatCompact, formatInteger } from "../lib/format";
 import { AgentAvatar, CurveProgress, StageBadge, VenueMarks } from "./agent-parts";
 
@@ -14,9 +22,14 @@ const comparators: Record<Sort, (a: AgentSummaryDto, b: AgentSummaryDto) => numb
   New: (a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt),
 };
 
-const stageLabel: Record<StageFilter, string> = { all: "ANY STAGE", "pre-graduation": "PRE-GRAD", graduated: "GRADUATED" };
+const stageLabel: Record<StageFilter, string> = {
+  all: "ANY STAGE",
+  "pre-graduation": "PRE-GRAD",
+  graduated: "GRADUATED",
+};
 
-const pair = (agent: AgentSummaryDto) => (agent.token?.stage === "graduated" ? `${agent.ticker}/MON` : agent.ticker);
+const pair = (agent: AgentSummaryDto) =>
+  agent.token?.stage === "graduated" ? `${agent.ticker}/MON` : agent.ticker;
 const cta = (agent: AgentSummaryDto) => (agent.token?.stage === "graduated" ? "TRADE" : "BACK IT");
 
 // Filters live in the URL so a filtered board can be shared.
@@ -25,7 +38,13 @@ function writeUrl(filters: BoardFilters) {
   window.history.replaceState(null, "", search ? `?${search}` : window.location.pathname);
 }
 
-export function TokenBoard({ agents, initialFilters }: { agents: AgentSummaryDto[]; initialFilters: BoardFilters }) {
+export function TokenBoard({
+  agents,
+  initialFilters,
+}: {
+  agents: AgentSummaryDto[];
+  initialFilters: BoardFilters;
+}) {
   const [filters, setFilters] = useState(initialFilters);
   const update = (patch: Partial<BoardFilters>) => {
     const next = { ...filters, ...patch };
@@ -45,14 +64,27 @@ export function TokenBoard({ agents, initialFilters }: { agents: AgentSummaryDto
     <main className={styles.main}>
       <p className={styles.eyebrow}>TOKENS</p>
       <h1 className={styles.boardTitle}>EVERY AGENT TOKEN.</h1>
-      <p className={styles.boardLead}>Every agent launches with a token. Buy it on the curve, or trade it in the pool once it graduates.</p>
+      <p className={styles.boardLead}>
+        Every agent launches with a token. Buy it on the curve, or trade it in the pool once it
+        graduates.
+      </p>
 
       <div className={styles.filterCard}>
         <div className={styles.filterRow} role="group" aria-label="Token stage">
           {STAGES.map((stage) => (
-            <button key={stage} type="button" className={styles.stageButton} aria-pressed={filters.stage === stage} onClick={() => update({ stage })}>
+            <button
+              key={stage}
+              type="button"
+              className={styles.stageButton}
+              aria-pressed={filters.stage === stage}
+              onClick={() => update({ stage })}
+            >
               {stageLabel[stage]}
-              <span>{stage === "all" ? agents.length : agents.filter((a) => a.token?.stage === stage).length}</span>
+              <span>
+                {stage === "all"
+                  ? agents.length
+                  : agents.filter((a) => a.token?.stage === stage).length}
+              </span>
             </button>
           ))}
         </div>
@@ -67,13 +99,25 @@ export function TokenBoard({ agents, initialFilters }: { agents: AgentSummaryDto
           />
           <span className={styles.filterLabel}>BEST BY</span>
           {SORTS.map((sort) => (
-            <button key={sort} type="button" className={styles.sortButton} aria-pressed={filters.sort === sort} onClick={() => update({ sort })}>
+            <button
+              key={sort}
+              type="button"
+              className={styles.sortButton}
+              aria-pressed={filters.sort === sort}
+              onClick={() => update({ sort })}
+            >
               {sort.toUpperCase()}
             </button>
           ))}
           <span className={styles.viewToggle} role="group" aria-label="Layout">
             {VIEWS.map((view) => (
-              <button key={view} type="button" className={styles.viewButton} aria-pressed={filters.view === view} onClick={() => update({ view })}>
+              <button
+                key={view}
+                type="button"
+                className={styles.viewButton}
+                aria-pressed={filters.view === view}
+                onClick={() => update({ view })}
+              >
                 {view.toUpperCase()}
               </button>
             ))}
@@ -119,22 +163,34 @@ export function TokenBoard({ agents, initialFilters }: { agents: AgentSummaryDto
                   {agent.token?.stage === "graduated" ? (
                     <span className={styles.curve}>
                       <span className={styles.curveLabel}>PRICE · 24H</span>
-                      <strong className={agent.token.change24h < 0 ? styles.toneLoss : styles.toneWin}>{formatChange(agent.token.change24h)}</strong>
+                      <strong
+                        className={agent.token.change24h < 0 ? styles.toneLoss : styles.toneWin}
+                      >
+                        {formatChange(agent.token.change24h)}
+                      </strong>
                       <span className={styles.bar}>
                         <span
                           className={`${styles.barFill} ${agent.token.change24h < 0 ? styles.barLoss : styles.barGraduated}`}
-                          style={{ width: `${Math.min(100, Math.abs(agent.token.change24h) * 500)}%` }}
+                          style={{
+                            width: `${Math.min(100, Math.abs(agent.token.change24h) * 500)}%`,
+                          }}
                         />
                       </span>
                     </span>
                   ) : agent.token ? (
                     <span className={styles.curve}>
-                      <span className={styles.curveLabel}>{formatInteger(agent.token.graduationTarget - agent.token.raised)} MON LEFT</span>
-                      <strong className={styles.toneCurve}>{Math.round((agent.token.raised / agent.token.graduationTarget) * 100)}%</strong>
+                      <span className={styles.curveLabel}>
+                        {formatInteger(agent.token.graduationTarget - agent.token.raised)} MON LEFT
+                      </span>
+                      <strong className={styles.toneCurve}>
+                        {Math.round((agent.token.raised / agent.token.graduationTarget) * 100)}%
+                      </strong>
                       <CurveProgress token={agent.token} bareBar />
                     </span>
                   ) : (
-                    <span className={`${styles.curve} ${styles.curveNote}`}>No token launched yet</span>
+                    <span className={`${styles.curve} ${styles.curveNote}`}>
+                      No token launched yet
+                    </span>
                   )}
                   <Link href={`/tokens/${agent.slug}`} className={styles.cardCta}>
                     {cta(agent)} <span aria-hidden="true">→</span>
@@ -166,9 +222,16 @@ export function TokenBoard({ agents, initialFilters }: { agents: AgentSummaryDto
               <span className={styles.tableStage}>
                 <StageBadge token={agent.token} />
               </span>
-              <span className={styles.tableNum}>{agent.token ? formatCompact(agent.token.marketCap) : "—"}</span>
-              <span className={styles.tableNum}>{agent.token ? formatCompact(agent.token.volume24h) : "—"}</span>
-              <Link href={`/tokens/${agent.slug}`} className={`${styles.tableCta} ${styles.cardCta}`}>
+              <span className={styles.tableNum}>
+                {agent.token ? formatCompact(agent.token.marketCap) : "—"}
+              </span>
+              <span className={styles.tableNum}>
+                {agent.token ? formatCompact(agent.token.volume24h) : "—"}
+              </span>
+              <Link
+                href={`/tokens/${agent.slug}`}
+                className={`${styles.tableCta} ${styles.cardCta}`}
+              >
                 {cta(agent)} <span aria-hidden="true">→</span>
               </Link>
             </div>

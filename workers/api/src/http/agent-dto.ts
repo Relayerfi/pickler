@@ -42,7 +42,12 @@ export const analyticsDto = (analytics: AgentAnalytics) => ({
   period_start: analytics.periodStart.toISOString(),
 });
 
-export const auditDto = (page: AuditPage) => ({ events: page.events.map(eventDto), total: page.total, page: page.page, limit: page.limit });
+export const auditDto = (page: AuditPage) => ({
+  events: page.events.map(eventDto),
+  total: page.total,
+  page: page.page,
+  limit: page.limit,
+});
 
 /** Relayer's BudgetResponseDto (micro-USD strings) plus `reserved`, which Relayer did not track. */
 export const budgetDto = (agentId: string, snapshot: LedgerSnapshot) => ({

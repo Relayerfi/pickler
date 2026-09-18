@@ -1,4 +1,9 @@
-import { CATEGORY_OPTIONS, PERSONALITY_OPTIONS, type CategoryDto, type PersonalityDto } from "@pickler/api-schema";
+import {
+  CATEGORY_OPTIONS,
+  PERSONALITY_OPTIONS,
+  type CategoryDto,
+  type PersonalityDto,
+} from "@pickler/api-schema";
 
 export interface Swatch {
   color: string;
@@ -29,19 +34,33 @@ const categorySwatches: Record<CategoryDto, Swatch> = {
 };
 
 const personalities: Record<PersonalityDto, Swatch & { sample: string }> = {
-  Analyst: { ...cyan, sample: "Analyst: “Took Lakers −4.5 at 0.58. Model says 0.64. Small edge, sized small.”" },
-  Contrarian: { ...orange, sample: "Contrarian: “Everyone is on the favourite. That is the whole reason I am not.”" },
-  "Trash talker": { ...magenta, sample: "Trash talker: “Books have not seen the injury report. I have. Lakers −4.5, easy.”" },
+  Analyst: {
+    ...cyan,
+    sample: "Analyst: “Took Lakers −4.5 at 0.58. Model says 0.64. Small edge, sized small.”",
+  },
+  Contrarian: {
+    ...orange,
+    sample: "Contrarian: “Everyone is on the favourite. That is the whole reason I am not.”",
+  },
+  "Trash talker": {
+    ...magenta,
+    sample: "Trash talker: “Books have not seen the injury report. I have. Lakers −4.5, easy.”",
+  },
   Deadpan: { ...slate, sample: "Deadpan: “Lakers −4.5 at 0.58. 12 MON. That is the post.”" },
   Hype: { ...lime, sample: "Hype: “WE ARE ON. Lakers −4.5. Full cap. Let it ride.”" },
-  Professor: { ...amber, sample: "Professor: “Pace differential and rest days both favour LA. Taking −4.5 at 0.58.”" },
+  Professor: {
+    ...amber,
+    sample: "Professor: “Pace differential and rest days both favour LA. Taking −4.5 at 0.58.”",
+  },
 };
 
 export const CATEGORIES = CATEGORY_OPTIONS.map((name) => ({ name, ...categorySwatches[name] }));
 export const PERSONALITIES = PERSONALITY_OPTIONS.map((name) => ({ name, ...personalities[name] }));
 
-export const categorySwatch = (name: string): Swatch => categorySwatches[name as CategoryDto] ?? violet;
-export const personalitySwatch = (name: string): Swatch => personalities[name as PersonalityDto] ?? orange;
+export const categorySwatch = (name: string): Swatch =>
+  categorySwatches[name as CategoryDto] ?? violet;
+export const personalitySwatch = (name: string): Swatch =>
+  personalities[name as PersonalityDto] ?? orange;
 
 /** Invite cadence shown to applicants. Product copy, not computed. */
 export const BATCH = { invitesPerBatch: 40, nextBatch: "FRI" } as const;
@@ -53,13 +72,20 @@ export function suggestTicker(name: string): string {
 }
 
 export function sanitizeTickerInput(raw: string): string {
-  const body = raw.replace(/[^a-zA-Z0-9]/g, "").toUpperCase().slice(0, 6);
+  const body = raw
+    .replace(/[^a-zA-Z0-9]/g, "")
+    .toUpperCase()
+    .slice(0, 6);
   return body ? `$${body}` : "";
 }
 
 export const isWellFormedTicker = (ticker: string) => /^\$[A-Z][A-Z0-9]{1,5}$/.test(ticker);
 
 export function cleanHandle(raw: string): string {
-  const handle = raw.trim().replace(/^https?:\/\/(www\.)?(x|twitter)\.com\//i, "").replace(/^@+/, "").replace(/\/+$/, "");
+  const handle = raw
+    .trim()
+    .replace(/^https?:\/\/(www\.)?(x|twitter)\.com\//i, "")
+    .replace(/^@+/, "")
+    .replace(/\/+$/, "");
   return handle ? `@${handle}` : "";
 }

@@ -6,15 +6,18 @@
 // Behaviour changes: every failure uses the same "Invalid agent credentials" response except the
 // documented `expired_timestamp` and `agent_killed` codes, and malformed hex never throws.
 
-import { buildAgentPrincipal, type AgentPrincipal } from "../../access/domain/principal";
-import type { AgentRegistry } from "../ports/agent-registry";
+import { buildAgentPrincipal, type AgentPrincipal } from "../../access/domain/principal.js";
+import type { AgentRegistry } from "../ports/agent-registry.js";
 
 export const AGENT_AUTH_WINDOW_SECONDS = 60;
 
 export type AgentAuthFailure = "invalid_auth" | "expired_timestamp" | "agent_killed";
 
 export class AgentAuthenticationError extends Error {
-  constructor(readonly code: AgentAuthFailure, message: string) {
+  constructor(
+    readonly code: AgentAuthFailure,
+    message: string,
+  ) {
     super(message);
     this.name = "AgentAuthenticationError";
   }
@@ -41,10 +44,14 @@ export interface AgentAuthDependencies {
 
 /** Mirrors Express body parsing + JSON.stringify so signatures computed by the SDK still match. */
 export function canonicalBody(raw: string): string {
-  if (!raw) return "";
+  if (!raw) {
+    return "";
+  }
   try {
     const parsed: unknown = JSON.parse(raw);
-    return typeof parsed === "object" && parsed !== null && Object.keys(parsed).length > 0 ? JSON.stringify(parsed) : "";
+    return typeof parsed === "object" && parsed !== null && Object.keys(parsed).length > 0
+      ? JSON.stringify(parsed)
+      : "";
   } catch {
     return "";
   }
@@ -52,9 +59,13 @@ export function canonicalBody(raw: string): string {
 
 function constantTimeEqualHex(a: string, b: string): boolean {
   const left = a.toLowerCase();
-  if (left.length !== b.length || !/^[0-9a-f]*$/.test(left)) return false;
+  if (left.length !== b.length || !/^[0-9a-f]*$/.test(left)) {
+    return false;
+  }
   let diff = 0;
-  for (let i = 0; i < left.length; i++) diff |= left.charCodeAt(i) ^ b.charCodeAt(i);
+  for (let i = 0; i < left.length; i++) {
+    diff |= left.charCodeAt(i) ^ b.charCodeAt(i);
+  }
   return diff === 0;
 }
 
@@ -68,12 +79,19 @@ export function createAuthenticateAgent(deps: AgentAuthDependencies) {
     const ts = Number.parseInt(request.timestamp, 10);
     const nowSeconds = Math.floor(deps.now().getTime() / 1000);
     if (Number.isNaN(ts) || Math.abs(nowSeconds - ts) > AGENT_AUTH_WINDOW_SECONDS) {
-      throw new AgentAuthenticationError("expired_timestamp", "Request timestamp outside acceptable window");
+      throw new AgentAuthenticationError(
+        "expired_timestamp",
+        "Request timestamp outside acceptable window",
+      );
     }
 
     const agent = await deps.agents.findCredentials(request.agentId);
-    if (!agent || !agent.encryptedAgentSecret) throw invalid();
-    if (agent.status === "killed") throw new AgentAuthenticationError("agent_killed", "Agent has been terminated");
+    if (!agent || !agent.encryptedAgentSecret) {
+      throw invalid();
+    }
+    if (agent.status === "killed") {
+      throw new AgentAuthenticationError("agent_killed", "Agent has been terminated");
+    }
 
     let secret: string;
     try {
@@ -84,8 +102,15 @@ export function createAuthenticateAgent(deps: AgentAuthDependencies) {
 
     const payload = `${request.method.toUpperCase()}${request.path}${request.timestamp}${await deps.sha256Hex(canonicalBody(request.body))}`;
     const expected = await deps.hmacSha256Hex(secret, payload);
-    if (!constantTimeEqualHex(request.signature, expected)) throw invalid();
+    if (!constantTimeEqualHex(request.signature, expected)) {
+      throw invalid();
+    }
 
-    return buildAgentPrincipal({ id: agent.id, integrator_id: agent.workspaceId, wallet_id: agent.walletId, status: agent.status });
+    return buildAgentPrincipal({
+      id: agent.id,
+      integrator_id: agent.workspaceId,
+      wallet_id: agent.walletId,
+      status: agent.status,
+    });
   };
 }

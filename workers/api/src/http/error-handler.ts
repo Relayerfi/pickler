@@ -19,18 +19,63 @@ import type { AppEnv } from "../env";
 import { errorEnvelope, type ErrorExtras } from "./envelope";
 import { HttpError } from "./http-error";
 
-function classify(error: unknown, isProduction: boolean): { status: ContentfulStatusCode; message: string; extras?: ErrorExtras } {
-  if (error instanceof HttpError) return { status: error.status, message: error.message, ...(error.extras ? { extras: error.extras } : {}) };
-  if (error instanceof HTTPException) return { status: error.status as ContentfulStatusCode, message: error.message || "Request failed" };
-  if (error instanceof AuthenticationRequiredError || error instanceof InactiveWorkspaceError) return { status: 401, message: error.message };
-  if (error instanceof AgentAuthenticationError) return { status: 401, message: error.message, extras: { error: error.code } };
-  if (error instanceof AccessDeniedError) return { status: 403, message: error.message };
-  if (error instanceof AgentNotFoundError) return { status: 404, message: error.message };
-  if (error instanceof InvalidProfileError) return { status: 400, message: error.message, extras: { error: "invalid_profile", code: error.field, reason: error.problem } };
-  if (error instanceof ProfileHandleTakenError) return { status: 409, message: error.message, extras: { error: "handle_taken", code: "handle" } };
-  if (error instanceof ProfileAlreadyExistsError) return { status: 409, message: error.message, extras: { error: "profile_exists", detail: error.profile.handle } };
-  if (error instanceof DataSourceUnavailableError) return { status: 503, message: "Service temporarily unavailable" };
-  const message = !isProduction && error instanceof Error && error.message ? error.message : "Internal server error";
+function classify(
+  error: unknown,
+  isProduction: boolean,
+): { status: ContentfulStatusCode; message: string; extras?: ErrorExtras } {
+  if (error instanceof HttpError) {
+    return {
+      status: error.status,
+      message: error.message,
+      ...(error.extras ? { extras: error.extras } : {}),
+    };
+  }
+  if (error instanceof HTTPException) {
+    return {
+      status: error.status as ContentfulStatusCode,
+      message: error.message || "Request failed",
+    };
+  }
+  if (error instanceof AuthenticationRequiredError || error instanceof InactiveWorkspaceError) {
+    return { status: 401, message: error.message };
+  }
+  if (error instanceof AgentAuthenticationError) {
+    return { status: 401, message: error.message, extras: { error: error.code } };
+  }
+  if (error instanceof AccessDeniedError) {
+    return { status: 403, message: error.message };
+  }
+  if (error instanceof AgentNotFoundError) {
+    return { status: 404, message: error.message };
+  }
+  if (error instanceof InvalidProfileError) {
+    return {
+      status: 400,
+      message: error.message,
+      extras: { error: "invalid_profile", code: error.field, reason: error.problem },
+    };
+  }
+  if (error instanceof ProfileHandleTakenError) {
+    return {
+      status: 409,
+      message: error.message,
+      extras: { error: "handle_taken", code: "handle" },
+    };
+  }
+  if (error instanceof ProfileAlreadyExistsError) {
+    return {
+      status: 409,
+      message: error.message,
+      extras: { error: "profile_exists", detail: error.profile.handle },
+    };
+  }
+  if (error instanceof DataSourceUnavailableError) {
+    return { status: 503, message: "Service temporarily unavailable" };
+  }
+  const message =
+    !isProduction && error instanceof Error && error.message
+      ? error.message
+      : "Internal server error";
   return { status: 500, message };
 }
 
@@ -39,7 +84,10 @@ export function handleError(error: unknown, c: Context<AppEnv>) {
   const isProduction = c.env?.APP_ENV === "production";
   const { status, message, extras } = classify(error, isProduction);
   if (status >= 500) {
-    console.error(`[${traceId}] ${c.req.method} ${c.req.path}`, isProduction && error instanceof Error ? error.message : error);
+    console.error(
+      `[${traceId}] ${c.req.method} ${c.req.path}`,
+      isProduction && error instanceof Error ? error.message : error,
+    );
   }
   return c.json(errorEnvelope(message, status, c.req.path, traceId, extras), status);
 }

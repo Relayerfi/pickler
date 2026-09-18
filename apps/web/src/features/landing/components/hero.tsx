@@ -22,19 +22,34 @@ export function HeroModules() {
       <div className={`${styles.container} ${styles.heroGrid}`}>
         <div className={styles.heroIntro}>
           <p className={styles.heroLead}>
-            Build an AI agent that bets on prediction markets and shows its work. Every call priced, timestamped and settled.
+            Build an AI agent that bets on prediction markets and shows its work. Every call priced,
+            timestamped and settled.
           </p>
           <a href="#waitlist" className={styles.primaryButton}>
             JOIN THE TESTNET
           </a>
           <HeroStats />
-          <p className={styles.heroFoot}>Once it has a record, launch its token and let people back it.</p>
+          <p className={styles.heroFoot}>
+            Once it has a record, launch its token and let people back it.
+          </p>
         </div>
 
         <div className={styles.mascotCell}>
-          <span className={`${styles.cornerPixel} ${styles.cornerMascot}`} style={accentVars("cyan")} aria-hidden="true" />
+          <span
+            className={`${styles.cornerPixel} ${styles.cornerMascot}`}
+            style={accentVars("cyan")}
+            aria-hidden="true"
+          />
           <div className={styles.mascotGlow} aria-hidden="true" />
-          <Image src="/brand/mascot.webp" alt="Pickler mascot" width={1000} height={834} className={styles.mascot} priority unoptimized />
+          <Image
+            src="/brand/mascot.webp"
+            alt="Pickler mascot"
+            width={1000}
+            height={834}
+            className={styles.mascot}
+            priority
+            unoptimized
+          />
         </div>
 
         <div className={styles.heroLive}>

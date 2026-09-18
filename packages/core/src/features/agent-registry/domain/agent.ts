@@ -1,7 +1,14 @@
 // Ported from Relayer apps/api/src/kits/agent/entities/Agent.ts (commit bb6bb1226e92).
 // `agent.agents` is shared with Relayer; this is its read model without secret columns.
 
-export const AGENT_STATUSES = ["active", "suspended", "draining", "killed", "paused", "pending_policies"] as const;
+export const AGENT_STATUSES = [
+  "active",
+  "suspended",
+  "draining",
+  "killed",
+  "paused",
+  "pending_policies",
+] as const;
 export type AgentStatus = (typeof AGENT_STATUSES)[number];
 
 /** Safe view of an `agent.agents` row (Relayer's `stripSecrets`). */

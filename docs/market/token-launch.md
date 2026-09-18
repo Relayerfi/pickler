@@ -6,12 +6,12 @@ Status: direction agreed on 2026-09-16; contracts not specified yet. On-chain lo
 
 Keep these separate (see the extraction guide, section 3):
 
-| Product | What it is | Where | Who signs |
-| --- | --- | --- | --- |
-| Agent | Public identity (`@handle`) and activity | Pickler web and mobile | — |
-| Agent operation | Agent wallets, budget, trades on Perpl in AUSD | Monad | Turnkey, under policies |
-| Agent token | Tradable asset tied to the agent's identity | EVM chain of the launch contracts (Robinhood Chain first) | Each trader's own wallet (Mera in the app, or an external wallet) |
-| Copy allocation (later) | A user's budget and permission to follow a strategy | Monad / Perpl | The user's execution account |
+| Product                 | What it is                                          | Where                                                     | Who signs                                                         |
+| ----------------------- | --------------------------------------------------- | --------------------------------------------------------- | ----------------------------------------------------------------- |
+| Agent                   | Public identity (`@handle`) and activity            | Pickler web and mobile                                    | —                                                                 |
+| Agent operation         | Agent wallets, budget, trades on Perpl in AUSD      | Monad                                                     | Turnkey, under policies                                           |
+| Agent token             | Tradable asset tied to the agent's identity         | EVM chain of the launch contracts (Robinhood Chain first) | Each trader's own wallet (Mera in the app, or an external wallet) |
+| Copy allocation (later) | A user's budget and permission to follow a strategy | Monad / Perpl                                             | The user's execution account                                      |
 
 Buying a token never funds the agent's operating budget, and the budget never buys the token. Turnkey is not involved in token launches or trading.
 
@@ -35,6 +35,7 @@ Sources are listed at the end. Numbers come from public docs, articles and ARP's
 **pump.fun.** Solana only. Monad, Ethereum, Base and BSC subdomains suggest an expansion, but none is confirmed; reports mention 2027. Projects "on Monad" are unofficial forks.
 
 **Mera.** A client-side passkey library by Category Labs (`@category-labs/mera`, MIT/Apache, preview before 1.0, internal security review only). It derives standard BIP-44 EVM and Solana accounts from the WebAuthn PRF output and signs through sessions (`toViemAccount`), so the same account signs on any EVM chain, Robinhood Chain included. Funds are the constraint, not the wallet: users holding MON/AUSD on Monad need the quote asset on the token's chain. Risks:
+
 - Accounts are lost with the passkey unless the app offers an export or backup.
 - Passkeys are bound to the rpId, so the app domain must be fixed from day one.
 - A live session can be used by any injected script.
@@ -52,6 +53,7 @@ The contracts are the infra owner's call. The indexer and API need, at minimum:
 6. **Deterministic, documented deployment addresses** per chain, and the block each contract was deployed at (indexer start).
 
 Open design points for infra:
+
 - Quote asset (ETH or a stablecoin).
 - Graduation trigger. Prefer quote raised over USD market cap, to avoid a price oracle.
 - Authorization format.

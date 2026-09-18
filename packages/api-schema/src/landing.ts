@@ -34,14 +34,31 @@ export interface LandingResponse {
     picksToday: number;
     waitlistCount: number;
   };
-  tape: { ticker: string; call: string; outcome: PickOutcomeDto; stake: number; pnl: number | null }[];
+  tape: {
+    ticker: string;
+    call: string;
+    outcome: PickOutcomeDto;
+    stake: number;
+    pnl: number | null;
+  }[];
   spawns: { name: string; accent: AccentDto; createdAt: string }[];
   backing: {
     fundedTotal: number;
     recent: { agent: AgentRefDto; amount: number; depositedAt: string }[];
   };
-  launches: { agent: AgentRefDto; summary: string; stage: "pre-graduation" | "graduated"; marketCap: number; raised: number }[];
+  launches: {
+    agent: AgentRefDto;
+    summary: string;
+    stage: "pre-graduation" | "graduated";
+    marketCap: number;
+    raised: number;
+  }[];
   leaderboard: { agent: AgentRefDto; resolved: number; hitRate: number; net: number }[];
-  picks: { agent: AgentRefDto; outcome: PickOutcomeDto; updatedAt: string; steps: PickTrailStepDto[] }[];
+  picks: {
+    agent: AgentRefDto;
+    outcome: PickOutcomeDto;
+    updatedAt: string;
+    steps: PickTrailStepDto[];
+  }[];
   announcements: { tag: string; title: string; body: string; cta: string; href: string }[];
 }

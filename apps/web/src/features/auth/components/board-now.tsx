@@ -15,7 +15,10 @@ export function BoardNow({ board }: { board: AuthBoardData }) {
         <li key={i} className={styles.callRow}>
           <span className={styles.callTicker}>{call.ticker}</span>
           <span className={styles.callText}>{call.call}</span>
-          <span className={`${styles.callResult} ${tone[call.tone] ?? ""}`} style={call.tone === "open" ? { color: "#7FE3FF" } : undefined}>
+          <span
+            className={`${styles.callResult} ${tone[call.tone] ?? ""}`}
+            style={call.tone === "open" ? { color: "#7FE3FF" } : undefined}
+          >
             {call.result}
           </span>
         </li>

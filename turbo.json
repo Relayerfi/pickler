@@ -2,22 +2,25 @@
   "$schema": "https://turborepo.com/schema.json",
   "tasks": {
     "build": {
-      "dependsOn": [
-        "^build"
-      ],
-      "outputs": [
-        ".next/**",
-        "!.next/cache/**"
+      "dependsOn": ["^build"],
+      "outputs": [".next/**", "!.next/cache/**", "dist/**", ".mastra/output/**"],
+      "env": [
+        "MODEL_BASE_URL",
+        "MODEL_ID",
+        "MODEL_API_KEY",
+        "EXA_API_KEY",
+        "TENANT_ALPHA_TOKEN",
+        "TENANT_BETA_TOKEN",
+        "DATABASE_URL"
       ]
     },
     "dev": {
       "cache": false,
-      "persistent": true
+      "persistent": true,
+      "dependsOn": ["^build"]
     },
     "typecheck": {
-      "dependsOn": [
-        "^typecheck"
-      ]
+      "dependsOn": ["^typecheck"]
     }
   }
 }

@@ -11,7 +11,9 @@ import { authConfig, isAuthConfigured } from "./config";
 let client: SupabaseClient | null = null;
 
 export function getSupabase(): SupabaseClient | null {
-  if (!isAuthConfigured()) return null;
+  if (!isAuthConfigured()) {
+    return null;
+  }
   client ??= createBrowserClient(authConfig.supabaseUrl, authConfig.supabasePublishableKey);
   return client;
 }

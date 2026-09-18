@@ -2,10 +2,16 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { DataSourceUnavailableError } from "@pickler/core";
-import { createSupabaseApplicants, createSupabaseRestClient, createSupabaseWaitlist } from "../src/index.ts";
+import {
+  createSupabaseApplicants,
+  createSupabaseRestClient,
+  createSupabaseWaitlist,
+} from "../src/index.js";
 
 // Output of growth.applicant_by_token() for a seat with a submitted application.
-const applicantFixture: unknown = JSON.parse(readFileSync(new URL("./fixtures/applicant.json", import.meta.url), "utf8"));
+const applicantFixture: unknown = JSON.parse(
+  readFileSync(new URL("./fixtures/applicant.json", import.meta.url), "utf8"),
+);
 
 type Call = { url: string; init: RequestInit };
 
@@ -20,7 +26,10 @@ const config = { url: "https://ref.supabase.co", secretKey: "sb_secret_test" };
 
 test("rest client posts to the rpc endpoint with the secret key only in apikey", async () => {
   const calls: Call[] = [];
-  const client = createSupabaseRestClient({ ...config, fetch: fakeFetch(() => Response.json({ ok: true }), calls) });
+  const client = createSupabaseRestClient({
+    ...config,
+    fetch: fakeFetch(() => Response.json({ ok: true }), calls),
+  });
 
   assert.deepEqual(await client.rpc("join_waitlist", { p_email: "a@b.co" }), { ok: true });
   assert.equal(calls[0]!.url, "https://ref.supabase.co/rest/v1/rpc/join_waitlist");
@@ -34,7 +43,11 @@ test("rest client posts to the rpc endpoint with the secret key only in apikey",
 
 test("rest client targets the configured schema through Content-Profile", async () => {
   const calls: Call[] = [];
-  const client = createSupabaseRestClient({ ...config, schema: "growth", fetch: fakeFetch(() => Response.json(true), calls) });
+  const client = createSupabaseRestClient({
+    ...config,
+    schema: "growth",
+    fetch: fakeFetch(() => Response.json(true), calls),
+  });
 
   await client.rpc("ticker_available", { p_ticker: "$HALF" });
   assert.equal((calls[0]!.init.headers as Record<string, string>)["Content-Profile"], "growth");
@@ -42,10 +55,17 @@ test("rest client targets the configured schema through Content-Profile", async 
 
 test("rest client sends legacy JWT keys as a bearer token too", async () => {
   const calls: Call[] = [];
-  const client = createSupabaseRestClient({ url: config.url, secretKey: "eyJlegacy", fetch: fakeFetch(() => Response.json([]), calls) });
+  const client = createSupabaseRestClient({
+    url: config.url,
+    secretKey: "eyJlegacy",
+    fetch: fakeFetch(() => Response.json([]), calls),
+  });
 
   await client.rpc("ticker_available");
-  assert.equal((calls[0]!.init.headers as Record<string, string>).Authorization, "Bearer eyJlegacy");
+  assert.equal(
+    (calls[0]!.init.headers as Record<string, string>).Authorization,
+    "Bearer eyJlegacy",
+  );
 });
 
 test("rest client maps HTTP errors, network errors and timeouts to DataSourceUnavailableError", async () => {
@@ -60,7 +80,9 @@ test("rest client maps HTTP errors, network errors and timeouts to DataSourceUna
   }
 
   const hanging = ((_: RequestInfo | URL, init?: RequestInit) =>
-    new Promise((_resolve, reject) => init?.signal?.addEventListener("abort", () => reject(init.signal?.reason)))) as typeof fetch;
+    new Promise((_resolve, reject) =>
+      init?.signal?.addEventListener("abort", () => reject(init.signal?.reason)),
+    )) as typeof fetch;
   const slow = createSupabaseRestClient({ ...config, timeoutMs: 10, fetch: hanging });
   await assert.rejects(slow.rpc("ticker_available"), DataSourceUnavailableError);
 });
@@ -74,7 +96,11 @@ test("waitlist adapter sends the referral code and reads the single placement ro
       return [{ line_position: 1205, already_joined: false, apply_token: token }];
     },
   });
-  assert.deepEqual(await waitlist.join("a@b.co", "abc12345"), { position: 1205, alreadyJoined: false, applyToken: token });
+  assert.deepEqual(await waitlist.join("a@b.co", "abc12345"), {
+    position: 1205,
+    alreadyJoined: false,
+    applyToken: token,
+  });
   assert.deepEqual(calls, [["join_waitlist", { p_email: "a@b.co", p_referral_code: "abc12345" }]]);
 
   const empty = createSupabaseWaitlist({ rpc: async () => [] });

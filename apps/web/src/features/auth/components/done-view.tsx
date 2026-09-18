@@ -1,7 +1,8 @@
 import styles from "../auth.module.css";
 import { iconStyle } from "../lib/icons";
 
-export type DoneState = { kind: "ready"; handle: string; returning: boolean } | { kind: "confirm_email"; email: string };
+export type DoneState =
+  { kind: "ready"; handle: string; returning: boolean } | { kind: "confirm_email"; email: string };
 
 export function DoneView({ state }: { state: DoneState }) {
   const confirm = state.kind === "confirm_email";
@@ -9,10 +10,18 @@ export function DoneView({ state }: { state: DoneState }) {
     <main className={styles.done}>
       <div className={styles.doneBox} role="status">
         <span className={styles.doneBadge}>
-          <span className={styles.icon} style={iconStyle(confirm ? "mail" : "check")} aria-hidden="true" />
+          <span
+            className={styles.icon}
+            style={iconStyle(confirm ? "mail" : "check")}
+            aria-hidden="true"
+          />
         </span>
-        <p className={styles.eyebrow}>{confirm ? "ONE MORE STEP" : state.returning ? "SIGNED IN" : "ACCOUNT CREATED"}</p>
-        <h1 className={styles.doneTitle}>{confirm ? "Check your email." : `You are in, @${state.handle}.`}</h1>
+        <p className={styles.eyebrow}>
+          {confirm ? "ONE MORE STEP" : state.returning ? "SIGNED IN" : "ACCOUNT CREATED"}
+        </p>
+        <h1 className={styles.doneTitle}>
+          {confirm ? "Check your email." : `You are in, @${state.handle}.`}
+        </h1>
         <p className={styles.doneBody}>
           {confirm
             ? `We sent a confirmation link to ${state.email}. Open it, then sign in — your handle is saved and claimed on your first sign-in.`
@@ -26,7 +35,9 @@ export function DoneView({ state }: { state: DoneState }) {
           </button>
         )}
         <p id="studio-soon" className={styles.doneFoot}>
-          {confirm ? "DIDN'T GET IT? CHECK SPAM, OR SIGN UP AGAIN IN A FEW MINUTES" : "THE STUDIO OPENS SOON · WE WILL EMAIL YOU"}
+          {confirm
+            ? "DIDN'T GET IT? CHECK SPAM, OR SIGN UP AGAIN IN A FEW MINUTES"
+            : "THE STUDIO OPENS SOON · WE WILL EMAIL YOU"}
         </p>
       </div>
     </main>

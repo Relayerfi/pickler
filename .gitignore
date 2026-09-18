@@ -9,3 +9,13 @@ contracts/out/
 contracts/cache/
 contracts/broadcast/
 .DS_Store
+
+# Local agent state and generated Mastra output
+.mastra/
+.data/
+*.db
+*.db-shm
+*.db-wal
+
+**/.wrangler/
+**/.dev.vars*

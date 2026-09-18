@@ -6,7 +6,9 @@ export const runtime = "nodejs";
 
 export async function GET(request: Request) {
   const raw = new URL(request.url).searchParams.get("ticker");
-  if (!raw || raw.length > 16) return errorResponse(400, "invalid_request", "Query parameter 'ticker' is required.");
+  if (!raw || raw.length > 16) {
+    return errorResponse(400, "invalid_request", "Query parameter 'ticker' is required.");
+  }
 
   try {
     const body: TickerAvailabilityResponse = await services.checkTicker(raw);

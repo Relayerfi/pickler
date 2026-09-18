@@ -20,9 +20,15 @@ export function FallingPieces() {
         <span
           key={piece.left}
           className={`${styles.fallingPiece} ${piece.spin ? styles.fallSpin : styles.fall}`}
-          style={{ left: piece.left, "--dur": piece.dur, "--delay": piece.delay } as React.CSSProperties}
+          style={
+            { left: piece.left, "--dur": piece.dur, "--delay": piece.delay } as React.CSSProperties
+          }
         >
-          <Shape shape={piece.shape} accent={SHAPE_ACCENT[piece.shape] as AccentDto} className={styles.shape} />
+          <Shape
+            shape={piece.shape}
+            accent={SHAPE_ACCENT[piece.shape] as AccentDto}
+            className={styles.shape}
+          />
         </span>
       ))}
     </div>

@@ -16,7 +16,7 @@ import {
   type ApplicantRepository,
   type ApplicationInput,
   type SubmitOutcome,
-} from "../src/index.ts";
+} from "../src/index.js";
 
 const input: ApplicationInput = {
   agentName: "  Halftime ",
@@ -28,9 +28,18 @@ const input: ApplicationInput = {
   whyYou: "Six years of NBA props.",
 };
 
-const applicant: Applicant = { email: "a@b.co", linePosition: 1205, referralCode: "abc12345", referrals: 0, application: null };
+const applicant: Applicant = {
+  email: "a@b.co",
+  linePosition: 1205,
+  referralCode: "abc12345",
+  referrals: 0,
+  application: null,
+};
 
-function repository(outcome: SubmitOutcome, stored: Applicant | null = applicant): ApplicantRepository & { submitted: unknown[] } {
+function repository(
+  outcome: SubmitOutcome,
+  stored: Applicant | null = applicant,
+): ApplicantRepository & { submitted: unknown[] } {
   const submitted: unknown[] = [];
   return {
     submitted,
@@ -56,13 +65,30 @@ test("tickers and X handles are normalized", () => {
 });
 
 test("validation returns every problem at once", () => {
-  const bad = { ...input, agentName: " ", ticker: "$", xHandle: "no spaces allowed", category: "Cooking", personality: "", edge: "x".repeat(141), whyYou: "" };
+  const bad = {
+    ...input,
+    agentName: " ",
+    ticker: "$",
+    xHandle: "no spaces allowed",
+    category: "Cooking",
+    personality: "",
+    edge: "x".repeat(141),
+    whyYou: "",
+  };
   try {
     validateApplication(bad);
     assert.fail("expected a validation error");
   } catch (error) {
     assert.ok(error instanceof ApplicationValidationError);
-    assert.deepEqual(error.issues.map((i) => i.field).sort(), ["agentName", "category", "edge", "personality", "ticker", "whyYou", "xHandle"]);
+    assert.deepEqual(error.issues.map((i) => i.field).sort(), [
+      "agentName",
+      "category",
+      "edge",
+      "personality",
+      "ticker",
+      "whyYou",
+      "xHandle",
+    ]);
   }
 });
 
@@ -92,12 +118,18 @@ test("submission failures map to business errors", async () => {
   for (const [outcome, errorType] of cases) {
     await assert.rejects(createSubmitApplication(repository(outcome))("token", input), errorType);
   }
-  await assert.rejects(createSubmitApplication(repository("submitted"))(null, input), ApplicantNotFoundError);
+  await assert.rejects(
+    createSubmitApplication(repository("submitted"))(null, input),
+    ApplicantNotFoundError,
+  );
 });
 
 test("invalid answers never reach the repository", async () => {
   const repo = repository("submitted");
-  await assert.rejects(createSubmitApplication(repo)("token", { ...input, category: "Cooking" }), ApplicationValidationError);
+  await assert.rejects(
+    createSubmitApplication(repo)("token", { ...input, category: "Cooking" }),
+    ApplicationValidationError,
+  );
   assert.equal(repo.submitted.length, 0);
 });
 

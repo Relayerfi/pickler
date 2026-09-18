@@ -19,7 +19,9 @@ export interface SupabaseJwtVerifierConfig {
 }
 
 export function createSupabaseJwtVerifier(config: SupabaseJwtVerifierConfig): AccessTokenVerifier {
-  if (!config.issuer) throw new Error("SupabaseJwtVerifier requires an issuer");
+  if (!config.issuer) {
+    throw new Error("SupabaseJwtVerifier requires an issuer");
+  }
   // jose caches the JWKS and refreshes it on key rotation.
   const keys = config.keys ?? createRemoteJWKSet(new URL(config.jwksUrl));
   const audience = config.audience ?? "authenticated";
@@ -33,8 +35,13 @@ export function createSupabaseJwtVerifier(config: SupabaseJwtVerifierConfig): Ac
           algorithms: ["ES256"],
           clockTolerance: "5s",
         });
-        if (typeof payload.sub !== "string" || payload.sub.length === 0) throw new Error("JWT missing sub");
-        return { userId: payload.sub, email: typeof payload.email === "string" ? payload.email : undefined };
+        if (typeof payload.sub !== "string" || payload.sub.length === 0) {
+          throw new Error("JWT missing sub");
+        }
+        return {
+          userId: payload.sub,
+          email: typeof payload.email === "string" ? payload.email : undefined,
+        };
       } catch (cause) {
         throw new InvalidAccessTokenError({ cause });
       }

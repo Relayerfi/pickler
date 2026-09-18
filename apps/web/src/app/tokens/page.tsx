@@ -18,7 +18,10 @@ export default async function TokensPage({ searchParams }: { searchParams: Promi
   const [agents, search] = await Promise.all([services.listAgents(), searchParams]);
   return (
     <PublicShell>
-      <TokenBoard agents={agents.map(toAgentSummaryDto)} initialFilters={readBoardFilters(search)} />
+      <TokenBoard
+        agents={agents.map(toAgentSummaryDto)}
+        initialFilters={readBoardFilters(search)}
+      />
     </PublicShell>
   );
 }

@@ -1,6 +1,7 @@
-import type { Applicant, Application } from "../domain/application";
+import type { Applicant, Application } from "../domain/application.js";
 
-export type SubmitOutcome = "submitted" | "not_found" | "already_submitted" | "ticker_taken" | "handle_taken";
+export type SubmitOutcome =
+  "submitted" | "not_found" | "already_submitted" | "ticker_taken" | "handle_taken";
 
 export interface ApplicantRepository {
   /** Resolves the secret apply token issued at signup. Unknown or malformed tokens resolve to null. */

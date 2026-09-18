@@ -34,7 +34,8 @@ export interface ForwardExpectations {
   allowedActivityTypes: readonly string[];
 }
 
-export const isTerminalActivity = (status: string) => (TERMINAL_ACTIVITY_STATUSES as readonly string[]).includes(status);
+export const isTerminalActivity = (status: string) =>
+  (TERMINAL_ACTIVITY_STATUSES as readonly string[]).includes(status);
 
 /** The signed request does not match what this caller may forward (HTTP 400). */
 export class InvalidSignedActivityError extends Error {
@@ -54,7 +55,10 @@ export class SignedActivityRejectedError extends Error {
 
 /** Turnkey could not be reached or failed (5xx, network, empty response) (HTTP 502). */
 export class SigningServiceUnavailableError extends Error {
-  constructor(message = "Failed to communicate with signing service", options?: { cause?: unknown }) {
+  constructor(
+    message = "Failed to communicate with signing service",
+    options?: { cause?: unknown },
+  ) {
     super(message, options);
     this.name = "SigningServiceUnavailableError";
   }

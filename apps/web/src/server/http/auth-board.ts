@@ -14,7 +14,10 @@ export function toAuthBoardData(snapshot: LandingSnapshot): AuthBoardData {
     calls: snapshot.tape.slice(0, 3).map((entry) => ({
       ticker: entry.ticker,
       call: entry.call,
-      result: entry.outcome === "open" || entry.pnl === null ? "open" : `${entry.pnl < 0 ? MINUS : "+"}${fixed(entry.pnl)}`,
+      result:
+        entry.outcome === "open" || entry.pnl === null
+          ? "open"
+          : `${entry.pnl < 0 ? MINUS : "+"}${fixed(entry.pnl)}`,
       tone: entry.outcome === "won" ? "win" : entry.outcome === "lost" ? "loss" : "open",
     })),
     deposits: snapshot.backing.recent.map((deposit) => ({

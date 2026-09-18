@@ -25,13 +25,18 @@ export function SignInCard({ board }: { board: AuthBoardData }) {
   const configured = isAuthConfigured();
 
   function after(result: AccountResult) {
-    if (result.kind === "ready") setDone({ kind: "ready", handle: result.profile.handle, returning: true });
-    else router.push("/signup?complete=1");
+    if (result.kind === "ready") {
+      setDone({ kind: "ready", handle: result.profile.handle, returning: true });
+    } else {
+      router.push("/signup?complete=1");
+    }
   }
 
   async function run(kind: "wallet" | "email", action: () => Promise<void>) {
     const supabase = getSupabase();
-    if (!supabase) return;
+    if (!supabase) {
+      return;
+    }
     setBusy(kind);
     setError(null);
     try {
@@ -48,10 +53,17 @@ export function SignInCard({ board }: { board: AuthBoardData }) {
   function signInWithEmail(event: FormEvent) {
     event.preventDefault();
     const supabase = getSupabase();
-    if (!supabase) return;
+    if (!supabase) {
+      return;
+    }
     void run("email", async () => {
-      const { error: authError } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
-      if (authError) throw new Error(authError.message);
+      const { error: authError } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      });
+      if (authError) {
+        throw new Error(authError.message);
+      }
     });
   }
 
@@ -72,11 +84,23 @@ export function SignInCard({ board }: { board: AuthBoardData }) {
         <div className={styles.signinStars} aria-hidden="true" />
         <FallingPieces />
         <div className={styles.signinColumn}>
-          <Image src="/brand/mascot.webp" alt="" width={1000} height={834} className={styles.mascotTop} priority unoptimized />
+          <Image
+            src="/brand/mascot.webp"
+            alt=""
+            width={1000}
+            height={834}
+            className={styles.mascotTop}
+            priority
+            unoptimized
+          />
           <div className={styles.glassCard}>
             <h1 className={styles.cardTitle}>Welcome back</h1>
             <p className={styles.cardLead}>Your agents kept running while you were out.</p>
-            {!configured && <p className={`${styles.alert} ${styles.info}`}>Sign-in is not connected in this environment yet.</p>}
+            {!configured && (
+              <p className={`${styles.alert} ${styles.info}`}>
+                Sign-in is not connected in this environment yet.
+              </p>
+            )}
             {error && (
               <p className={styles.alert} role="alert">
                 {error}
@@ -88,7 +112,9 @@ export function SignInCard({ board }: { board: AuthBoardData }) {
               disabled={!configured || busy !== null}
               onClick={() => {
                 const supabase = getSupabase();
-                if (supabase) void run("wallet", () => signInWithWallet(supabase));
+                if (supabase) {
+                  void run("wallet", () => signInWithWallet(supabase));
+                }
               }}
             >
               <span className={styles.icon} style={iconStyle("wallet")} aria-hidden="true" />
@@ -98,13 +124,33 @@ export function SignInCard({ board }: { board: AuthBoardData }) {
             <form className={styles.stack} onSubmit={signInWithEmail}>
               <label>
                 <span className={styles.srOnly}>Email</span>
-                <input className={styles.input} type="email" autoComplete="email" placeholder="you@email.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                <input
+                  className={styles.input}
+                  type="email"
+                  autoComplete="email"
+                  placeholder="you@email.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
               </label>
               <label>
                 <span className={styles.srOnly}>Password</span>
-                <input className={styles.input} type="password" autoComplete="current-password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+                <input
+                  className={styles.input}
+                  type="password"
+                  autoComplete="current-password"
+                  placeholder="Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
               </label>
-              <button type="submit" className={styles.primary} disabled={!configured || busy !== null || !email || !password}>
+              <button
+                type="submit"
+                className={styles.primary}
+                disabled={!configured || busy !== null || !email || !password}
+              >
                 {busy === "email" ? "Signing in…" : "Sign in"}
               </button>
             </form>

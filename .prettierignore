@@ -1,0 +1,22 @@
+node_modules/
+**/node_modules/
+**/dist/
+**/.next/
+**/.mastra/
+**/.turbo/
+**/.data/
+**/next-env.d.ts
+**/*.tsbuildinfo
+package-lock.json
+.env*
+**/.env*
+contracts/out/
+contracts/cache/
+contracts/broadcast/
+
+# Generated local Supabase state
+supabase/.temp/
+supabase/.branches/
+
+**/.wrangler/
+**/.dev.vars*

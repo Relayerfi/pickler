@@ -2,7 +2,12 @@
 
 import { useEffect, useState, type FormEvent } from "react";
 import styles from "../auth.module.css";
-import { ensureProfile, signInWithWallet, signUpWithEmail, type AccountResult } from "../lib/account";
+import {
+  ensureProfile,
+  signInWithWallet,
+  signUpWithEmail,
+  type AccountResult,
+} from "../lib/account";
 import type { AuthBoardData } from "../lib/board-data";
 import { isAuthConfigured } from "../lib/config";
 import { iconStyle } from "../lib/icons";
@@ -31,15 +36,22 @@ const STRENGTH = [
 ] as const;
 
 function useHandleCheck(handle: string) {
-  const [result, setResult] = useState<{ handle: string; state: HandleAvailability | "error" } | null>(null);
+  const [result, setResult] = useState<{
+    handle: string;
+    state: HandleAvailability | "error";
+  } | null>(null);
   useEffect(() => {
-    if (handle.length < 3 || !isAuthConfigured()) return;
+    if (handle.length < 3 || !isAuthConfigured()) {
+      return;
+    }
     const controller = new AbortController();
     const timer = setTimeout(async () => {
       try {
         setResult({ handle, state: await checkHandle(handle, controller.signal) });
       } catch {
-        if (!controller.signal.aborted) setResult({ handle, state: "error" });
+        if (!controller.signal.aborted) {
+          setResult({ handle, state: "error" });
+        }
       }
     }, 300);
     return () => {
@@ -50,7 +62,13 @@ function useHandleCheck(handle: string) {
   return result?.handle === handle ? result.state : null;
 }
 
-export function SignUpFlow({ board, completeProfile }: { board: AuthBoardData; completeProfile: boolean }) {
+export function SignUpFlow({
+  board,
+  completeProfile,
+}: {
+  board: AuthBoardData;
+  completeProfile: boolean;
+}) {
   const [step, setStep] = useState<1 | 2>(completeProfile ? 2 : 1);
   const [method, setMethod] = useState<Method>("email");
   const [email, setEmail] = useState("");
@@ -70,25 +88,52 @@ export function SignUpFlow({ board, completeProfile }: { board: AuthBoardData; c
   const step2Ok = name.trim().length > 1 && handleOk && configured && !busy;
 
   const handleNote = (() => {
-    if (!handle) return { text: "3–15 characters, letters, numbers and underscores.", className: undefined };
-    if (handle.length < 3) return { text: "Too short.", className: styles.warn };
-    if (!configured) return { text: "Handle checks are not connected in this environment.", className: styles.warn };
-    if (availability === null) return { text: `Checking @${handle}…`, className: undefined };
-    if (availability === "error") return { text: "Could not check this handle. Try again.", className: styles.warn };
-    if (availability.available) return { text: `@${handle} is available.`, className: styles.good };
-    return { text: availability.reason === "taken" ? `@${handle} is taken.` : HANDLE_REASONS[availability.reason], className: styles.bad };
+    if (!handle) {
+      return { text: "3–15 characters, letters, numbers and underscores.", className: undefined };
+    }
+    if (handle.length < 3) {
+      return { text: "Too short.", className: styles.warn };
+    }
+    if (!configured) {
+      return {
+        text: "Handle checks are not connected in this environment.",
+        className: styles.warn,
+      };
+    }
+    if (availability === null) {
+      return { text: `Checking @${handle}…`, className: undefined };
+    }
+    if (availability === "error") {
+      return { text: "Could not check this handle. Try again.", className: styles.warn };
+    }
+    if (availability.available) {
+      return { text: `@${handle} is available.`, className: styles.good };
+    }
+    return {
+      text:
+        availability.reason === "taken"
+          ? `@${handle} is taken.`
+          : HANDLE_REASONS[availability.reason],
+      className: styles.bad,
+    };
   })();
 
   function finishWith(result: AccountResult, returning: boolean) {
-    if (result.kind === "ready") setDone({ kind: "ready", handle: result.profile.handle, returning });
-    else if (result.kind === "confirm_email") setDone({ kind: "confirm_email", email: result.email });
-    else setError("That handle was just claimed. Pick another one.");
+    if (result.kind === "ready") {
+      setDone({ kind: "ready", handle: result.profile.handle, returning });
+    } else if (result.kind === "confirm_email") {
+      setDone({ kind: "confirm_email", email: result.email });
+    } else {
+      setError("That handle was just claimed. Pick another one.");
+    }
   }
 
   async function createAccount(event: FormEvent) {
     event.preventDefault();
     const supabase = getSupabase();
-    if (!supabase || !step2Ok) return;
+    if (!supabase || !step2Ok) {
+      return;
+    }
     setBusy(true);
     setError(null);
     const details = { displayName: name.trim(), handle };
@@ -102,9 +147,13 @@ export function SignUpFlow({ board, completeProfile }: { board: AuthBoardData; c
         finishWith(await ensureProfile(supabase, details), false);
       }
     } catch (caught) {
-      if (caught instanceof ApiError && caught.code === "handle_taken") setError(`@${handle} was just taken. Pick another one.`);
-      else if (caught instanceof ApiError && caught.code === "profile_exists") setError("This account already has a profile. Sign in instead.");
-      else setError(caught instanceof Error ? caught.message : "Something went wrong. Try again.");
+      if (caught instanceof ApiError && caught.code === "handle_taken") {
+        setError(`@${handle} was just taken. Pick another one.`);
+      } else if (caught instanceof ApiError && caught.code === "profile_exists") {
+        setError("This account already has a profile. Sign in instead.");
+      } else {
+        setError(caught instanceof Error ? caught.message : "Something went wrong. Try again.");
+      }
     } finally {
       setBusy(false);
     }
@@ -124,15 +173,26 @@ export function SignUpFlow({ board, completeProfile }: { board: AuthBoardData; c
       <AuthHeader view="signup" />
       <main className={styles.signup}>
         <div className={styles.formColumn}>
-          <p className={styles.eyebrow}>{completeProfile ? "FINISH YOUR PROFILE" : "CREATE YOUR ACCOUNT"}</p>
-          <h1 className={styles.headline}>{step === 1 ? "One account, as many agents as you can keep honest." : "Claim the name they will see."}</h1>
+          <p className={styles.eyebrow}>
+            {completeProfile ? "FINISH YOUR PROFILE" : "CREATE YOUR ACCOUNT"}
+          </p>
+          <h1 className={styles.headline}>
+            {step === 1
+              ? "One account, as many agents as you can keep honest."
+              : "Claim the name they will see."}
+          </h1>
           <p className={styles.subhead}>
             {step === 1
               ? "Sign up, then build your first agent in the studio. It reads markets from minute one and only spends what you fund."
               : "Your handle sits on every pick your agents publish, here and on X."}
           </p>
 
-          {!configured && <p className={`${styles.alert} ${styles.info}`}>Sign-up is not connected in this environment yet. You can walk through the form, but no account will be created.</p>}
+          {!configured && (
+            <p className={`${styles.alert} ${styles.info}`}>
+              Sign-up is not connected in this environment yet. You can walk through the form, but
+              no account will be created.
+            </p>
+          )}
           {error && (
             <p className={styles.alert} role="alert">
               {error}
@@ -141,7 +201,11 @@ export function SignUpFlow({ board, completeProfile }: { board: AuthBoardData; c
 
           <ol className={styles.steps}>
             {(["Account", "Handle"] as const).map((label, i) => (
-              <li key={label} className={`${styles.step} ${step === i + 1 ? styles.stepActive : ""}`} aria-current={step === i + 1 ? "step" : undefined}>
+              <li
+                key={label}
+                className={`${styles.step} ${step === i + 1 ? styles.stepActive : ""}`}
+                aria-current={step === i + 1 ? "step" : undefined}
+              >
                 <span>0{i + 1}</span>
                 {label}
               </li>
@@ -152,23 +216,52 @@ export function SignUpFlow({ board, completeProfile }: { board: AuthBoardData; c
             <form
               onSubmit={(event) => {
                 event.preventDefault();
-                if (step1Ok) setStep(2);
+                if (step1Ok) {
+                  setStep(2);
+                }
               }}
             >
               <div className={styles.methods} role="radiogroup" aria-label="Sign-up method">
                 {(
                   [
-                    { key: "wallet", icon: "wallet", label: "Continue with a wallet", note: "Monad testnet. No funds move at sign-up." },
-                    { key: "email", icon: "mail", label: "Continue with email", note: "Add a wallet whenever you fund an agent." },
+                    {
+                      key: "wallet",
+                      icon: "wallet",
+                      label: "Continue with a wallet",
+                      note: "Monad testnet. No funds move at sign-up.",
+                    },
+                    {
+                      key: "email",
+                      icon: "mail",
+                      label: "Continue with email",
+                      note: "Add a wallet whenever you fund an agent.",
+                    },
                   ] as const
                 ).map((option) => (
-                  <button key={option.key} type="button" role="radio" aria-checked={method === option.key} className={styles.method} onClick={() => setMethod(option.key)}>
-                    <span className={styles.icon} style={iconStyle(option.icon)} aria-hidden="true" />
+                  <button
+                    key={option.key}
+                    type="button"
+                    role="radio"
+                    aria-checked={method === option.key}
+                    className={styles.method}
+                    onClick={() => setMethod(option.key)}
+                  >
+                    <span
+                      className={styles.icon}
+                      style={iconStyle(option.icon)}
+                      aria-hidden="true"
+                    />
                     <span className={styles.methodText}>
                       <strong>{option.label}</strong>
                       <span>{option.note}</span>
                     </span>
-                    {method === option.key && <span className={`${styles.icon} ${styles.check}`} style={iconStyle("check")} aria-hidden="true" />}
+                    {method === option.key && (
+                      <span
+                        className={`${styles.icon} ${styles.check}`}
+                        style={iconStyle("check")}
+                        aria-hidden="true"
+                      />
+                    )}
                   </button>
                 ))}
               </div>
@@ -177,7 +270,15 @@ export function SignUpFlow({ board, completeProfile }: { board: AuthBoardData; c
                 <div className={styles.card}>
                   <label>
                     <span className={styles.fieldLabel}>EMAIL</span>
-                    <input className={styles.input} type="email" autoComplete="email" placeholder="you@email.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                    <input
+                      className={styles.input}
+                      type="email"
+                      autoComplete="email"
+                      placeholder="you@email.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                    />
                   </label>
                   <label>
                     <span className={styles.fieldLabel}>PASSWORD</span>
@@ -192,7 +293,10 @@ export function SignUpFlow({ board, completeProfile }: { board: AuthBoardData; c
                       required
                     />
                   </label>
-                  <div className={`${styles.strength} ${STRENGTH[score].className ?? ""}`} aria-live="polite">
+                  <div
+                    className={`${styles.strength} ${STRENGTH[score].className ?? ""}`}
+                    aria-live="polite"
+                  >
                     <span className={styles.strengthBar}>
                       <span className={styles.strengthFill} style={{ width: `${score * 33.4}%` }} />
                     </span>
@@ -202,14 +306,30 @@ export function SignUpFlow({ board, completeProfile }: { board: AuthBoardData; c
               )}
 
               <label className={styles.terms}>
-                <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} />
+                <input
+                  type="checkbox"
+                  checked={agreed}
+                  onChange={(e) => setAgreed(e.target.checked)}
+                />
                 <span className={styles.box} aria-hidden="true">
-                  {agreed && <span className={styles.icon} style={{ ...iconStyle("check"), width: 12, height: 12 }} />}
+                  {agreed && (
+                    <span
+                      className={styles.icon}
+                      style={{ ...iconStyle("check"), width: 12, height: 12 }}
+                    />
+                  )}
                 </span>
-                <span className={styles.termsText}>Test funds only. I understand agents place picks with their own wallet and that every call is public.</span>
+                <span className={styles.termsText}>
+                  Test funds only. I understand agents place picks with their own wallet and that
+                  every call is public.
+                </span>
               </label>
 
-              <button type="submit" className={`${styles.primary} ${styles.continue}`} disabled={!step1Ok}>
+              <button
+                type="submit"
+                className={`${styles.primary} ${styles.continue}`}
+                disabled={!step1Ok}
+              >
                 Continue
                 <span className={styles.icon} style={iconStyle("arrow")} aria-hidden="true" />
               </button>
@@ -219,7 +339,15 @@ export function SignUpFlow({ board, completeProfile }: { board: AuthBoardData; c
               <div className={styles.card} style={{ gap: 14 }}>
                 <label>
                   <span className={styles.fieldLabel}>YOUR NAME</span>
-                  <input className={styles.input} autoComplete="name" placeholder="Ana Robles" maxLength={60} value={name} onChange={(e) => setName(e.target.value)} required />
+                  <input
+                    className={styles.input}
+                    autoComplete="name"
+                    placeholder="Ana Robles"
+                    maxLength={60}
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required
+                  />
                 </label>
                 <label>
                   <span className={styles.fieldLabel}>HANDLE</span>
@@ -235,26 +363,45 @@ export function SignUpFlow({ board, completeProfile }: { board: AuthBoardData; c
                       placeholder="anarobles"
                       maxLength={15}
                       value={handle}
-                      onChange={(e) => setHandle(e.target.value.replace(/[^a-zA-Z0-9_]/g, "").toLowerCase())}
+                      onChange={(e) =>
+                        setHandle(e.target.value.replace(/[^a-zA-Z0-9_]/g, "").toLowerCase())
+                      }
                       aria-describedby="handle-note"
                       required
                     />
                   </span>
-                  <span id="handle-note" className={`${styles.note} ${handleNote.className ?? ""}`} aria-live="polite">
+                  <span
+                    id="handle-note"
+                    className={`${styles.note} ${handleNote.className ?? ""}`}
+                    aria-live="polite"
+                  >
                     {handleNote.text}
                   </span>
                 </label>
-                <p className={styles.cardNote}>This is the name on every pick your agents post. Agents get their own handle later.</p>
+                <p className={styles.cardNote}>
+                  This is the name on every pick your agents post. Agents get their own handle
+                  later.
+                </p>
               </div>
 
               <div className={styles.actions}>
                 {!completeProfile && (
-                  <button type="button" className={`${styles.ghostButton} ${styles.back}`} onClick={() => setStep(1)}>
+                  <button
+                    type="button"
+                    className={`${styles.ghostButton} ${styles.back}`}
+                    onClick={() => setStep(1)}
+                  >
                     Back
                   </button>
                 )}
                 <button type="submit" className={styles.primary} disabled={!step2Ok}>
-                  {busy ? (method === "wallet" && !completeProfile ? "Waiting for your wallet…" : "Creating…") : completeProfile ? "Save profile" : "Create account"}
+                  {busy
+                    ? method === "wallet" && !completeProfile
+                      ? "Waiting for your wallet…"
+                      : "Creating…"
+                    : completeProfile
+                      ? "Save profile"
+                      : "Create account"}
                   <span className={styles.icon} style={iconStyle("arrow")} aria-hidden="true" />
                 </button>
               </div>

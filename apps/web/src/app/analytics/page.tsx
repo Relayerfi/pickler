@@ -19,7 +19,10 @@ export default async function Analytics({ searchParams }: { searchParams: Promis
   const analytics = await services.getPlatformAnalytics(range);
   return (
     <PublicShell>
-      <AnalyticsPage analytics={toPlatformAnalyticsDto(analytics)} nowMs={services.clock.now().getTime()} />
+      <AnalyticsPage
+        analytics={toPlatformAnalyticsDto(analytics)}
+        nowMs={services.clock.now().getTime()}
+      />
     </PublicShell>
   );
 }

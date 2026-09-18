@@ -8,13 +8,22 @@ export const runtime = "nodejs";
 
 export async function POST(request: Request) {
   const body = await readJsonObject(request, 1024);
-  if (body instanceof Response) return body;
-  if (typeof body.email !== "string") return errorResponse(400, "invalid_request", "Field 'email' must be a string.");
+  if (body instanceof Response) {
+    return body;
+  }
+  if (typeof body.email !== "string") {
+    return errorResponse(400, "invalid_request", "Field 'email' must be a string.");
+  }
   const referralCode = typeof body.ref === "string" ? body.ref : null;
 
   try {
-    const placement = await services.joinWaitlist(body.email, { referralCode, currentToken: await readApplyToken() });
-    if (placement.applyToken) await writeApplyToken(placement.applyToken);
+    const placement = await services.joinWaitlist(body.email, {
+      referralCode,
+      currentToken: await readApplyToken(),
+    });
+    if (placement.applyToken) {
+      await writeApplyToken(placement.applyToken);
+    }
     const response: JoinWaitlistResponse = {
       position: placement.position,
       alreadyJoined: placement.alreadyJoined,

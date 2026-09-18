@@ -24,11 +24,22 @@ export interface ErrorExtras {
   detail?: string;
 }
 
-export function successEnvelope<T>(data: T, path: string, message = "Success", statusCode = 200): ApiEnvelope<T> {
+export function successEnvelope<T>(
+  data: T,
+  path: string,
+  message = "Success",
+  statusCode = 200,
+): ApiEnvelope<T> {
   return { success: true, message, data, statusCode, timestamp: new Date().toISOString(), path };
 }
 
-export function errorEnvelope(message: string, statusCode: number, path: string, traceId?: string, extras?: ErrorExtras): ApiEnvelope<never> {
+export function errorEnvelope(
+  message: string,
+  statusCode: number,
+  path: string,
+  traceId?: string,
+  extras?: ErrorExtras,
+): ApiEnvelope<never> {
   return {
     success: false,
     message,

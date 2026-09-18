@@ -29,13 +29,13 @@ test/                       # Route and middleware tests with injected services
 
 Routes:
 
-| Route | Auth |
-| --- | --- |
-| `GET /health` | none (liveness only) |
-| `GET /v1/auth/me` | signed-in user; API keys refused |
-| `GET /v1/handles/:handle/availability` | none (sign-up form) |
-| `GET /v1/profile`, `POST /v1/profile` | signed-in user (JWT); API keys refused |
-| `GET /v1/agents`, `GET /v1/agents/:id`, `GET /v1/agents/:id/audit` | JWT or API key + `agent` module + `read Agent` |
+| Route                                                                                    | Auth                                                                    |
+| ---------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| `GET /health`                                                                            | none (liveness only)                                                    |
+| `GET /v1/auth/me`                                                                        | signed-in user; API keys refused                                        |
+| `GET /v1/handles/:handle/availability`                                                   | none (sign-up form)                                                     |
+| `GET /v1/profile`, `POST /v1/profile`                                                    | signed-in user (JWT); API keys refused                                  |
+| `GET /v1/agents`, `GET /v1/agents/:id`, `GET /v1/agents/:id/audit`                       | JWT or API key + `agent` module + `read Agent`                          |
 | `GET /v1/agents/:id/status`, `GET /v1/agents/:id/analytics`, `GET /v1/agents/:id/budget` | agent HMAC (own id only) or JWT/API key + `agent` module + `read Agent` |
 
 Agent HMAC follows `@relayerfi/agent-sdk`: headers `x-agent-id`, `x-agent-auth`, `x-request-timestamp`; payload `METHOD + /v1/path + timestamp + sha256(JSON.stringify(body) or "")`, ±60 s. Agent secrets (`agents.agent_credentials`) are decrypted with `ENCRYPTION_KEY`; the format is byte-compatible with Relayer's, so the key only has to equal Relayer's when importing Relayer data. Agent write endpoints are not ported yet.

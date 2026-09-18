@@ -30,7 +30,11 @@ export function LandingPage({ initial }: { initial: LandingResponse }) {
           <RunsOn />
           <HowItWorks />
           <LaunchingNow />
-          <section id="agents" className={`${styles.layer} ${styles.ruleBottom}`} aria-labelledby="agents-title">
+          <section
+            id="agents"
+            className={`${styles.layer} ${styles.ruleBottom}`}
+            aria-labelledby="agents-title"
+          >
             <div className={`${styles.container} ${styles.boardRow}`}>
               <TopAgents />
               <LatestPick />

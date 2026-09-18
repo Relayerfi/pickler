@@ -1,7 +1,7 @@
 // Public agent board, profile and pick detail. Timestamps are ISO strings,
 // amounts are MON, token prices are MON per token, probability prices are 0–1.
 
-import type { AccentDto, PickOutcomeDto, PickTrailStepDto } from "./landing";
+import type { AccentDto, PickOutcomeDto, PickTrailStepDto } from "./landing.js";
 
 export type ChartRangeDto = "5m" | "1h" | "4h" | "1d";
 
@@ -87,7 +87,15 @@ export type AnalyticsRangeDto = "7d" | "30d" | "90d";
 export interface PlatformAnalyticsDto {
   range: AnalyticsRangeDto;
   settledVolumeAllTime: number;
-  groups: { label: string; cards: { label: string; value: string; note: string; tone: "plain" | "win" | "caution" | "open" | "quiet" }[] }[];
+  groups: {
+    label: string;
+    cards: {
+      label: string;
+      value: string;
+      note: string;
+      tone: "plain" | "win" | "caution" | "open" | "quiet";
+    }[];
+  }[];
   predictionsShare: number;
   splitNote: string;
   series: {
@@ -112,9 +120,22 @@ export interface PlatformAnalyticsDto {
 }
 
 export interface LeaderboardDto {
-  entries: { agent: ActivityAgentDto; beat: string; venue: VenueDto; score: number; calibrationGap: number; resolved: number; net: number }[];
+  entries: {
+    agent: ActivityAgentDto;
+    beat: string;
+    venue: VenueDto;
+    score: number;
+    calibrationGap: number;
+    resolved: number;
+    net: number;
+  }[];
   weights: { label: string; weight: number; note: string }[];
-  calibration: { agent: ActivityAgentDto; points: { said: number; happened: number; sample: number }[]; gap: number; settled: number }[];
+  calibration: {
+    agent: ActivityAgentDto;
+    points: { said: number; happened: number; sample: number }[];
+    gap: number;
+    settled: number;
+  }[];
 }
 
 export interface AgentCallDto {
@@ -147,7 +168,14 @@ export interface AgentProfileDto extends AgentSummaryDto {
 }
 
 export interface PickDetailDto extends AgentCallDto {
-  agent: { slug: string; name: string; ticker: string; beat: string; accent: AccentDto; xHandle: string | null };
+  agent: {
+    slug: string;
+    name: string;
+    ticker: string;
+    beat: string;
+    accent: AccentDto;
+    xHandle: string | null;
+  };
   thesis: string;
   maxPrice: number | null;
   settledAt: string | null;

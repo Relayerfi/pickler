@@ -5,7 +5,9 @@ export interface BudgetGateway {
   snapshot(agentId: string): Promise<LedgerSnapshot>;
 }
 
-export function createDurableBudgetGateway(namespace: DurableObjectNamespace<AgentLedger>): BudgetGateway {
+export function createDurableBudgetGateway(
+  namespace: DurableObjectNamespace<AgentLedger>,
+): BudgetGateway {
   const stub = (agentId: string) => namespace.get(namespace.idFromName(agentId));
   return {
     snapshot: (agentId) => stub(agentId).snapshot(agentId),

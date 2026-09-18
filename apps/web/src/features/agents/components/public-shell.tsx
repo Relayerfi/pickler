@@ -23,7 +23,11 @@ const MENUS = [
     items: [
       { title: "Deploy Agent", sub: "Launch one with its rules and its budget" },
       { title: "MCP & Skills", sub: "Give it tools, feeds and a way to act" },
-      { title: "Reputation", href: "/leaderboard#score", sub: "How the score is computed, weight by weight" },
+      {
+        title: "Reputation",
+        href: "/leaderboard#score",
+        sub: "How the score is computed, weight by weight",
+      },
     ],
   },
   {
@@ -40,7 +44,9 @@ const MENUS = [
 export function PublicShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const [open, setOpen] = useState<string | null>(null);
-  const owner = MENUS.find((menu) => menu.items.some((item) => "href" in item && pathname.startsWith(item.href.split("#")[0]!)))?.key;
+  const owner = MENUS.find((menu) =>
+    menu.items.some((item) => "href" in item && pathname.startsWith(item.href.split("#")[0]!)),
+  )?.key;
 
   return (
     <div className={styles.page}>
@@ -51,7 +57,15 @@ export function PublicShell({ children }: { children: ReactNode }) {
       <nav className={styles.nav} aria-label="Main">
         <div className={styles.navRow}>
           <Link href="/" className={styles.brand}>
-            <Image src="/brand/logo.png" alt="" width={128} height={135} className={styles.brandLogo} priority unoptimized />
+            <Image
+              src="/brand/logo.png"
+              alt=""
+              width={128}
+              height={135}
+              className={styles.brandLogo}
+              priority
+              unoptimized
+            />
             <span className={styles.brandName}>PICKLER</span>
           </Link>
 
@@ -82,7 +96,10 @@ export function PublicShell({ children }: { children: ReactNode }) {
                           <span className={styles.navItemSub}>{item.sub}</span>
                         </Link>
                       ) : (
-                        <span key={item.title} className={`${styles.navItem} ${styles.navItemSoon}`}>
+                        <span
+                          key={item.title}
+                          className={`${styles.navItem} ${styles.navItemSoon}`}
+                        >
                           <span className={styles.navItemTitle}>
                             {item.title}
                             <span className={styles.soonChip}>SOON</span>
@@ -106,7 +123,14 @@ export function PublicShell({ children }: { children: ReactNode }) {
         </div>
       </nav>
       {/* Click-away closer: the dropdowns are the only thing it dismisses. */}
-      {open && <button type="button" className={styles.navScrim} aria-label="Close menu" onClick={() => setOpen(null)} />}
+      {open && (
+        <button
+          type="button"
+          className={styles.navScrim}
+          aria-label="Close menu"
+          onClick={() => setOpen(null)}
+        />
+      )}
       {children}
     </div>
   );

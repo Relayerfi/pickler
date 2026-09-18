@@ -1,5 +1,5 @@
-import type { AgentCredentialRecord, RegisteredAgent } from "../domain/agent";
-import type { AgentEvent, AuditPage, AuditQuery } from "../domain/events";
+import type { AgentCredentialRecord, RegisteredAgent } from "../domain/agent.js";
+import type { AgentEvent, AuditPage, AuditQuery } from "../domain/events.js";
 
 export interface AgentRegistry {
   findById(id: string): Promise<RegisteredAgent | null>;

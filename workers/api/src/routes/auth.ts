@@ -11,12 +11,18 @@ export function authRoutes(authenticate: Authenticate) {
   return new Hono<AppEnv>().get("/me", authenticated(authenticate, { userOnly: true }), (c) => {
     const principal = c.get("principal");
     const workspace = c.get("workspace");
-    if (principal.kind !== "user") throw new Error("userOnly authentication returned a non-user principal");
+    if (principal.kind !== "user") {
+      throw new Error("userOnly authentication returned a non-user principal");
+    }
     return c.json(
       successEnvelope(
         {
           user: { id: principal.id, email: principal.email ?? null },
-          workspace: workspace && { id: workspace.id, name: workspace.name, activeModules: workspace.activeModules },
+          workspace: workspace && {
+            id: workspace.id,
+            name: workspace.name,
+            activeModules: workspace.activeModules,
+          },
           role: principal.memberRole,
         },
         c.req.path,

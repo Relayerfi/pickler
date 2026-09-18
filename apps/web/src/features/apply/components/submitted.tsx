@@ -20,21 +20,31 @@ export function Submitted({
   onRefresh: (applicant: ApplicantResponse) => void;
 }) {
   const [copied, setCopied] = useState(false);
-  const origin = useSyncExternalStore(subscribeNever, () => window.location.origin, () => "");
+  const origin = useSyncExternalStore(
+    subscribeNever,
+    () => window.location.origin,
+    () => "",
+  );
 
   // Referral counts change while the applicant is away; refresh when they come back.
   useEffect(() => {
     const refresh = async () => {
-      if (document.visibilityState !== "visible") return;
+      if (document.visibilityState !== "visible") {
+        return;
+      }
       const response = await fetch("/api/v1/applications").catch(() => null);
-      if (response?.ok) onRefresh((await response.json()) as ApplicantResponse);
+      if (response?.ok) {
+        onRefresh((await response.json()) as ApplicantResponse);
+      }
     };
     document.addEventListener("visibilitychange", refresh);
     return () => document.removeEventListener("visibilitychange", refresh);
   }, [onRefresh]);
 
   useEffect(() => {
-    if (!copied) return;
+    if (!copied) {
+      return;
+    }
     const timer = setTimeout(() => setCopied(false), 1600);
     return () => clearTimeout(timer);
   }, [copied]);
@@ -56,8 +66,16 @@ export function Submitted({
     { label: "AGENT NAME", value: application.agentName, swatch: SWATCHES.lime },
     { label: "TICKER", value: application.ticker, swatch: SWATCHES.lime },
     { label: "X ACCOUNT", value: application.xHandle, swatch: SWATCHES.white },
-    { label: "CATEGORY", value: application.category, swatch: categorySwatch(application.category) },
-    { label: "PERSONALITY", value: application.personality, swatch: personalitySwatch(application.personality) },
+    {
+      label: "CATEGORY",
+      value: application.category,
+      swatch: categorySwatch(application.category),
+    },
+    {
+      label: "PERSONALITY",
+      value: application.personality,
+      swatch: personalitySwatch(application.personality),
+    },
   ];
 
   return (
@@ -72,7 +90,8 @@ export function Submitted({
             {application.agentName.toUpperCase()} IS IN LINE.
           </h1>
           <p className={styles.sentLead}>
-            We send invites in batches every Friday. When yours lands, the name and ticker are held and the studio opens with your category already set.
+            We send invites in batches every Friday. When yours lands, the name and ticker are held
+            and the studio opens with your category already set.
           </p>
           <dl className={styles.tiles}>
             <div className={styles.tile}>
@@ -97,7 +116,11 @@ export function Submitted({
           <dl className={styles.heldList}>
             {held.map((row) => (
               <div key={row.label} className={styles.heldRow}>
-                <span className={styles.pixel} style={colorVars(row.swatch.color, row.swatch.rgb)} aria-hidden="true" />
+                <span
+                  className={styles.pixel}
+                  style={colorVars(row.swatch.color, row.swatch.rgb)}
+                  aria-hidden="true"
+                />
                 <span className={styles.heldText}>
                   <dt>{row.label}</dt>
                   <dd>{row.value}</dd>
@@ -115,14 +138,25 @@ export function Submitted({
                 BRING YOUR OWN CROWD.
               </h2>
               <p className={styles.crowdLead}>
-                Post your agent from its own X account. Every creator who applies through your link moves you up {REFERRAL_BOOST} places, and we let in the
-                agents people already want to watch.
+                Post your agent from its own X account. Every creator who applies through your link
+                moves you up {REFERRAL_BOOST} places, and we let in the agents people already want
+                to watch.
               </p>
               <div className={styles.row}>
-                <a href={shareUrl} target="_blank" rel="noopener noreferrer" className={`${styles.primaryButton} ${styles.shareButton}`}>
+                <a
+                  href={shareUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`${styles.primaryButton} ${styles.shareButton}`}
+                >
                   POST IT FROM {application.xHandle}
                 </a>
-                <button type="button" className={styles.secondaryButton} onClick={copyLink} disabled={!origin}>
+                <button
+                  type="button"
+                  className={styles.secondaryButton}
+                  onClick={copyLink}
+                  disabled={!origin}
+                >
                   {copied ? "LINK COPIED" : "COPY YOUR LINK"}
                 </button>
               </div>

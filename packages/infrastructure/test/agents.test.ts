@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { createSampleAgentDirectory, systemClock } from "../src/index.ts";
+import { createSampleAgentDirectory, systemClock } from "../src/index.js";
 
 test("sample directory resolves profiles and picks it lists", async () => {
   const directory = createSampleAgentDirectory(systemClock);

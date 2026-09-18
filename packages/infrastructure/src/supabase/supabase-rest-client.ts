@@ -21,10 +21,17 @@ export function createSupabaseRestClient(config: SupabaseConfig): SupabaseRestCl
   const baseUrl = new URL("/rest/v1/rpc/", config.url);
   const doFetch = config.fetch ?? fetch;
   const timeoutMs = config.timeoutMs ?? 5000;
-  const headers: Record<string, string> = { apikey: config.secretKey, "Content-Type": "application/json" };
-  if (config.schema) headers["Content-Profile"] = config.schema;
+  const headers: Record<string, string> = {
+    apikey: config.secretKey,
+    "Content-Type": "application/json",
+  };
+  if (config.schema) {
+    headers["Content-Profile"] = config.schema;
+  }
   // Legacy JWT keys also travel as a bearer token; new sb_* keys must not.
-  if (!config.secretKey.startsWith("sb_")) headers.Authorization = `Bearer ${config.secretKey}`;
+  if (!config.secretKey.startsWith("sb_")) {
+    headers.Authorization = `Bearer ${config.secretKey}`;
+  }
 
   return {
     async rpc(fn, args = {}) {
@@ -41,7 +48,9 @@ export function createSupabaseRestClient(config: SupabaseConfig): SupabaseRestCl
         throw new DataSourceUnavailableError(source, { cause });
       }
       if (!response.ok) {
-        throw new DataSourceUnavailableError(source, { cause: new Error(`HTTP ${response.status}`) });
+        throw new DataSourceUnavailableError(source, {
+          cause: new Error(`HTTP ${response.status}`),
+        });
       }
       try {
         return await response.json();

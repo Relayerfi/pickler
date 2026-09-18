@@ -1,5 +1,5 @@
-import type { LandingSnapshot, TokenLaunch } from "../domain/landing";
-import type { LandingReadModel } from "../ports/landing-read-model";
+import type { LandingSnapshot, TokenLaunch } from "../domain/landing.js";
+import type { LandingReadModel } from "../ports/landing-read-model.js";
 
 export const LANDING_LIMITS = {
   tape: 14,
@@ -21,10 +21,15 @@ export function createGetLanding(readModel: LandingReadModel) {
       ...snapshot,
       tape: snapshot.tape.slice(0, LANDING_LIMITS.tape),
       spawns: snapshot.spawns.slice(0, LANDING_LIMITS.spawns),
-      backing: { ...snapshot.backing, recent: snapshot.backing.recent.slice(0, LANDING_LIMITS.deposits) },
+      backing: {
+        ...snapshot.backing,
+        recent: snapshot.backing.recent.slice(0, LANDING_LIMITS.deposits),
+      },
       launches: [...snapshot.launches].sort(byStageThenRaised).slice(0, LANDING_LIMITS.launches),
       // The board ranks betting results, never token price.
-      leaderboard: [...snapshot.leaderboard].sort((a, b) => b.net - a.net).slice(0, LANDING_LIMITS.leaderboard),
+      leaderboard: [...snapshot.leaderboard]
+        .sort((a, b) => b.net - a.net)
+        .slice(0, LANDING_LIMITS.leaderboard),
       picks: [...snapshot.picks]
         .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
         .slice(0, LANDING_LIMITS.picks),

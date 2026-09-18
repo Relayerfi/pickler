@@ -38,14 +38,18 @@ input {
 
 .fallback-eyebrow {
   margin: 0;
-  font: 500 12.5px/1 var(--font-mono), monospace;
+  font:
+    500 12.5px/1 var(--font-mono),
+    monospace;
   letter-spacing: 0.14em;
   color: #7fe3ff;
 }
 
 .fallback h1 {
   margin: 0;
-  font: 700 clamp(28px, 5vw, 48px)/1 var(--font-display), sans-serif;
+  font:
+    700 clamp(28px, 5vw, 48px)/1 var(--font-display),
+    sans-serif;
 }
 
 .fallback p {
@@ -60,7 +64,9 @@ input {
   border: 1px solid rgba(255, 255, 255, 0.5);
   background: #c8f03a;
   color: #0b1200;
-  font: 500 13px/1 var(--font-mono), monospace;
+  font:
+    500 13px/1 var(--font-mono),
+    monospace;
   letter-spacing: 0.1em;
   cursor: pointer;
 }
@@ -72,7 +78,9 @@ input {
   border: 1px solid rgba(255, 255, 255, 0.5);
   background: #c8f03a;
   color: #0b1200;
-  font: 500 13px/1 var(--font-mono), monospace;
+  font:
+    500 13px/1 var(--font-mono),
+    monospace;
   letter-spacing: 0.1em;
   text-decoration: none;
 }

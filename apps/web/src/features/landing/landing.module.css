@@ -102,7 +102,9 @@
 }
 
 .pixelBevel {
-  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.45), 0 0 12px rgba(var(--accent-rgb), 0.55);
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.45),
+    0 0 12px rgba(var(--accent-rgb), 0.55);
 }
 
 .mark {
@@ -147,7 +149,9 @@
   font: 500 13.5px/1 var(--mono);
   letter-spacing: 0.1em;
   cursor: pointer;
-  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.4), 0 0 40px rgba(200, 240, 58, 0.5);
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.4),
+    0 0 40px rgba(200, 240, 58, 0.5);
   transition:
     box-shadow 240ms cubic-bezier(0.22, 1, 0.36, 1),
     transform 240ms cubic-bezier(0.22, 1, 0.36, 1);
@@ -159,7 +163,9 @@
 }
 
 .primaryButton:hover {
-  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.4), 0 0 70px rgba(200, 240, 58, 0.85);
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.4),
+    0 0 70px rgba(200, 240, 58, 0.85);
   transform: translateY(-2px);
 }
 
@@ -207,8 +213,12 @@
   background-image:
     radial-gradient(rgba(255, 255, 255, 0.85) 1px, transparent 1px),
     radial-gradient(rgba(255, 255, 255, 0.5) 1px, transparent 1px);
-  background-size: 120px 120px, 70px 70px;
-  background-position: 0 0, 35px 45px;
+  background-size:
+    120px 120px,
+    70px 70px;
+  background-position:
+    0 0,
+    35px 45px;
   animation: starsDrift 90s linear infinite;
 }
 
@@ -230,7 +240,12 @@
   height: 600px;
   transform: translateX(-50%);
   pointer-events: none;
-  background: radial-gradient(50% 50% at 50% 50%, rgba(155, 123, 255, 0.4) 0%, rgba(90, 216, 255, 0.1) 55%, rgba(5, 6, 26, 0) 100%);
+  background: radial-gradient(
+    50% 50% at 50% 50%,
+    rgba(155, 123, 255, 0.4) 0%,
+    rgba(90, 216, 255, 0.1) 55%,
+    rgba(5, 6, 26, 0) 100%
+  );
 }
 
 .floorGrid {
@@ -624,7 +639,11 @@
   width: 86%;
   height: 86%;
   transform: translate(-50%, -50%);
-  background: radial-gradient(50% 50% at 50% 50%, rgba(155, 123, 255, 0.55) 0%, rgba(155, 123, 255, 0) 70%);
+  background: radial-gradient(
+    50% 50% at 50% 50%,
+    rgba(155, 123, 255, 0.55) 0%,
+    rgba(155, 123, 255, 0) 70%
+  );
 }
 
 .mascot {
@@ -886,7 +905,11 @@
   padding: 34px 22px;
   overflow: hidden;
   border-right: 1px solid var(--rule);
-  background-image: linear-gradient(180deg, rgba(var(--accent-rgb), 0.12) 0%, rgba(5, 6, 26, 0) 70%);
+  background-image: linear-gradient(
+    180deg,
+    rgba(var(--accent-rgb), 0.12) 0%,
+    rgba(5, 6, 26, 0) 70%
+  );
 }
 
 .howGhost {
@@ -911,7 +934,9 @@
 .howTitle .pixel {
   width: 16px;
   height: 16px;
-  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.45), 0 0 14px rgba(var(--accent-rgb), 0.6);
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.45),
+    0 0 14px rgba(var(--accent-rgb), 0.6);
 }
 
 .howNote {
@@ -1451,45 +1476,100 @@
 /* ---------- Keyframes ---------- */
 
 @keyframes tapeFlow {
-  from { transform: translateX(0); }
-  to { transform: translateX(-50%); }
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
 }
 
 @keyframes blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.2; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.2;
+  }
 }
 
 @keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-8px); }
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
 }
 
 @keyframes starsDrift {
-  from { background-position: 0 0, 35px 45px; }
-  to { background-position: 0 1200px, 35px 745px; }
+  from {
+    background-position:
+      0 0,
+      35px 45px;
+  }
+  to {
+    background-position:
+      0 1200px,
+      35px 745px;
+  }
 }
 
 @keyframes starsBreathe {
-  from { transform: translateY(0) scale(1); opacity: 0.5; }
-  50% { opacity: 0.85; }
-  to { transform: translateY(-40px) scale(1.06); opacity: 0.5; }
+  from {
+    transform: translateY(0) scale(1);
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 0.85;
+  }
+  to {
+    transform: translateY(-40px) scale(1.06);
+    opacity: 0.5;
+  }
 }
 
 @keyframes gridScroll {
-  from { background-position: 0 0, 0 0; }
-  to { background-position: 0 64px, 64px 0; }
+  from {
+    background-position:
+      0 0,
+      0 0;
+  }
+  to {
+    background-position:
+      0 64px,
+      64px 0;
+  }
 }
 
 @keyframes drop {
-  0% { transform: translateY(-230px); }
-  72% { transform: translateY(0); }
-  84% { transform: translateY(-7px); }
-  100% { transform: translateY(0); }
+  0% {
+    transform: translateY(-230px);
+  }
+  72% {
+    transform: translateY(0);
+  }
+  84% {
+    transform: translateY(-7px);
+  }
+  100% {
+    transform: translateY(0);
+  }
 }
 
 @keyframes pop {
-  0% { transform: scale(0.4); opacity: 0; }
-  60% { transform: scale(1.18); opacity: 1; }
-  100% { transform: scale(1); opacity: 1; }
+  0% {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.18);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }

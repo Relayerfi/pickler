@@ -81,7 +81,10 @@ export function toPickDetailDto(pick: PickDetail): PickDetailDto {
   };
 }
 
-const toActivityAgentDto = (agent: ActivityAgent): ActivityAgentDto => ({ ...agent, slug: agentSlug(agent.ticker) });
+const toActivityAgentDto = (agent: ActivityAgent): ActivityAgentDto => ({
+  ...agent,
+  slug: agentSlug(agent.ticker),
+});
 
 const toActivityEventDto = (event: ActivityEvent): ActivityEventDto => ({
   ...event,
@@ -104,7 +107,10 @@ export function toAgentPersonaDto(persona: AgentPersona): AgentPersonaDto {
 export function toPlatformAnalyticsDto(analytics: PlatformAnalytics): PlatformAnalyticsDto {
   return {
     ...analytics,
-    groups: analytics.groups.map((group) => ({ label: group.label, cards: group.cards.map((card) => ({ ...card })) })),
+    groups: analytics.groups.map((group) => ({
+      label: group.label,
+      cards: group.cards.map((card) => ({ ...card })),
+    })),
     series: analytics.series.map((series) => ({
       ...series,
       from: series.from.toISOString(),
@@ -112,7 +118,11 @@ export function toPlatformAnalyticsDto(analytics: PlatformAnalytics): PlatformAn
       points: series.points.map((point) => ({ ...point })),
     })),
     log: analytics.log.map(toActivityEventDto),
-    table: analytics.table.map((row) => ({ ...row, agent: toActivityAgentDto(row.agent), form: [...row.form] })),
+    table: analytics.table.map((row) => ({
+      ...row,
+      agent: toActivityAgentDto(row.agent),
+      form: [...row.form],
+    })),
   };
 }
 

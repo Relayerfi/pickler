@@ -4,7 +4,7 @@
 // Tables: identity.workspaces (Relayer's integrators) and identity.workspace_members.
 
 import { DataSourceUnavailableError, type Workspace, type WorkspaceDirectory } from "@pickler/core";
-import type { SupabaseAdmin } from "../supabase-admin-client";
+import type { SupabaseAdmin } from "../supabase-admin-client.js";
 
 interface WorkspaceRow {
   id: string;
@@ -25,7 +25,11 @@ const toWorkspace = (row: WorkspaceRow): Workspace => ({
 });
 
 function unwrap<T>(result: { data: T; error: { message: string } | null }, source: string): T {
-  if (result.error) throw new DataSourceUnavailableError(`supabase.identity.${source}`, { cause: new Error(result.error.message) });
+  if (result.error) {
+    throw new DataSourceUnavailableError(`supabase.identity.${source}`, {
+      cause: new Error(result.error.message),
+    });
+  }
   return result.data;
 }
 
@@ -35,28 +39,54 @@ export function createSupabaseWorkspaceDirectory(db: SupabaseAdmin): WorkspaceDi
 
   return {
     async findById(id) {
-      const row = unwrap(await workspaces().select(WORKSPACE_COLUMNS).eq("id", id).maybeSingle<WorkspaceRow>(), "workspaces.findById");
+      const row = unwrap(
+        await workspaces().select(WORKSPACE_COLUMNS).eq("id", id).maybeSingle<WorkspaceRow>(),
+        "workspaces.findById",
+      );
       return row && toWorkspace(row);
     },
 
     async findOwnedBy(userId) {
-      const row = unwrap(await workspaces().select(WORKSPACE_COLUMNS).eq("owner_user_id", userId).maybeSingle<WorkspaceRow>(), "workspaces.findOwnedBy");
+      const row = unwrap(
+        await workspaces()
+          .select(WORKSPACE_COLUMNS)
+          .eq("owner_user_id", userId)
+          .maybeSingle<WorkspaceRow>(),
+        "workspaces.findOwnedBy",
+      );
       return row && toWorkspace(row);
     },
 
     async findOldestMembership(userId) {
       const row = unwrap(
-        await members().select("workspace_id, role").eq("user_id", userId).order("created_at", { ascending: true }).limit(1).maybeSingle<{ workspace_id: string; role: string }>(),
+        await members()
+          .select("workspace_id, role")
+          .eq("user_id", userId)
+          .order("created_at", { ascending: true })
+          .limit(1)
+          .maybeSingle<{ workspace_id: string; role: string }>(),
         "workspace_members.findOldest",
       );
       return row && { workspaceId: row.workspace_id, role: row.role };
     },
 
     async roleOf(userId, workspaceId) {
-      const owner = unwrap(await workspaces().select("owner_user_id").eq("id", workspaceId).maybeSingle<{ owner_user_id: string }>(), "workspaces.owner");
-      if (owner?.owner_user_id === userId) return "admin";
+      const owner = unwrap(
+        await workspaces()
+          .select("owner_user_id")
+          .eq("id", workspaceId)
+          .maybeSingle<{ owner_user_id: string }>(),
+        "workspaces.owner",
+      );
+      if (owner?.owner_user_id === userId) {
+        return "admin";
+      }
       const membership = unwrap(
-        await members().select("role").eq("user_id", userId).eq("workspace_id", workspaceId).maybeSingle<{ role: string }>(),
+        await members()
+          .select("role")
+          .eq("user_id", userId)
+          .eq("workspace_id", workspaceId)
+          .maybeSingle<{ role: string }>(),
         "workspace_members.role",
       );
       return membership?.role ?? null;

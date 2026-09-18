@@ -9,7 +9,17 @@ import { formatChange, formatTokenPrice } from "../lib/format";
 const RANGES: ChartRangeDto[] = ["5m", "1h", "4h", "1d"];
 type Candles = NonNullable<AgentProfileDto["market"]>["candles"];
 
-export function PriceChart({ price, change24h, candles, accent }: { price: number; change24h: number; candles: Candles; accent: AccentDto }) {
+export function PriceChart({
+  price,
+  change24h,
+  candles,
+  accent,
+}: {
+  price: number;
+  change24h: number;
+  candles: Candles;
+  accent: AccentDto;
+}) {
   const [range, setRange] = useState<ChartRangeDto>("1h");
   const series = candles[range];
 
@@ -26,18 +36,32 @@ export function PriceChart({ price, change24h, candles, accent }: { price: numbe
       <div className={styles.panelHead}>
         <span className={styles.label}>PRICE</span>
         <span className={styles.panelHeadValue}>{formatTokenPrice(price)} MON</span>
-        <span className={`${styles.change} ${change24h < 0 ? styles.toneLoss : styles.toneWin}`} style={{ margin: 0 }}>
+        <span
+          className={`${styles.change} ${change24h < 0 ? styles.toneLoss : styles.toneWin}`}
+          style={{ margin: 0 }}
+        >
           {formatChange(change24h)} 24H
         </span>
         <span className={styles.ranges} role="group" aria-label="Chart range">
           {RANGES.map((r) => (
-            <button key={r} type="button" className={styles.rangeButton} aria-pressed={r === range} onClick={() => setRange(r)}>
+            <button
+              key={r}
+              type="button"
+              className={styles.rangeButton}
+              aria-pressed={r === range}
+              onClick={() => setRange(r)}
+            >
               {r.toUpperCase()}
             </button>
           ))}
         </span>
       </div>
-      <div className={styles.chart} style={accentVars(accent)} role="img" aria-label={`${range} price candles`}>
+      <div
+        className={styles.chart}
+        style={accentVars(accent)}
+        role="img"
+        aria-label={`${range} price candles`}
+      >
         {series.length === 0 ? (
           <p className={styles.chartEmpty}>No trades in this range yet.</p>
         ) : (
@@ -49,13 +73,25 @@ export function PriceChart({ price, change24h, candles, accent }: { price: numbe
                 const bodyBottom = y(Math.min(candle.open, candle.close));
                 return (
                   <span key={i} className={styles.candle}>
-                    <span className={`${styles.wick} ${tone}`} style={{ top: `${y(candle.high)}%`, height: `${y(candle.low) - y(candle.high)}%` }} />
-                    <span className={`${styles.body} ${tone}`} style={{ top: `${bodyTop}%`, height: `${bodyBottom - bodyTop}%` }} />
+                    <span
+                      className={`${styles.wick} ${tone}`}
+                      style={{
+                        top: `${y(candle.high)}%`,
+                        height: `${y(candle.low) - y(candle.high)}%`,
+                      }}
+                    />
+                    <span
+                      className={`${styles.body} ${tone}`}
+                      style={{ top: `${bodyTop}%`, height: `${bodyBottom - bodyTop}%` }}
+                    />
                   </span>
                 );
               })}
             </div>
-            <span className={styles.lastPrice} style={{ top: `calc(14px + (100% - 28px) * ${(y(price) / 100).toFixed(4)})` }}>
+            <span
+              className={styles.lastPrice}
+              style={{ top: `calc(14px + (100% - 28px) * ${(y(price) / 100).toFixed(4)})` }}
+            >
               {formatTokenPrice(price)}
             </span>
           </>

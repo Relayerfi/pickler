@@ -8,7 +8,7 @@ import {
   DecryptionError,
   encryptAes256Gcm,
   isLegacyFormat,
-} from "../src/index.ts";
+} from "../src/index.js";
 
 // Relayer's original implementation, inlined as the compatibility oracle.
 const relayer = {
@@ -25,7 +25,9 @@ const relayer = {
     const key = nodeCrypto.scryptSync(secret, data.subarray(0, 16), 32);
     const decipher = nodeCrypto.createDecipheriv("aes-256-gcm", key, data.subarray(16, 32));
     decipher.setAuthTag(data.subarray(data.length - 16));
-    return decipher.update(data.subarray(32, data.length - 16)).toString("utf8") + decipher.final("utf8");
+    return (
+      decipher.update(data.subarray(32, data.length - 16)).toString("utf8") + decipher.final("utf8")
+    );
   },
   legacyParts(plaintext: string, secret: string) {
     const key = nodeCrypto.scryptSync(secret, "salt", 32);
@@ -50,7 +52,10 @@ test("values encrypted by Pickler decrypt in Relayer", async () => {
 });
 
 test("encryption is salted", async () => {
-  assert.notEqual(await encryptAes256Gcm(PLAINTEXT, SECRET), await encryptAes256Gcm(PLAINTEXT, SECRET));
+  assert.notEqual(
+    await encryptAes256Gcm(PLAINTEXT, SECRET),
+    await encryptAes256Gcm(PLAINTEXT, SECRET),
+  );
 });
 
 test("wrong keys, tampering and malformed input raise DecryptionError", async () => {
@@ -67,6 +72,9 @@ test("legacy formats written by Relayer still decrypt", async () => {
   const json = JSON.stringify(parts);
   assert.equal(isLegacyFormat(json), true);
   assert.equal(await decryptLegacyAes256Gcm(json, SECRET), PLAINTEXT);
-  assert.equal(await decryptLegacySeparateColumns(parts.data, parts.iv, parts.tag, SECRET), PLAINTEXT);
+  assert.equal(
+    await decryptLegacySeparateColumns(parts.data, parts.iv, parts.tag, SECRET),
+    PLAINTEXT,
+  );
   await assert.rejects(decryptLegacyAes256Gcm("{not json", SECRET), DecryptionError);
 });

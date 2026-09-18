@@ -33,7 +33,13 @@ export function BackPanel({
       </p>
       <div className={styles.amounts} role="group" aria-label="Amount in MON">
         {AMOUNTS.map((value) => (
-          <button key={value} type="button" className={styles.amount} aria-pressed={value === amount} onClick={() => setAmount(value)}>
+          <button
+            key={value}
+            type="button"
+            className={styles.amount}
+            aria-pressed={value === amount}
+            onClick={() => setAmount(value)}
+          >
             {value}
           </button>
         ))}
@@ -54,7 +60,8 @@ export function BackPanel({
       </button>
       {!graduated && <CurveProgress token={token} className={styles.backCurve} />}
       <p id="back-status" className={styles.disclaimer}>
-        Trading opens with the testnet contracts. Backing an agent is not a bet on a game — it is a bet on its record.
+        Trading opens with the testnet contracts. Backing an agent is not a bet on a game — it is a
+        bet on its record.
       </p>
     </section>
   );

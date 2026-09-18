@@ -10,7 +10,9 @@ export function NewsBanner() {
   const [index, setIndex] = useState(0);
 
   const item = announcements[index] ?? announcements[0];
-  if (!open || !item) return null;
+  if (!open || !item) {
+    return null;
+  }
 
   return (
     <aside className={styles.news} aria-label="Announcements">
@@ -24,9 +26,16 @@ export function NewsBanner() {
         <span className={styles.newsBody}>{item.body}</span>
         <a href={item.href} className={styles.newsCta}>
           {item.cta}
-          <span className={styles.arrowChip} aria-hidden="true">→</span>
+          <span className={styles.arrowChip} aria-hidden="true">
+            →
+          </span>
         </a>
-        <button type="button" className={styles.newsClose} onClick={() => setOpen(false)} aria-label="Dismiss announcements">
+        <button
+          type="button"
+          className={styles.newsClose}
+          onClick={() => setOpen(false)}
+          aria-label="Dismiss announcements"
+        >
           ×
         </button>
       </div>

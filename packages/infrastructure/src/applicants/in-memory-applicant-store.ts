@@ -1,4 +1,9 @@
-import type { Applicant, ApplicantRepository, Application, WaitlistRepository } from "@pickler/core";
+import type {
+  Applicant,
+  ApplicantRepository,
+  Application,
+  WaitlistRepository,
+} from "@pickler/core";
 
 interface Seat {
   email: string;
@@ -34,15 +39,21 @@ export function createInMemoryApplicantStore(options: InMemoryApplicantStoreOpti
     email: seat.email,
     linePosition: seat.position,
     referralCode: seat.referralCode,
-    referrals: [...byEmail.values()].filter((s) => s.referredBy === seat.referralCode && s.application).length,
+    referrals: [...byEmail.values()].filter(
+      (s) => s.referredBy === seat.referralCode && s.application,
+    ).length,
     application: seat.application,
   });
 
   const waitlist: WaitlistRepository = {
     async join(email, referralCode) {
       const existing = byEmail.get(email);
-      if (existing) return { position: existing.position, alreadyJoined: true, applyToken: null };
-      const referrer = referralCode ? [...byEmail.values()].find((s) => s.referralCode === referralCode) : undefined;
+      if (existing) {
+        return { position: existing.position, alreadyJoined: true, applyToken: null };
+      }
+      const referrer = referralCode
+        ? [...byEmail.values()].find((s) => s.referralCode === referralCode)
+        : undefined;
       const seat: Seat = {
         email,
         position: initialCount + byEmail.size + 1,
@@ -57,7 +68,8 @@ export function createInMemoryApplicantStore(options: InMemoryApplicantStoreOpti
     },
   };
 
-  const tickerTaken = (ticker: string) => reserved.has(ticker) || [...byToken.values()].some((s) => s.application?.ticker === ticker);
+  const tickerTaken = (ticker: string) =>
+    reserved.has(ticker) || [...byToken.values()].some((s) => s.application?.ticker === ticker);
 
   const applicants: ApplicantRepository = {
     async findByToken(token) {
@@ -66,11 +78,19 @@ export function createInMemoryApplicantStore(options: InMemoryApplicantStoreOpti
     },
     async submit(token, application) {
       const seat = byToken.get(token);
-      if (!seat) return "not_found";
-      if (seat.application) return "already_submitted";
-      if (tickerTaken(application.ticker)) return "ticker_taken";
+      if (!seat) {
+        return "not_found";
+      }
+      if (seat.application) {
+        return "already_submitted";
+      }
+      if (tickerTaken(application.ticker)) {
+        return "ticker_taken";
+      }
       const handle = application.xHandle.toLowerCase();
-      if ([...byToken.values()].some((s) => s.application?.xHandle.toLowerCase() === handle)) return "handle_taken";
+      if ([...byToken.values()].some((s) => s.application?.xHandle.toLowerCase() === handle)) {
+        return "handle_taken";
+      }
       seat.application = { ...application, submittedAt: now() };
       return "submitted";
     },

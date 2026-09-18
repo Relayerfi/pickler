@@ -1,4 +1,4 @@
-import type { ApplicationFieldDto } from "./applications";
+import type { ApplicationFieldDto } from "./applications.js";
 
 export type ApiErrorCode =
   | "invalid_request"

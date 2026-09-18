@@ -1,8 +1,8 @@
 // Public read models for the agent board, agent profile and pick detail.
 // Amounts are MON in display units; token prices are MON per token.
 
-import type { Accent, PickOutcome, PickTrailStep } from "../../landing/domain/landing";
-import type { Venue } from "./public-views";
+import type { Accent, PickOutcome, PickTrailStep } from "../../landing/domain/landing.js";
+import type { Venue } from "./public-views.js";
 
 export type TokenStage = "pre-graduation" | "graduated";
 
@@ -88,7 +88,7 @@ export interface PickDetail extends AgentCall {
   chain: { positionTx: string | null; settlementTx: string | null; agentWallet: string | null };
 }
 
-export * from "./public-views";
+export * from "./public-views.js";
 
 /** URL slug for a token: "$HALF" → "half". */
 export const agentSlug = (ticker: string) => ticker.replace(/^\$/, "").toLowerCase();

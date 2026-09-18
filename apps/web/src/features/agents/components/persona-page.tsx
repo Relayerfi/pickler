@@ -6,14 +6,25 @@ import { useState } from "react";
 import { accentVars } from "@/lib/accent";
 import styles from "../agents.module.css";
 import { calibrationTone, calibrationVerdict } from "../lib/reputation";
-import { formatAge, formatCompact, formatInteger, formatPercent, formatSigned } from "../lib/format";
+import {
+  formatAge,
+  formatCompact,
+  formatInteger,
+  formatPercent,
+  formatSigned,
+} from "../lib/format";
 import { ActivityRow } from "./activity-row";
 import { AgentAvatar, VenueChip } from "./agent-parts";
 
 const TABS = ["decisions", "thinks", "record", "answers"] as const;
 type Tab = (typeof TABS)[number];
 
-const tabLabel: Record<Tab, string> = { decisions: "Decisions", thinks: "How it thinks", record: "Record", answers: "Answers" };
+const tabLabel: Record<Tab, string> = {
+  decisions: "Decisions",
+  thinks: "How it thinks",
+  record: "Record",
+  answers: "Answers",
+};
 
 const xUrl = (handle: string) => `https://x.com/${handle.replace(/^@/, "")}`;
 
@@ -40,7 +51,12 @@ export function PersonaPage({ persona, nowMs }: { persona: AgentPersonaDto; nowM
             <h1 className={styles.heroTitle}>{persona.name}</h1>
             <span className={styles.handleChip}>@{persona.handle}</span>
             {persona.xHandle && (
-              <a href={xUrl(persona.xHandle)} target="_blank" rel="noopener noreferrer" className={styles.chip}>
+              <a
+                href={xUrl(persona.xHandle)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.chip}
+              >
                 {persona.xHandle}
               </a>
             )}
@@ -78,12 +94,16 @@ export function PersonaPage({ persona, nowMs }: { persona: AgentPersonaDto; nowM
         <p className={styles.tokenAsideRow}>
           <strong>{persona.ticker}</strong>
           <span className={styles.chip}>mcap {formatCompact(persona.marketCap)} MON</span>
-          <span className={`${styles.chip} ${styles.chipMuted}`}>{persona.stage === "graduated" ? "GRADUATED" : "PRE-GRAD"}</span>
-          {persona.creatorHandle && <span className={styles.quiet}>deployed by {persona.creatorHandle}</span>}
+          <span className={`${styles.chip} ${styles.chipMuted}`}>
+            {persona.stage === "graduated" ? "GRADUATED" : "PRE-GRAD"}
+          </span>
+          {persona.creatorHandle && (
+            <span className={styles.quiet}>deployed by {persona.creatorHandle}</span>
+          )}
         </p>
         <p className={styles.quiet}>
-          Holding it funds the agent and gives you the right to ask it questions. It does not buy influence over what it calls, and it is not what this
-          page is about.
+          Holding it funds the agent and gives you the right to ask it questions. It does not buy
+          influence over what it calls, and it is not what this page is about.
         </p>
       </section>
 
@@ -106,7 +126,12 @@ export function PersonaPage({ persona, nowMs }: { persona: AgentPersonaDto; nowM
       </div>
 
       {tab === "decisions" && (
-        <section id="panel-decisions" role="tabpanel" aria-labelledby="tab-decisions" className={styles.panel}>
+        <section
+          id="panel-decisions"
+          role="tabpanel"
+          aria-labelledby="tab-decisions"
+          className={styles.panel}
+        >
           {persona.decisions.length === 0 ? (
             <p className={styles.empty}>Nothing published yet.</p>
           ) : (
@@ -127,7 +152,12 @@ export function PersonaPage({ persona, nowMs }: { persona: AgentPersonaDto; nowM
       )}
 
       {tab === "thinks" && (
-        <section id="panel-thinks" role="tabpanel" aria-labelledby="tab-thinks" className={styles.columns}>
+        <section
+          id="panel-thinks"
+          role="tabpanel"
+          aria-labelledby="tab-thinks"
+          className={styles.columns}
+        >
           <div className={styles.mainColumn}>
             <div className={`${styles.panel} ${styles.sideCard}`}>
               <h2 className={styles.label}>TEMPERAMENT</h2>
@@ -137,14 +167,18 @@ export function PersonaPage({ persona, nowMs }: { persona: AgentPersonaDto; nowM
                     <dt>{meter.label}</dt>
                     <dd>
                       <span className={styles.bar}>
-                        <span className={`${styles.barFill} ${styles.barCurve}`} style={{ width: `${meter.value}%` }} />
+                        <span
+                          className={`${styles.barFill} ${styles.barCurve}`}
+                          style={{ width: `${meter.value}%` }}
+                        />
                       </span>
                     </dd>
                   </div>
                 ))}
               </dl>
               <p className={styles.quiet}>
-                Read from its own behaviour, not from a questionnaire: how long it waits, how big it goes, how often it speaks.
+                Read from its own behaviour, not from a questionnaire: how long it waits, how big it
+                goes, how often it speaks.
               </p>
             </div>
           </div>
@@ -173,9 +207,21 @@ export function PersonaPage({ persona, nowMs }: { persona: AgentPersonaDto; nowM
         <section id="panel-record" role="tabpanel" aria-labelledby="tab-record">
           <dl className={`${styles.panel} ${styles.record}`}>
             <RecordItem label="SETTLED PICKS" value={formatInteger(persona.resolved)} />
-            <RecordItem label="HIT RATE" value={formatPercent(persona.hitRate)} className={styles.toneOpen} />
-            <RecordItem label="AGENT P&L" value={`${formatSigned(persona.net)} MON`} className={persona.net < 0 ? styles.toneLoss : styles.toneWin} />
-            <RecordItem label="CALIBRATION GAP · PTS" value={persona.calibrationGap.toFixed(1)} className={styles[tone]} />
+            <RecordItem
+              label="HIT RATE"
+              value={formatPercent(persona.hitRate)}
+              className={styles.toneOpen}
+            />
+            <RecordItem
+              label="AGENT P&L"
+              value={`${formatSigned(persona.net)} MON`}
+              className={persona.net < 0 ? styles.toneLoss : styles.toneWin}
+            />
+            <RecordItem
+              label="CALIBRATION GAP · PTS"
+              value={persona.calibrationGap.toFixed(1)}
+              className={styles[tone]}
+            />
           </dl>
           <div className={`${styles.panel} ${styles.sideCard}`}>
             <h2 className={styles.label}>WHAT THE RECORD MEANS</h2>
@@ -194,11 +240,17 @@ export function PersonaPage({ persona, nowMs }: { persona: AgentPersonaDto; nowM
       )}
 
       {tab === "answers" && (
-        <section id="panel-answers" role="tabpanel" aria-labelledby="tab-answers" className={styles.answers}>
+        <section
+          id="panel-answers"
+          role="tabpanel"
+          aria-labelledby="tab-answers"
+          className={styles.answers}
+        >
           <p className={`${styles.panel} ${styles.askCard}`}>
             <strong>ASKING COSTS {persona.askPrice}</strong>
             <span>
-              The fee goes to its operating budget, which is what it trades with. Holders ask at this price; if it cannot answer, nothing is charged.
+              The fee goes to its operating budget, which is what it trades with. Holders ask at
+              this price; if it cannot answer, nothing is charged.
             </span>
           </p>
           {persona.answers.map((answer) => (
@@ -209,18 +261,28 @@ export function PersonaPage({ persona, nowMs }: { persona: AgentPersonaDto; nowM
             </article>
           ))}
           <p className={styles.quiet}>
-            It answers on its reads, its sources and its limits. It cannot take orders, trade on your behalf, or reveal anything its creator has not
-            declared.
+            It answers on its reads, its sources and its limits. It cannot take orders, trade on
+            your behalf, or reveal anything its creator has not declared.
           </p>
         </section>
       )}
 
-      <p className={styles.quiet}>Last decision {persona.decisions[0] ? formatAge(persona.decisions[0].at, nowMs) : "—"} ago.</p>
+      <p className={styles.quiet}>
+        Last decision {persona.decisions[0] ? formatAge(persona.decisions[0].at, nowMs) : "—"} ago.
+      </p>
     </main>
   );
 }
 
-function RecordItem({ label, value, className }: { label: string; value: string; className?: string | undefined }) {
+function RecordItem({
+  label,
+  value,
+  className,
+}: {
+  label: string;
+  value: string;
+  className?: string | undefined;
+}) {
   return (
     <div className={styles.recordItem}>
       <dt>{label}</dt>

@@ -46,11 +46,15 @@ export function LatestPick() {
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
   useAnimationInterval(() => {
-    if (!paused && data.picks.length > 1) setIndex((i) => (i + 1) % data.picks.length);
+    if (!paused && data.picks.length > 1) {
+      setIndex((i) => (i + 1) % data.picks.length);
+    }
   }, ROTATE_MS);
 
   const pick = data.picks[index % Math.max(1, data.picks.length)];
-  if (!pick) return null;
+  if (!pick) {
+    return null;
+  }
   const { label, className } = status[pick.outcome];
 
   return (
@@ -111,7 +115,11 @@ export function LatestPick() {
                   )}
                 </span>
                 <span className={styles.trailNote}>{step.note}</span>
-                {step.figure && <span className={`${styles.figure} ${figureTone[step.figure.tone]}`}>{step.figure.text}</span>}
+                {step.figure && (
+                  <span className={`${styles.figure} ${figureTone[step.figure.tone]}`}>
+                    {step.figure.text}
+                  </span>
+                )}
               </span>
             </li>
           ))}

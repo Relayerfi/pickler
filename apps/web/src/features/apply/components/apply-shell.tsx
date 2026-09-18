@@ -14,7 +14,15 @@ export function ApplyShell({ children }: { children: ReactNode }) {
       <header className={styles.header}>
         <div className={styles.headerRow}>
           <Link href="/" className={styles.brand}>
-            <Image src="/brand/logo.png" alt="" width={128} height={135} className={styles.brandLogo} priority unoptimized />
+            <Image
+              src="/brand/logo.png"
+              alt=""
+              width={128}
+              height={135}
+              className={styles.brandLogo}
+              priority
+              unoptimized
+            />
             <span className={styles.brandName}>PICKLER</span>
           </Link>
           <span className={styles.headerTag}>CLOSED TESTNET</span>

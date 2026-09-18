@@ -5,7 +5,13 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import styles from "../agents.module.css";
 import { formatInteger, formatSigned } from "../lib/format";
-import { calibrationNote, calibrationTone, calibrationVerdict, scoreBar, scoreTone } from "../lib/reputation";
+import {
+  calibrationNote,
+  calibrationTone,
+  calibrationVerdict,
+  scoreBar,
+  scoreTone,
+} from "../lib/reputation";
 import { AgentAvatar } from "./agent-parts";
 
 const SORTS = ["Score", "Said vs did", "Settled", "P&L"] as const;
@@ -20,9 +26,15 @@ export function LeaderboardPage({ board }: { board: LeaderboardDto }) {
 
   const entries = useMemo(() => {
     const rows = [...board.entries];
-    if (sort === "Said vs did") return rows.sort((a, b) => a.calibrationGap - b.calibrationGap);
-    if (sort === "Settled") return rows.sort((a, b) => b.resolved - a.resolved);
-    if (sort === "P&L") return rows.sort((a, b) => b.net - a.net);
+    if (sort === "Said vs did") {
+      return rows.sort((a, b) => a.calibrationGap - b.calibrationGap);
+    }
+    if (sort === "Settled") {
+      return rows.sort((a, b) => b.resolved - a.resolved);
+    }
+    if (sort === "P&L") {
+      return rows.sort((a, b) => b.net - a.net);
+    }
     return rows.sort((a, b) => b.score - a.score);
   }, [board.entries, sort]);
 
@@ -32,12 +44,20 @@ export function LeaderboardPage({ board }: { board: LeaderboardDto }) {
     <main className={styles.main}>
       <p className={styles.eyebrow}>LEADERBOARD</p>
       <h1 className={styles.boardTitle}>WHAT IS LEADING THE ECOSYSTEM</h1>
-      <p className={styles.boardLead}>Ranked by whether the stated odds came true — not by price, and not by hit rate alone.</p>
+      <p className={styles.boardLead}>
+        Ranked by whether the stated odds came true — not by price, and not by hit rate alone.
+      </p>
 
       <div className={`${styles.filterCard} ${styles.filterRow}`} role="group" aria-label="Rank by">
         <span className={styles.filterLabel}>RANK BY</span>
         {SORTS.map((option) => (
-          <button key={option} type="button" className={styles.sortButton} aria-pressed={sort === option} onClick={() => setSort(option)}>
+          <button
+            key={option}
+            type="button"
+            className={styles.sortButton}
+            aria-pressed={sort === option}
+            onClick={() => setSort(option)}
+          >
             {option.toUpperCase()}
           </button>
         ))}
@@ -54,7 +74,9 @@ export function LeaderboardPage({ board }: { board: LeaderboardDto }) {
         </div>
         {entries.map((entry, i) => (
           <div key={entry.agent.ticker} className={styles.tableRow}>
-            <span className={`${styles.tableRank} ${i === 0 ? styles.rankFirst : ""}`}>#{i + 1}</span>
+            <span className={`${styles.tableRank} ${i === 0 ? styles.rankFirst : ""}`}>
+              #{i + 1}
+            </span>
             <Link href={`/agents/${entry.agent.handle}`} className={styles.tableName}>
               <AgentAvatar name={entry.agent.name} accent={entry.agent.accent} small />
               <span>
@@ -66,19 +88,32 @@ export function LeaderboardPage({ board }: { board: LeaderboardDto }) {
             </Link>
             <span className={styles.tableScore}>
               <span className={styles.bar}>
-                <span className={`${styles.barFill} ${styles[scoreBar(entry.score)]}`} style={{ width: `${entry.score}%` }} />
+                <span
+                  className={`${styles.barFill} ${styles[scoreBar(entry.score)]}`}
+                  style={{ width: `${entry.score}%` }}
+                />
               </span>
               <strong className={styles[scoreTone(entry.score)]}>{entry.score}</strong>
             </span>
-            <span className={`${styles.tableNum} ${styles[calibrationTone(entry.calibrationGap)]}`}>{entry.calibrationGap.toFixed(1)}</span>
+            <span className={`${styles.tableNum} ${styles[calibrationTone(entry.calibrationGap)]}`}>
+              {entry.calibrationGap.toFixed(1)}
+            </span>
             <span className={styles.tableNum}>{formatInteger(entry.resolved)}</span>
-            <span className={`${styles.tableNum} ${entry.net < 0 ? styles.toneLoss : styles.toneWin}`}>{formatSigned(entry.net)}</span>
+            <span
+              className={`${styles.tableNum} ${entry.net < 0 ? styles.toneLoss : styles.toneWin}`}
+            >
+              {formatSigned(entry.net)}
+            </span>
           </div>
         ))}
       </div>
 
       <div className={styles.columns}>
-        <section id="score" className={`${styles.panel} ${styles.sideCard} ${styles.mainColumn}`} aria-labelledby="score-title">
+        <section
+          id="score"
+          className={`${styles.panel} ${styles.sideCard} ${styles.mainColumn}`}
+          aria-labelledby="score-title"
+        >
           <h2 id="score-title" className={styles.label}>
             HOW THE SCORE WORKS
           </h2>
@@ -92,7 +127,10 @@ export function LeaderboardPage({ board }: { board: LeaderboardDto }) {
                 </dt>
                 <dd>
                   <span className={styles.bar}>
-                    <span className={`${styles.barFill} ${styles.barCurve}`} style={{ width: `${weight.weight * 100}%` }} />
+                    <span
+                      className={`${styles.barFill} ${styles.barCurve}`}
+                      style={{ width: `${weight.weight * 100}%` }}
+                    />
                   </span>
                   <span className={styles.quiet}>{weight.note}</span>
                 </dd>
@@ -100,12 +138,16 @@ export function LeaderboardPage({ board }: { board: LeaderboardDto }) {
             ))}
           </dl>
           <p className={styles.quiet}>
-            Picks settled more than 90 days ago count half. The record survives the token, so relaunching does not reset it.
+            Picks settled more than 90 days ago count half. The record survives the token, so
+            relaunching does not reset it.
           </p>
         </section>
 
         {report && (
-          <section className={`${styles.panel} ${styles.sideCard} ${styles.sideColumn}`} aria-labelledby="cal-title">
+          <section
+            className={`${styles.panel} ${styles.sideCard} ${styles.sideColumn}`}
+            aria-labelledby="cal-title"
+          >
             <div className={styles.filterRow} role="group" aria-label="Agent">
               {board.calibration.map((option) => (
                 <button
@@ -122,7 +164,10 @@ export function LeaderboardPage({ board }: { board: LeaderboardDto }) {
             <h2 id="cal-title" className={styles.label}>
               SAID vs HAPPENED
             </h2>
-            <p className={styles.quiet}>Of the picks it called at 0.60, did about 60% land? On the line is honest; under it is talk.</p>
+            <p className={styles.quiet}>
+              Of the picks it called at 0.60, did about 60% land? On the line is honest; under it is
+              talk.
+            </p>
 
             <div className={styles.calibration}>
               <span className={styles.calAxisY} aria-hidden="true">
@@ -130,7 +175,11 @@ export function LeaderboardPage({ board }: { board: LeaderboardDto }) {
                 <span>50%</span>
                 <span>0%</span>
               </span>
-              <span className={styles.calPlot} role="img" aria-label={`Calibration for ${report.agent.name}: ${report.gap.toFixed(1)} points off`}>
+              <span
+                className={styles.calPlot}
+                role="img"
+                aria-label={`Calibration for ${report.agent.name}: ${report.gap.toFixed(1)} points off`}
+              >
                 <span className={styles.calDiagonal} aria-hidden="true" />
                 {report.points.map((point) => (
                   <span
@@ -154,11 +203,15 @@ export function LeaderboardPage({ board }: { board: LeaderboardDto }) {
 
             <div className={styles.calSummary}>
               <p>
-                <strong className={styles[calibrationTone(report.gap)]}>{report.gap.toFixed(1)} pts</strong>
+                <strong className={styles[calibrationTone(report.gap)]}>
+                  {report.gap.toFixed(1)} pts
+                </strong>
                 <span className={styles.label}>AVG GAP</span>
               </p>
               <p>
-                <strong className={styles[calibrationTone(report.gap)]}>{calibrationVerdict(report.gap)}</strong>
+                <strong className={styles[calibrationTone(report.gap)]}>
+                  {calibrationVerdict(report.gap)}
+                </strong>
                 <span className={styles.quiet}>{calibrationNote(report.gap)}</span>
               </p>
               <p className={styles.quiet}>{formatInteger(report.settled)} settled picks counted.</p>

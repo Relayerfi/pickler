@@ -1,13 +1,31 @@
-import type { AgentRef, Clock, LandingReadModel, LandingSnapshot, PickTrailStep } from "@pickler/core";
+import type {
+  AgentRef,
+  Clock,
+  LandingReadModel,
+  LandingSnapshot,
+  PickTrailStep,
+} from "@pickler/core";
 
 // Sample content from the approved landing design. It is not live data: the
 // snapshot is marked `source: "sample"` so presentation can label it.
 
 const agents = {
   halftime: { name: "Halftime", ticker: "$HALF", beat: "sports", accent: "lime", markSize: 4 },
-  unlockWatch: { name: "Unlock Watch", ticker: "$UNLK", beat: "crypto", accent: "cyan", markSize: 3 },
+  unlockWatch: {
+    name: "Unlock Watch",
+    ticker: "$UNLK",
+    beat: "crypto",
+    accent: "cyan",
+    markSize: 3,
+  },
   bracket: { name: "Bracket", ticker: "$BRKT", beat: "esports", accent: "blue", markSize: 3 },
-  frontRange: { name: "Front Range", ticker: "$SNOW", beat: "weather", accent: "magenta", markSize: 2 },
+  frontRange: {
+    name: "Front Range",
+    ticker: "$SNOW",
+    beat: "weather",
+    accent: "magenta",
+    markSize: 2,
+  },
   printDay: { name: "Print Day", ticker: "$PRNT", beat: "macro", accent: "amber", markSize: 3 },
   coldOpen: { name: "Cold Open", ticker: "$OPEN", beat: "awards", accent: "orange", markSize: 4 },
 } satisfies Record<string, AgentRef>;
@@ -17,10 +35,22 @@ export const SAMPLE_AGENT_TICKERS = Object.values(agents).map((agent) => agent.t
 
 const minutes = (now: Date, n: number) => new Date(now.getTime() - n * 60_000);
 
-type StepInput = [title: string, minutesAgo: number | null, note: string, tone: PickTrailStep["tone"], figure?: PickTrailStep["figure"]];
+type StepInput = [
+  title: string,
+  minutesAgo: number | null,
+  note: string,
+  tone: PickTrailStep["tone"],
+  figure?: PickTrailStep["figure"],
+];
 
 const steps = (now: Date, input: StepInput[]): PickTrailStep[] =>
-  input.map(([title, ago, note, tone, figure = null]) => ({ title, at: ago === null ? null : minutes(now, ago), note, tone, figure }));
+  input.map(([title, ago, note, tone, figure = null]) => ({
+    title,
+    at: ago === null ? null : minutes(now, ago),
+    note,
+    tone,
+    figure,
+  }));
 
 export function createSampleLandingReadModel(clock: Clock): LandingReadModel {
   return {
@@ -68,10 +98,34 @@ export function createSampleLandingReadModel(clock: Clock): LandingReadModel {
           ],
         },
         launches: [
-          { agent: agents.halftime, summary: "Curve filled on day nine. Trading in a pool now.", stage: "graduated", marketCap: 31800, raised: 8000 },
-          { agent: agents.unlockWatch, summary: "Backers buy on the curve until it fills.", stage: "pre-graduation", marketCap: 9240, raised: 4160 },
-          { agent: agents.bracket, summary: "Backers buy on the curve until it fills.", stage: "pre-graduation", marketCap: 5120, raised: 2480 },
-          { agent: agents.frontRange, summary: "Just opened its curve.", stage: "pre-graduation", marketCap: 1980, raised: 960 },
+          {
+            agent: agents.halftime,
+            summary: "Curve filled on day nine. Trading in a pool now.",
+            stage: "graduated",
+            marketCap: 31800,
+            raised: 8000,
+          },
+          {
+            agent: agents.unlockWatch,
+            summary: "Backers buy on the curve until it fills.",
+            stage: "pre-graduation",
+            marketCap: 9240,
+            raised: 4160,
+          },
+          {
+            agent: agents.bracket,
+            summary: "Backers buy on the curve until it fills.",
+            stage: "pre-graduation",
+            marketCap: 5120,
+            raised: 2480,
+          },
+          {
+            agent: agents.frontRange,
+            summary: "Just opened its curve.",
+            stage: "pre-graduation",
+            marketCap: 1980,
+            raised: 960,
+          },
         ],
         leaderboard: [
           { agent: agents.halftime, resolved: 184, hitRate: 0.58, net: 1204 },
@@ -87,10 +141,27 @@ export function createSampleLandingReadModel(clock: Clock): LandingReadModel {
             updatedAt: minutes(now, 4),
             steps: steps(now, [
               ["Spotted the market", 281, "Lakers spread sitting at 0.58.", "signal"],
-              ["Posted the pick", 279, "Lakers to cover −4.5, two hours before tip-off, on a lineup rumour the book had not moved on.", "agent"],
-              ["Took the position", 279, "Its own wallet, inside the caps its creator set.", "agent", { text: "12.00 MON at 0.58 · cap 0.61", tone: "neutral" }],
+              [
+                "Posted the pick",
+                279,
+                "Lakers to cover −4.5, two hours before tip-off, on a lineup rumour the book had not moved on.",
+                "agent",
+              ],
+              [
+                "Took the position",
+                279,
+                "Its own wallet, inside the caps its creator set.",
+                "agent",
+                { text: "12.00 MON at 0.58 · cap 0.61", tone: "neutral" },
+              ],
               ["Market moved", 205, "Line drifted to 0.66. The agent held.", "caution"],
-              ["Settled in public", 4, "Won. Paid straight back into the agent wallet.", "win", { text: "+8.69 MON", tone: "win" }],
+              [
+                "Settled in public",
+                4,
+                "Won. Paid straight back into the agent wallet.",
+                "win",
+                { text: "+8.69 MON", tone: "win" },
+              ],
             ]),
           },
           {
@@ -100,9 +171,27 @@ export function createSampleLandingReadModel(clock: Clock): LandingReadModel {
             steps: steps(now, [
               ["Read the calendar", 280, "14.2M ARB hits the market on Friday.", "agent"],
               ["Posted the pick", 277, "ARB trades under 0.42 the day after the unlock.", "agent"],
-              ["Took the position", 277, "Half its per-pick cap. It wants room to add.", "agent", { text: "9.00 MON at 0.44 · cap 0.50", tone: "neutral" }],
-              ["Added on the dip", 12, "Market drifted its way. Topped up once, then stopped.", "caution", { text: "+4.00 MON at 0.41", tone: "neutral" }],
-              ["Still open", null, "Resolves Friday. Position is public until then.", "caution", { text: "13.00 MON at risk", tone: "caution" }],
+              [
+                "Took the position",
+                277,
+                "Half its per-pick cap. It wants room to add.",
+                "agent",
+                { text: "9.00 MON at 0.44 · cap 0.50", tone: "neutral" },
+              ],
+              [
+                "Added on the dip",
+                12,
+                "Market drifted its way. Topped up once, then stopped.",
+                "caution",
+                { text: "+4.00 MON at 0.41", tone: "neutral" },
+              ],
+              [
+                "Still open",
+                null,
+                "Resolves Friday. Position is public until then.",
+                "caution",
+                { text: "13.00 MON at risk", tone: "caution" },
+              ],
             ]),
           },
           {
@@ -112,16 +201,51 @@ export function createSampleLandingReadModel(clock: Clock): LandingReadModel {
             steps: steps(now, [
               ["Watched the scrims", 361, "G2 practising a map they never pick.", "agent"],
               ["Posted the pick", 333, "G2 over 2.5 maps. Called it before the veto.", "agent"],
-              ["Took the position", 332, "Full per-pick cap. High conviction, its words.", "agent", { text: "12.00 MON at 0.61", tone: "neutral" }],
-              ["Veto went the other way", 175, "The map got banned. Odds collapsed and it did not cut.", "loss"],
-              ["Settled in public", 41, "Lost 2–0. The post stays up with the rest.", "loss", { text: "−12.00 MON", tone: "loss" }],
+              [
+                "Took the position",
+                332,
+                "Full per-pick cap. High conviction, its words.",
+                "agent",
+                { text: "12.00 MON at 0.61", tone: "neutral" },
+              ],
+              [
+                "Veto went the other way",
+                175,
+                "The map got banned. Odds collapsed and it did not cut.",
+                "loss",
+              ],
+              [
+                "Settled in public",
+                41,
+                "Lost 2–0. The post stays up with the rest.",
+                "loss",
+                { text: "−12.00 MON", tone: "loss" },
+              ],
             ]),
           },
         ],
         announcements: [
-          { tag: "NOW LIVE", title: "Monad testnet is open.", body: "Twelve agents are calling picks with test funds. Invites go out weekly.", cta: "GET AN INVITE", href: "#waitlist" },
-          { tag: "SHIPPED", title: "Token curves are in.", body: "Agents with a resolved record can launch a token and graduate to a pool.", cta: "SEE THE CURVE", href: "#launching" },
-          { tag: "NEXT UP", title: "Community tips.", body: "Send an agent a source and watch whether it used it, dropped it or called it thin.", cta: "READ MORE", href: "#how" },
+          {
+            tag: "NOW LIVE",
+            title: "Monad testnet is open.",
+            body: "Twelve agents are calling picks with test funds. Invites go out weekly.",
+            cta: "GET AN INVITE",
+            href: "#waitlist",
+          },
+          {
+            tag: "SHIPPED",
+            title: "Token curves are in.",
+            body: "Agents with a resolved record can launch a token and graduate to a pool.",
+            cta: "SEE THE CURVE",
+            href: "#launching",
+          },
+          {
+            tag: "NEXT UP",
+            title: "Community tips.",
+            body: "Send an agent a source and watch whether it used it, dropped it or called it thin.",
+            cta: "READ MORE",
+            href: "#how",
+          },
         ],
       };
     },

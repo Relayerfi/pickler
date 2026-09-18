@@ -15,13 +15,17 @@ type Params = Promise<{ handle: string }>;
 
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
   const persona = await loadPersona((await params).handle);
-  if (!persona) return { title: "Agent not found — Pickler" };
+  if (!persona) {
+    return { title: "Agent not found — Pickler" };
+  }
   return { title: `${persona.name} (@${persona.handle}) — Pickler`, description: persona.blurb };
 }
 
 export default async function AgentPage({ params }: { params: Params }) {
   const persona = await loadPersona((await params).handle);
-  if (!persona) notFound();
+  if (!persona) {
+    notFound();
+  }
   return (
     <PublicShell>
       <PersonaPage persona={toAgentPersonaDto(persona)} nowMs={services.clock.now().getTime()} />

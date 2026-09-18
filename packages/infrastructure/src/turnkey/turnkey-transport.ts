@@ -4,7 +4,13 @@
 // So requests are built and signed with the official packages and sent with our own fetch.
 // The stamper is pinned to WebCrypto so it does not depend on nodejs_compat detection.
 
-import { SignedActivityRejectedError, SigningServiceUnavailableError, type SignedActivityRequest, type TurnkeyActivity, type TurnkeyReader } from "@pickler/core";
+import {
+  SignedActivityRejectedError,
+  SigningServiceUnavailableError,
+  type SignedActivityRequest,
+  type TurnkeyActivity,
+  type TurnkeyReader,
+} from "@pickler/core";
 import { ApiKeyStamper } from "@turnkey/api-key-stamper";
 import { TurnkeyClient } from "@turnkey/http";
 
@@ -17,13 +23,19 @@ export interface TurnkeyTransportConfig {
 }
 
 /** Sends a stamped Turnkey request and maps failures to core signing errors. */
-export async function sendStampedRequest<T>(request: SignedActivityRequest, config: TurnkeyTransportConfig = {}): Promise<T> {
+export async function sendStampedRequest<T>(
+  request: SignedActivityRequest,
+  config: TurnkeyTransportConfig = {},
+): Promise<T> {
   const doFetch = config.fetch ?? fetch;
   let response: Response;
   try {
     response = await doFetch(request.url, {
       method: "POST",
-      headers: { "Content-Type": "application/json", [request.stamp.stampHeaderName]: request.stamp.stampHeaderValue },
+      headers: {
+        "Content-Type": "application/json",
+        [request.stamp.stampHeaderName]: request.stamp.stampHeaderValue,
+      },
       body: request.body,
       redirect: "manual",
       signal: AbortSignal.timeout(config.timeoutMs ?? 10_000),
@@ -41,14 +53,20 @@ export async function sendStampedRequest<T>(request: SignedActivityRequest, conf
       // Non-JSON error body.
     }
     // Turnkey error bodies are {code, message, details}; its message is shown to the user verbatim, as in Relayer.
-    if (response.status >= 400 && response.status < 500) throw new SignedActivityRejectedError(message ?? "Signing service rejected the activity");
-    throw new SigningServiceUnavailableError(message ? `Signing service error: ${message}` : undefined);
+    if (response.status >= 400 && response.status < 500) {
+      throw new SignedActivityRejectedError(message ?? "Signing service rejected the activity");
+    }
+    throw new SigningServiceUnavailableError(
+      message ? `Signing service error: ${message}` : undefined,
+    );
   }
 
   try {
     return (await response.json()) as T;
   } catch (cause) {
-    throw new SigningServiceUnavailableError("Signing service returned an invalid response", { cause });
+    throw new SigningServiceUnavailableError("Signing service returned an invalid response", {
+      cause,
+    });
   }
 }
 
@@ -61,7 +79,11 @@ export interface TurnkeyApiKeyConfig extends TurnkeyTransportConfig {
 export function createTurnkeyStampingClient(config: TurnkeyApiKeyConfig): TurnkeyClient {
   return new TurnkeyClient(
     { baseUrl: config.baseUrl ?? TURNKEY_API_BASE_URL },
-    new ApiKeyStamper({ apiPublicKey: config.apiPublicKey, apiPrivateKey: config.apiPrivateKey, runtimeOverride: "browser" }),
+    new ApiKeyStamper({
+      apiPublicKey: config.apiPublicKey,
+      apiPrivateKey: config.apiPrivateKey,
+      runtimeOverride: "browser",
+    }),
   );
 }
 
@@ -76,7 +98,9 @@ export function createTurnkeyReader(config: TurnkeyApiKeyConfig): TurnkeyReader 
     async getActivity(organizationId, activityId) {
       const signed = await client.stampGetActivity({ organizationId, activityId });
       const { activity } = await sendStampedRequest<{ activity?: TurnkeyActivity }>(signed, config);
-      if (!activity) throw new SigningServiceUnavailableError("Turnkey activity response was empty");
+      if (!activity) {
+        throw new SigningServiceUnavailableError("Turnkey activity response was empty");
+      }
       return activity;
     },
   };

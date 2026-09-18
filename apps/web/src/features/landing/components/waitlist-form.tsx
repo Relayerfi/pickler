@@ -27,16 +27,24 @@ export function WaitlistForm() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         // A share link like /?ref=abc123 credits the creator who sent it.
-        body: JSON.stringify({ email, ref: new URLSearchParams(window.location.search).get("ref") ?? undefined }),
+        body: JSON.stringify({
+          email,
+          ref: new URLSearchParams(window.location.search).get("ref") ?? undefined,
+        }),
       });
       if (!response.ok) {
         const body = (await response.json().catch(() => null)) as ApiErrorResponse | null;
-        setStatus({ kind: "error", message: body?.error.message ?? "Something went wrong. Try again." });
+        setStatus({
+          kind: "error",
+          message: body?.error.message ?? "Something went wrong. Try again.",
+        });
         return;
       }
       const placement = (await response.json()) as JoinWaitlistResponse;
       setStatus({ kind: "joined", position: placement.position, continuing: placement.canApply });
-      if (placement.canApply) router.push("/apply");
+      if (placement.canApply) {
+        router.push("/apply");
+      }
     } catch {
       setStatus({ kind: "error", message: "Network error. Try again." });
     }
@@ -51,7 +59,9 @@ export function WaitlistForm() {
         <h2 id="waitlist-title" className={styles.waitlistTitle}>
           GET IN LINE
         </h2>
-        <p className={styles.waitlistLead}>We are letting creators in a few at a time. Drop your email and we will send an invite.</p>
+        <p className={styles.waitlistLead}>
+          We are letting creators in a few at a time. Drop your email and we will send an invite.
+        </p>
         <form className={styles.waitlistForm} onSubmit={onSubmit} noValidate={false}>
           <label htmlFor="waitlist-email" className={styles.srOnly}>
             Email
@@ -67,13 +77,19 @@ export function WaitlistForm() {
             value={email}
             onChange={(event) => {
               setEmail(event.target.value);
-              if (status.kind === "error") setStatus({ kind: "idle" });
+              if (status.kind === "error") {
+                setStatus({ kind: "idle" });
+              }
             }}
             aria-invalid={status.kind === "error" || undefined}
             aria-describedby={status.kind === "error" ? "waitlist-error" : undefined}
             disabled={joined}
           />
-          <button type="submit" className={`${styles.primaryButton} ${styles.waitlistButton}`} disabled={status.kind === "submitting" || joined}>
+          <button
+            type="submit"
+            className={`${styles.primaryButton} ${styles.waitlistButton}`}
+            disabled={status.kind === "submitting" || joined}
+          >
             {joined ? "YOU ARE IN" : status.kind === "submitting" ? "JOINING…" : "JOIN THE TESTNET"}
           </button>
         </form>

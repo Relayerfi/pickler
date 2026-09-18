@@ -3,8 +3,13 @@
 // Behaviour change: the super-admin allowlist is passed in instead of read from process.env,
 // so the business layer stays free of environment access.
 
-import { API_SCOPES } from "./api-scopes";
-import { abilitiesForApiKey, abilitiesForMemberRole, emptyAbility, type AppAbility } from "./abilities";
+import { API_SCOPES } from "./api-scopes.js";
+import {
+  abilitiesForApiKey,
+  abilitiesForMemberRole,
+  emptyAbility,
+  type AppAbility,
+} from "./abilities.js";
 
 export type PrincipalKind = "user" | "apikey" | "agent" | "service";
 
@@ -54,8 +59,13 @@ export const parseEmailAllowlist = (csv: string | undefined): string[] =>
     .filter((email) => email.length > 0);
 
 /** Fail-closed: an empty allowlist matches nobody. */
-export function isAllowlistedEmail(email: string | undefined, allowlist: readonly string[]): boolean {
-  if (!email || allowlist.length === 0) return false;
+export function isAllowlistedEmail(
+  email: string | undefined,
+  allowlist: readonly string[],
+): boolean {
+  if (!email || allowlist.length === 0) {
+    return false;
+  }
   return allowlist.includes(email.trim().toLowerCase());
 }
 
@@ -79,7 +89,10 @@ export function buildUserPrincipal(input: BuildUserPrincipalInput): UserPrincipa
   };
 }
 
-export function buildApiKeyPrincipal(apiKey: { id: string; scopes?: string[] | null }, tenantId: string | null): ApiKeyPrincipal | ServicePrincipal {
+export function buildApiKeyPrincipal(
+  apiKey: { id: string; scopes?: string[] | null },
+  tenantId: string | null,
+): ApiKeyPrincipal | ServicePrincipal {
   const scopes = apiKey.scopes ?? [];
   const base = {
     id: apiKey.id,
@@ -88,10 +101,17 @@ export function buildApiKeyPrincipal(apiKey: { id: string; scopes?: string[] | n
     // Only admin-scoped keys are evaluated through abilities; others are scope-checked.
     abilities: scopes.includes(API_SCOPES.ADMIN) ? abilitiesForApiKey(scopes) : emptyAbility(),
   };
-  return scopes.includes(API_SCOPES.INTERNAL) ? { kind: "service", ...base } : { kind: "apikey", ...base };
+  return scopes.includes(API_SCOPES.INTERNAL)
+    ? { kind: "service", ...base }
+    : { kind: "apikey", ...base };
 }
 
-export function buildAgentPrincipal(agent: { id: string; integrator_id: string; wallet_id?: string | null; status: string }): AgentPrincipal {
+export function buildAgentPrincipal(agent: {
+  id: string;
+  integrator_id: string;
+  wallet_id?: string | null;
+  status: string;
+}): AgentPrincipal {
   return {
     kind: "agent",
     id: agent.id,

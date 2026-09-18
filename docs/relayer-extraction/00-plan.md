@@ -5,12 +5,12 @@ Target runtime: Cloudflare Workers. Database: Supabase project `pickler` (separa
 
 Detailed findings, per-file decisions and ordering live in:
 
-| Report | Area |
-| --- | --- |
-| [01-identity-auth.md](01-identity-auth.md) | Supabase Auth, API keys, integrators and members, CASL permissions, shared helpers |
-| [02-turnkey-signing.md](02-turnkey-signing.md) | Turnkey sub-orgs, wallets, policies, approvals, EVM transactions |
-| [03-agents-budget.md](03-agents-budget.md) | Agent lifecycle, budgets, events, original `pickler` schema proposal (superseded by schema-per-domain) |
-| [04-mastra-runtime.md](04-mastra-runtime.md) | Mastra agents, agent SDK, skills, Cloudflare feasibility, minimal vertical slice |
+| Report                                         | Area                                                                                                   |
+| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| [01-identity-auth.md](01-identity-auth.md)     | Supabase Auth, API keys, integrators and members, CASL permissions, shared helpers                     |
+| [02-turnkey-signing.md](02-turnkey-signing.md) | Turnkey sub-orgs, wallets, policies, approvals, EVM transactions                                       |
+| [03-agents-budget.md](03-agents-budget.md)     | Agent lifecycle, budgets, events, original `pickler` schema proposal (superseded by schema-per-domain) |
+| [04-mastra-runtime.md](04-mastra-runtime.md)   | Mastra agents, agent SDK, skills, Cloudflare feasibility, minimal vertical slice                       |
 
 These reports come from reading code only. Nothing was executed against Relayer, Turnkey or the database.
 
@@ -24,19 +24,19 @@ These reports come from reading code only. Nothing was executed against Relayer,
 
 ## Runtime mapping
 
-| Relayer (NestJS on Render) | Pickler (Cloudflare) |
-| --- | --- |
-| Controllers, guards, interceptors | Hono routes and middleware in `workers/api` |
-| `class-validator` DTOs | zod schemas |
-| Redis budget Lua script | One Durable Object per agent: idempotent reserve/commit/release, alarm sync to Postgres |
-| Redis two-step state (prepare/confirm, passkey challenges) | Durable Object or single-use Postgres rows (not KV) |
-| Redis cache, throttler | KV cache, Cloudflare Rate Limiting |
-| `@nestjs/schedule` crons | Cron Triggers → Queues |
-| `ws` gateway | Durable Object with WebSocket Hibernation |
-| `node:crypto` scrypt/AES-GCM/ECDH/Ed25519 | `@noble/*` + WebCrypto (byte-compatible) |
-| `@turnkey/sdk-server` | `@turnkey/http` or a WebCrypto request stamper (spike first) |
-| ethers v5 | viem |
-| Mastra on a VPS with pm2, `node-cron`, LibSQL | Workers + Cloudflare Workflows; Containers only if the Mastra bundle does not run on Workers (spike first) |
+| Relayer (NestJS on Render)                                 | Pickler (Cloudflare)                                                                                       |
+| ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| Controllers, guards, interceptors                          | Hono routes and middleware in `workers/api`                                                                |
+| `class-validator` DTOs                                     | zod schemas                                                                                                |
+| Redis budget Lua script                                    | One Durable Object per agent: idempotent reserve/commit/release, alarm sync to Postgres                    |
+| Redis two-step state (prepare/confirm, passkey challenges) | Durable Object or single-use Postgres rows (not KV)                                                        |
+| Redis cache, throttler                                     | KV cache, Cloudflare Rate Limiting                                                                         |
+| `@nestjs/schedule` crons                                   | Cron Triggers → Queues                                                                                     |
+| `ws` gateway                                               | Durable Object with WebSocket Hibernation                                                                  |
+| `node:crypto` scrypt/AES-GCM/ECDH/Ed25519                  | `@noble/*` + WebCrypto (byte-compatible)                                                                   |
+| `@turnkey/sdk-server`                                      | `@turnkey/http` or a WebCrypto request stamper (spike first)                                               |
+| ethers v5                                                  | viem                                                                                                       |
+| Mastra on a VPS with pm2, `node-cron`, LibSQL              | Workers + Cloudflare Workflows; Containers only if the Mastra bundle does not run on Workers (spike first) |
 
 ## Defects found in Relayer
 
@@ -56,17 +56,17 @@ Defects to fix while porting (details in the cited report):
 
 Each wave compiles, has tests, and leaves the web app working.
 
-| Wave | Content | Status |
-| --- | --- | --- |
-| 0 | AES-256-GCM, byte-compatible with Relayer (`packages/infrastructure/src/crypto`); verified inside workerd against a Relayer-produced ciphertext | Done |
-| 1 | Error types and response envelope, auth constants, CASL abilities, principal, Supabase JWT verifier (`jose`), IP allowlist without `net.BlockList` | Done |
-| 2 | `workers/api` (Hono): Supabase client factory, integrator and API-key repositories, membership resolution, combined-auth/module/permission middleware, `/v1/auth/me`; runs under `wrangler dev` | Done (not yet tested against the real Supabase project) |
-| 3 | Pickler identity and creator model: one identity across web and mobile, creator workspace = integrator, many agents per creator; schema migrations (profiles, versioned configs, waitlist, applications) | Schema done and applied to `pickler` (identity, agents, budget, audit, growth); adapters read the new tables. Writes (workspace creation, agent configs) pending. |
-| 4 | Agents: repositories, lifecycle (draft → confirm-user → confirm-policies → active/paused/killed), events (append-only), analytics; public read endpoints for the web | Read side done: `agent.agents`/`agent_events` repositories, list/get/status/analytics/audit routes, agent SDK HMAC auth. Lifecycle writes wait for waves 5–6; public web endpoints wait for the `market` schema. |
-| 5 | Budget Durable Object replacing the Lua script, with the reserve/commit/release semantics and fixes above | Done: `AgentLedger` DO + core ledger, `GET /v1/agents/:id/budget`; concurrency, idempotency and alarm expiry verified in workerd. Postgres write-behind and the budget prepare/confirm endpoint wait for waves 3 and 6. |
-| 6 | Turnkey client spike on Workers, then wallets, policies, EVM transactions on Monad with AUSD (verify chain id, AUSD address, decimals) | In progress. Step 0 done: stamping verified in workerd (see Turnkey findings); P-256 keygen and Ed25519 verify via WebCrypto; Monad/AUSD verified. Ported: parent-key reader and passkey activity forwarder with scope checks. Next: activity mapping, ERC-20 SCI ABI, policy synthesis, EVM tx builder, then wallets/transactions use cases. |
-| 7 | Mastra spike on Workers; minimal slice: `market-analyst` agent with `get-trading-limits` and `propose-trade`, decisions tied to config version and prompt hash, `TradeAuthorizationService` returning `pending_approval`/`rejected` without signing | |
-| 8 | Perpl venue adapter: orders, fills, positions, reconciliation | |
+| Wave | Content                                                                                                                                                                                                                                             | Status                                                                                                                                                                                                                                                                                                                                        |
+| ---- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0    | AES-256-GCM, byte-compatible with Relayer (`packages/infrastructure/src/crypto`); verified inside workerd against a Relayer-produced ciphertext                                                                                                     | Done                                                                                                                                                                                                                                                                                                                                          |
+| 1    | Error types and response envelope, auth constants, CASL abilities, principal, Supabase JWT verifier (`jose`), IP allowlist without `net.BlockList`                                                                                                  | Done                                                                                                                                                                                                                                                                                                                                          |
+| 2    | `workers/api` (Hono): Supabase client factory, integrator and API-key repositories, membership resolution, combined-auth/module/permission middleware, `/v1/auth/me`; runs under `wrangler dev`                                                     | Done (not yet tested against the real Supabase project)                                                                                                                                                                                                                                                                                       |
+| 3    | Pickler identity and creator model: one identity across web and mobile, creator workspace = integrator, many agents per creator; schema migrations (profiles, versioned configs, waitlist, applications)                                            | Schema done and applied to `pickler` (identity, agents, budget, audit, growth); adapters read the new tables. Writes (workspace creation, agent configs) pending.                                                                                                                                                                             |
+| 4    | Agents: repositories, lifecycle (draft → confirm-user → confirm-policies → active/paused/killed), events (append-only), analytics; public read endpoints for the web                                                                                | Read side done: `agent.agents`/`agent_events` repositories, list/get/status/analytics/audit routes, agent SDK HMAC auth. Lifecycle writes wait for waves 5–6; public web endpoints wait for the `market` schema.                                                                                                                              |
+| 5    | Budget Durable Object replacing the Lua script, with the reserve/commit/release semantics and fixes above                                                                                                                                           | Done: `AgentLedger` DO + core ledger, `GET /v1/agents/:id/budget`; concurrency, idempotency and alarm expiry verified in workerd. Postgres write-behind and the budget prepare/confirm endpoint wait for waves 3 and 6.                                                                                                                       |
+| 6    | Turnkey client spike on Workers, then wallets, policies, EVM transactions on Monad with AUSD (verify chain id, AUSD address, decimals)                                                                                                              | In progress. Step 0 done: stamping verified in workerd (see Turnkey findings); P-256 keygen and Ed25519 verify via WebCrypto; Monad/AUSD verified. Ported: parent-key reader and passkey activity forwarder with scope checks. Next: activity mapping, ERC-20 SCI ABI, policy synthesis, EVM tx builder, then wallets/transactions use cases. |
+| 7    | Mastra spike on Workers; minimal slice: `market-analyst` agent with `get-trading-limits` and `propose-trade`, decisions tied to config version and prompt hash, `TradeAuthorizationService` returning `pending_approval`/`rejected` without signing |                                                                                                                                                                                                                                                                                                                                               |
+| 8    | Perpl venue adapter: orders, fills, positions, reconciliation                                                                                                                                                                                       |                                                                                                                                                                                                                                                                                                                                               |
 
 The web app switches from its sample/Supabase adapters to `workers/api` in waves 2–4, keeping the same core ports.
 

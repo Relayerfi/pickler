@@ -75,9 +75,15 @@ export function abilitiesForMemberRole(role: MemberRole | string): AppAbility {
 export function abilitiesForApiKey(scopes: readonly string[]): AppAbility {
   const { can, build } = new AbilityBuilder<AppAbility>(createMongoAbility);
   for (const scope of scopes) {
-    if (scope.startsWith("manage:")) continue;
-    if (scope === "read:wallets" || scope === "read:transactions") can("read", "Signing");
-    if (scope === "sign:prepare") can("create", "Signing");
+    if (scope.startsWith("manage:")) {
+      continue;
+    }
+    if (scope === "read:wallets" || scope === "read:transactions") {
+      can("read", "Signing");
+    }
+    if (scope === "sign:prepare") {
+      can("create", "Signing");
+    }
   }
   return build();
 }

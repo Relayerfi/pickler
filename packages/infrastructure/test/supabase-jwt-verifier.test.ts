@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { InvalidAccessTokenError } from "@pickler/core";
 import { createLocalJWKSet, exportJWK, generateKeyPair, SignJWT } from "jose";
-import { createSupabaseJwtVerifier } from "../src/index.ts";
+import { createSupabaseJwtVerifier } from "../src/index.js";
 
 const issuer = "https://ref.supabase.co/auth/v1";
 
@@ -10,8 +10,15 @@ async function setup() {
   const { publicKey, privateKey } = await generateKeyPair("ES256");
   const other = await generateKeyPair("ES256");
   const jwk = { ...(await exportJWK(publicKey)), kid: "k1", alg: "ES256" };
-  const verifier = createSupabaseJwtVerifier({ jwksUrl: "https://unused.invalid", issuer, keys: createLocalJWKSet({ keys: [jwk] }) });
-  const sign = (claims: Record<string, unknown>, opts: { key?: CryptoKey; iss?: string; aud?: string; exp?: string; alg?: string } = {}) =>
+  const verifier = createSupabaseJwtVerifier({
+    jwksUrl: "https://unused.invalid",
+    issuer,
+    keys: createLocalJWKSet({ keys: [jwk] }),
+  });
+  const sign = (
+    claims: Record<string, unknown>,
+    opts: { key?: CryptoKey; iss?: string; aud?: string; exp?: string; alg?: string } = {},
+  ) =>
     new SignJWT(claims)
       .setProtectedHeader({ alg: opts.alg ?? "ES256", kid: "k1" })
       .setIssuer(opts.iss ?? issuer)
@@ -38,7 +45,9 @@ test("wrong signer, issuer, audience, expiry or missing sub are rejected", async
     await sign({}),
     "not.a.jwt",
   ];
-  for (const token of bad) await assert.rejects(verifier.verify(token), InvalidAccessTokenError);
+  for (const token of bad) {
+    await assert.rejects(verifier.verify(token), InvalidAccessTokenError);
+  }
 });
 
 test("an issuer is mandatory", () => {

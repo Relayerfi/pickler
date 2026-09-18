@@ -34,7 +34,11 @@ export function periodStart(period: AnalyticsPeriod, now: Date): Date {
   return start;
 }
 
-export function aggregateAnalytics(events: readonly AgentEvent[], period: AnalyticsPeriod, start: Date): AgentAnalytics {
+export function aggregateAnalytics(
+  events: readonly AgentEvent[],
+  period: AnalyticsPeriod,
+  start: Date,
+): AgentAnalytics {
   const eventsByType: Record<string, number> = {};
   const recipients = new Map<string, { total: number; count: number }>();
   let totalSpend = 0;
@@ -42,7 +46,9 @@ export function aggregateAnalytics(events: readonly AgentEvent[], period: Analyt
   for (const event of events) {
     eventsByType[event.eventType] = (eventsByType[event.eventType] ?? 0) + 1;
     const amount = event.payload?.["amount"];
-    if (typeof amount !== "number" || Number.isNaN(amount)) continue;
+    if (typeof amount !== "number" || Number.isNaN(amount)) {
+      continue;
+    }
     totalSpend += amount;
     const recipient = event.payload?.["recipient"];
     if (typeof recipient === "string") {
@@ -93,13 +99,25 @@ export interface AuditPage {
 
 /** Relayer's parsing: page ≥ 1, limit 1–100 (default 20), unknown filters ignored. */
 export function parseAuditQuery(
-  raw: { page?: string | null; limit?: string | null; type?: string | null; period?: string | null; status?: string | null },
+  raw: {
+    page?: string | null;
+    limit?: string | null;
+    type?: string | null;
+    period?: string | null;
+    status?: string | null;
+  },
   now: Date,
 ): AuditQuery {
   const page = Math.max(1, Number.parseInt(raw.page ?? "1", 10) || 1);
   const limit = Math.min(100, Math.max(1, Number.parseInt(raw.limit ?? "20", 10) || 20));
-  const types = raw.type && raw.type in AUDIT_EVENT_TYPES ? AUDIT_EVENT_TYPES[raw.type as keyof typeof AUDIT_EVENT_TYPES] : null;
-  const days = raw.period && raw.period in AUDIT_WINDOWS_DAYS ? AUDIT_WINDOWS_DAYS[raw.period as keyof typeof AUDIT_WINDOWS_DAYS] : null;
+  const types =
+    raw.type && raw.type in AUDIT_EVENT_TYPES
+      ? AUDIT_EVENT_TYPES[raw.type as keyof typeof AUDIT_EVENT_TYPES]
+      : null;
+  const days =
+    raw.period && raw.period in AUDIT_WINDOWS_DAYS
+      ? AUDIT_WINDOWS_DAYS[raw.period as keyof typeof AUDIT_WINDOWS_DAYS]
+      : null;
   return {
     page,
     limit,

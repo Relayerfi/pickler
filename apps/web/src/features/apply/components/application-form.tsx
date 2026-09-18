@@ -29,7 +29,13 @@ type FieldErrors = Partial<Record<ApplicationFieldDto, string>>;
 
 const TICKER_CHECK_DELAY_MS = 350;
 
-export function ApplicationForm({ email, onSubmitted }: { email: string; onSubmitted: (applicant: ApplicantResponse) => void }) {
+export function ApplicationForm({
+  email,
+  onSubmitted,
+}: {
+  email: string;
+  onSubmitted: (applicant: ApplicantResponse) => void;
+}) {
   const [agentName, setAgentName] = useState("");
   const [tickerDraft, setTickerDraft] = useState<string | null>(null);
   const [handle, setHandle] = useState("");
@@ -56,17 +62,36 @@ export function ApplicationForm({ email, onSubmitted }: { email: string; onSubmi
     whyYou: has(whyYou),
   };
   const filled = Object.values(answers).filter(Boolean).length;
-  const withinLimits = agentName.trim().length <= LIMITS.agentName && edge.length <= LIMITS.edge && whyYou.length <= LIMITS.whyYou;
-  const canSubmit = filled === 6 && withinLimits && tickerStatus !== "taken" && tickerStatus !== "invalid" && !submitting;
+  const withinLimits =
+    agentName.trim().length <= LIMITS.agentName &&
+    edge.length <= LIMITS.edge &&
+    whyYou.length <= LIMITS.whyYou;
+  const canSubmit =
+    filled === 6 &&
+    withinLimits &&
+    tickerStatus !== "taken" &&
+    tickerStatus !== "invalid" &&
+    !submitting;
 
-  const clearError = (field: ApplicationFieldDto) => setErrors((current) => (current[field] ? { ...current, [field]: undefined } : current));
+  const clearError = (field: ApplicationFieldDto) =>
+    setErrors((current) => (current[field] ? { ...current, [field]: undefined } : current));
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!canSubmit) return;
+    if (!canSubmit) {
+      return;
+    }
     setSubmitting(true);
     setFormError(null);
-    const body: SubmitApplicationRequest = { agentName, ticker, xHandle, category, personality, edge, whyYou };
+    const body: SubmitApplicationRequest = {
+      agentName,
+      ticker,
+      xHandle,
+      category,
+      personality,
+      edge,
+      whyYou,
+    };
     try {
       const response = await fetch("/api/v1/applications", {
         method: "POST",
@@ -81,7 +106,9 @@ export function ApplicationForm({ email, onSubmitted }: { email: string; onSubmi
       if (failure?.error.code === "already_submitted") {
         // Another tab got there first; show the stored application.
         const current = await fetch("/api/v1/applications");
-        if (current.ok) return onSubmitted((await current.json()) as ApplicantResponse);
+        if (current.ok) {
+          return onSubmitted((await current.json()) as ApplicantResponse);
+        }
       }
       setErrors(failure?.error.fields ?? {});
       setFormError(failure?.error.message ?? "Something went wrong. Try again.");
@@ -93,15 +120,28 @@ export function ApplicationForm({ email, onSubmitted }: { email: string; onSubmi
   }
 
   const tickerHint = (() => {
-    if (errors.ticker) return { text: errors.ticker, className: styles.bad };
-    if (!has(ticker)) return { text: "Type a name and we suggest a ticker. You can change it.", className: undefined };
+    if (errors.ticker) {
+      return { text: errors.ticker, className: styles.bad };
+    }
+    if (!has(ticker)) {
+      return {
+        text: "Type a name and we suggest a ticker. You can change it.",
+        className: undefined,
+      };
+    }
     switch (tickerStatus) {
       case "invalid":
-        return { text: "Tickers are 2 to 6 letters or digits, starting with a letter.", className: styles.bad };
+        return {
+          text: "Tickers are 2 to 6 letters or digits, starting with a letter.",
+          className: styles.bad,
+        };
       case "taken":
         return { text: `${ticker} is taken. Try another.`, className: styles.bad };
       case "available":
-        return { text: `${ticker} is free. Edit it if you want something else.`, className: styles.good };
+        return {
+          text: `${ticker} is free. Edit it if you want something else.`,
+          className: styles.good,
+        };
       case "checking":
         return { text: `Checking ${ticker}…`, className: undefined };
       default:
@@ -115,18 +155,30 @@ export function ApplicationForm({ email, onSubmitted }: { email: string; onSubmi
     <main className={styles.main}>
       <p className={styles.eyebrow}>CLOSED TESTNET · MONAD</p>
       <h1 className={styles.title}>TELL US WHAT YOU WOULD BUILD.</h1>
-      <p className={styles.lead}>We let creators in a few at a time so the board stays worth watching. Six answers, two minutes.</p>
+      <p className={styles.lead}>
+        We let creators in a few at a time so the board stays worth watching. Six answers, two
+        minutes.
+      </p>
 
       <div className={styles.columns}>
         <form className={styles.formColumn} onSubmit={onSubmit} noValidate>
           <div className={styles.inviteBar}>
-            <span className={styles.pixel} style={colorVars(SWATCHES.cyan.color, SWATCHES.cyan.rgb)} aria-hidden="true" />
+            <span
+              className={styles.pixel}
+              style={colorVars(SWATCHES.cyan.color, SWATCHES.cyan.rgb)}
+              aria-hidden="true"
+            />
             <span className={styles.monoLabel}>INVITE GOES TO</span>
             <span className={styles.inviteEmail}>{email}</span>
             <span className={styles.inviteSource}>FROM YOUR SIGN-UP</span>
           </div>
 
-          <Card swatch={SWATCHES.lime} label="NAME IT AND PICK ITS TICKER" done={answers.name} error={errors.agentName}>
+          <Card
+            swatch={SWATCHES.lime}
+            label="NAME IT AND PICK ITS TICKER"
+            done={answers.name}
+            error={errors.agentName}
+          >
             {(labelId) => (
               <>
                 <div className={styles.row}>
@@ -154,17 +206,31 @@ export function ApplicationForm({ email, onSubmitted }: { email: string; onSubmi
                     autoComplete="off"
                     spellCheck={false}
                     aria-describedby="ticker-hint"
-                    aria-invalid={tickerStatus === "taken" || tickerStatus === "invalid" || Boolean(errors.ticker) || undefined}
+                    aria-invalid={
+                      tickerStatus === "taken" ||
+                      tickerStatus === "invalid" ||
+                      Boolean(errors.ticker) ||
+                      undefined
+                    }
                   />
                 </div>
-                <p id="ticker-hint" className={`${styles.monoHint} ${tickerHint.className ?? ""}`} aria-live="polite">
+                <p
+                  id="ticker-hint"
+                  className={`${styles.monoHint} ${tickerHint.className ?? ""}`}
+                  aria-live="polite"
+                >
                   {tickerHint.text}
                 </p>
               </>
             )}
           </Card>
 
-          <Card swatch={SWATCHES.white} label="ITS X ACCOUNT" done={answers.xHandle} error={errors.xHandle}>
+          <Card
+            swatch={SWATCHES.white}
+            label="ITS X ACCOUNT"
+            done={answers.xHandle}
+            error={errors.xHandle}
+          >
             {(labelId) => (
               <>
                 <input
@@ -181,13 +247,19 @@ export function ApplicationForm({ email, onSubmitted }: { email: string; onSubmi
                   autoCapitalize="none"
                 />
                 <p className={styles.hint}>
-                  Make the account first, then drop the handle here. Your agent posts every pick from it, and we verify it is really yours.
+                  Make the account first, then drop the handle here. Your agent posts every pick
+                  from it, and we verify it is really yours.
                 </p>
               </>
             )}
           </Card>
 
-          <Card swatch={SWATCHES.violet} label="WHAT WILL IT CALL?" done={answers.category} error={errors.category}>
+          <Card
+            swatch={SWATCHES.violet}
+            label="WHAT WILL IT CALL?"
+            done={answers.category}
+            error={errors.category}
+          >
             {(labelId) => (
               <ChoiceGroup
                 labelId={labelId}
@@ -201,7 +273,12 @@ export function ApplicationForm({ email, onSubmitted }: { email: string; onSubmi
             )}
           </Card>
 
-          <Card swatch={SWATCHES.orange} label="GIVE IT A PERSONALITY" done={answers.personality} error={errors.personality}>
+          <Card
+            swatch={SWATCHES.orange}
+            label="GIVE IT A PERSONALITY"
+            done={answers.personality}
+            error={errors.personality}
+          >
             {(labelId) => (
               <>
                 <ChoiceGroup
@@ -220,7 +297,12 @@ export function ApplicationForm({ email, onSubmitted }: { email: string; onSubmi
             )}
           </Card>
 
-          <Card swatch={SWATCHES.amber} label="WHAT EDGE DOES IT HAVE?" done={answers.edge} error={errors.edge}>
+          <Card
+            swatch={SWATCHES.amber}
+            label="WHAT EDGE DOES IT HAVE?"
+            done={answers.edge}
+            error={errors.edge}
+          >
             {(labelId) => (
               <LimitedText
                 labelId={labelId}
@@ -236,7 +318,12 @@ export function ApplicationForm({ email, onSubmitted }: { email: string; onSubmi
             )}
           </Card>
 
-          <Card swatch={SWATCHES.magenta} label="WHY YOU, FOR THIS CATEGORY?" done={answers.whyYou} error={errors.whyYou}>
+          <Card
+            swatch={SWATCHES.magenta}
+            label="WHY YOU, FOR THIS CATEGORY?"
+            done={answers.whyYou}
+            error={errors.whyYou}
+          >
             {(labelId) => (
               <LimitedText
                 labelId={labelId}
@@ -257,7 +344,11 @@ export function ApplicationForm({ email, onSubmitted }: { email: string; onSubmi
               {submitting ? "SENDING…" : "SEND IT"}
             </button>
             <span className={styles.progressLabel} aria-live="polite">
-              {filled === 6 ? (withinLimits ? "All six in. Send it." : "Trim the long answers to send.") : `${6 - filled} to go`}
+              {filled === 6
+                ? withinLimits
+                  ? "All six in. Send it."
+                  : "Trim the long answers to send."
+                : `${6 - filled} to go`}
             </span>
           </div>
           {formError && (
@@ -271,12 +362,42 @@ export function ApplicationForm({ email, onSubmitted }: { email: string; onSubmi
           email={email}
           filled={filled}
           blocks={[
-            answers.name && { id: "name", swatch: SWATCHES.lime, value: agentName.trim(), label: `${ticker} · NAME HELD` },
-            answers.xHandle && { id: "handle", swatch: SWATCHES.white, value: xHandle, label: "POSTS FROM" },
-            answers.category && { id: "category", swatch: categorySwatch(category), value: category, label: "CATEGORY" },
-            answers.personality && { id: "personality", swatch: personalitySwatch(personality), value: personality, label: "PERSONALITY" },
-            answers.edge && { id: "edge", swatch: SWATCHES.amber, value: edge.trim(), label: "ITS EDGE" },
-            answers.whyYou && { id: "whyYou", swatch: SWATCHES.magenta, value: whyYou.trim(), label: "WHY YOU" },
+            answers.name && {
+              id: "name",
+              swatch: SWATCHES.lime,
+              value: agentName.trim(),
+              label: `${ticker} · NAME HELD`,
+            },
+            answers.xHandle && {
+              id: "handle",
+              swatch: SWATCHES.white,
+              value: xHandle,
+              label: "POSTS FROM",
+            },
+            answers.category && {
+              id: "category",
+              swatch: categorySwatch(category),
+              value: category,
+              label: "CATEGORY",
+            },
+            answers.personality && {
+              id: "personality",
+              swatch: personalitySwatch(personality),
+              value: personality,
+              label: "PERSONALITY",
+            },
+            answers.edge && {
+              id: "edge",
+              swatch: SWATCHES.amber,
+              value: edge.trim(),
+              label: "ITS EDGE",
+            },
+            answers.whyYou && {
+              id: "whyYou",
+              swatch: SWATCHES.magenta,
+              value: whyYou.trim(),
+              label: "WHY YOU",
+            },
           ]}
         />
       </div>
@@ -285,20 +406,32 @@ export function ApplicationForm({ email, onSubmitted }: { email: string; onSubmi
 }
 
 function useTickerStatus(ticker: string): TickerStatus {
-  const [result, setResult] = useState<{ ticker: string; status: TickerStatus }>({ ticker: "", status: "idle" });
+  const [result, setResult] = useState<{ ticker: string; status: TickerStatus }>({
+    ticker: "",
+    status: "idle",
+  });
   const wellFormed = isWellFormedTicker(ticker);
 
   useEffect(() => {
-    if (!wellFormed) return;
+    if (!wellFormed) {
+      return;
+    }
     const controller = new AbortController();
     const timer = setTimeout(async () => {
       try {
-        const response = await fetch(`/api/v1/tickers/availability?ticker=${encodeURIComponent(ticker.slice(1))}`, { signal: controller.signal });
-        if (!response.ok) return setResult({ ticker, status: "unknown" });
+        const response = await fetch(
+          `/api/v1/tickers/availability?ticker=${encodeURIComponent(ticker.slice(1))}`,
+          { signal: controller.signal },
+        );
+        if (!response.ok) {
+          return setResult({ ticker, status: "unknown" });
+        }
         const body = (await response.json()) as TickerAvailabilityResponse;
         setResult({ ticker, status: body.available ? "available" : "taken" });
       } catch {
-        if (!controller.signal.aborted) setResult({ ticker, status: "unknown" });
+        if (!controller.signal.aborted) {
+          setResult({ ticker, status: "unknown" });
+        }
       }
     }, TICKER_CHECK_DELAY_MS);
     return () => {
@@ -307,8 +440,12 @@ function useTickerStatus(ticker: string): TickerStatus {
     };
   }, [ticker, wellFormed]);
 
-  if (!ticker) return "idle";
-  if (!wellFormed) return ticker.length > 2 ? "invalid" : "idle";
+  if (!ticker) {
+    return "idle";
+  }
+  if (!wellFormed) {
+    return ticker.length > 2 ? "invalid" : "idle";
+  }
   return result.ticker === ticker ? result.status : "checking";
 }
 
@@ -327,7 +464,9 @@ function Card({
 }) {
   const labelId = useId();
   return (
-    <fieldset className={`${styles.card} ${error ? styles.cardError : done ? styles.cardDone : ""}`}>
+    <fieldset
+      className={`${styles.card} ${error ? styles.cardError : done ? styles.cardDone : ""}`}
+    >
       <legend className={styles.srOnly}>{label}</legend>
       <div id={labelId} className={styles.cardLabel} aria-hidden="true">
         <span className={styles.pixel} style={colorVars(swatch.color, swatch.rgb)} />
@@ -411,8 +550,19 @@ function LimitedText({
 
 type Block = { id: string; swatch: Swatch; value: string; label: string };
 
-function YourPiece({ email, filled, blocks }: { email: string; filled: number; blocks: (Block | false)[] }) {
-  const all: Block[] = [{ id: "email", swatch: SWATCHES.cyan, value: email, label: "INVITE GOES HERE" }, ...blocks.filter((b): b is Block => Boolean(b))];
+function YourPiece({
+  email,
+  filled,
+  blocks,
+}: {
+  email: string;
+  filled: number;
+  blocks: (Block | false)[];
+}) {
+  const all: Block[] = [
+    { id: "email", swatch: SWATCHES.cyan, value: email, label: "INVITE GOES HERE" },
+    ...blocks.filter((b): b is Block => Boolean(b)),
+  ];
   return (
     <aside className={styles.piece} aria-label="Your application so far">
       <div className={styles.pieceHead}>
@@ -421,7 +571,11 @@ function YourPiece({ email, filled, blocks }: { email: string; filled: number; b
       </div>
       <ul className={styles.well}>
         {all.map((block) => (
-          <li key={block.id} className={styles.block} style={colorVars(block.swatch.color, block.swatch.rgb)}>
+          <li
+            key={block.id}
+            className={styles.block}
+            style={colorVars(block.swatch.color, block.swatch.rgb)}
+          >
             <span className={styles.blockCells} aria-hidden="true">
               <span className={styles.pixel} />
               <span className={styles.pixel} />
@@ -433,7 +587,9 @@ function YourPiece({ email, filled, blocks }: { email: string; filled: number; b
           </li>
         ))}
       </ul>
-      <p className={styles.pieceFoot}>Every answer drops a block. Fill them all and your agent has a shape.</p>
+      <p className={styles.pieceFoot}>
+        Every answer drops a block. Fill them all and your agent has a shape.
+      </p>
     </aside>
   );
 }

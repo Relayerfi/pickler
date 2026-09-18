@@ -4,8 +4,10 @@ export interface HealthResponse {
   checkedAt: string;
 }
 
-export type * from "./landing";
-export type * from "./waitlist";
-export * from "./applications";
-export type * from "./agents";
-export type * from "./errors";
+export type * from "./landing.js";
+export type * from "./waitlist.js";
+export * from "./applications.js";
+export type * from "./agents.js";
+export type * from "./errors.js";
+
+export * from "./research.js";

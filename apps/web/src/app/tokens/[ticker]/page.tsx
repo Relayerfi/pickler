@@ -15,13 +15,20 @@ type Params = Promise<{ ticker: string }>;
 
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
   const profile = await loadProfile((await params).ticker);
-  if (!profile) return { title: "Token not found — Pickler" };
-  return { title: `${profile.name} (${profile.ticker}) — Pickler`, description: profile.blurb || `${profile.name}'s token and public record on Pickler.` };
+  if (!profile) {
+    return { title: "Token not found — Pickler" };
+  }
+  return {
+    title: `${profile.name} (${profile.ticker}) — Pickler`,
+    description: profile.blurb || `${profile.name}'s token and public record on Pickler.`,
+  };
 }
 
 export default async function TokenDetailPage({ params }: { params: Params }) {
   const profile = await loadProfile((await params).ticker);
-  if (!profile) notFound();
+  if (!profile) {
+    notFound();
+  }
   return (
     <PublicShell>
       <TokenPage agent={toAgentProfileDto(profile)} nowMs={services.clock.now().getTime()} />

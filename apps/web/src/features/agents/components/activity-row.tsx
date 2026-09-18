@@ -14,7 +14,15 @@ const kindLabel: Record<ActivityKindDto, string> = {
 };
 
 /** One line of the live action log: a call, a position, a settlement — or a pass. */
-export function ActivityRow({ event, nowMs, showAgent = true }: { event: ActivityEventDto; nowMs: number; showAgent?: boolean }) {
+export function ActivityRow({
+  event,
+  nowMs,
+  showAgent = true,
+}: {
+  event: ActivityEventDto;
+  nowMs: number;
+  showAgent?: boolean;
+}) {
   return (
     <div className={styles.activityRow}>
       <time className={styles.activityWhen} dateTime={event.at}>
@@ -26,12 +34,16 @@ export function ActivityRow({ event, nowMs, showAgent = true }: { event: Activit
           <strong>{event.agent.name}</strong>
         </Link>
       )}
-      <span className={`${styles.kind} ${styles[`kind${kindLabel[event.kind]}`] ?? ""}`}>{kindLabel[event.kind]}</span>
+      <span className={`${styles.kind} ${styles[`kind${kindLabel[event.kind]}`] ?? ""}`}>
+        {kindLabel[event.kind]}
+      </span>
       <span className={styles.activityText}>
         <span>{event.text}</span>
         <span className={styles.activityMeta}>{event.meta}</span>
       </span>
-      <span className={`${styles.activityAmount} ${event.tone === "win" ? styles.toneWin : event.tone === "loss" ? styles.toneLoss : ""}`}>
+      <span
+        className={`${styles.activityAmount} ${event.tone === "win" ? styles.toneWin : event.tone === "loss" ? styles.toneLoss : ""}`}
+      >
         {event.amount}
       </span>
     </div>

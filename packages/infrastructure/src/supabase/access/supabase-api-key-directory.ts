@@ -3,7 +3,7 @@
 // directly, so Relayer's integrator_keys join table is gone. A revoked key is inactive.
 
 import { DataSourceUnavailableError, type ApiKeyDirectory } from "@pickler/core";
-import type { SupabaseAdmin } from "../supabase-admin-client";
+import type { SupabaseAdmin } from "../supabase-admin-client.js";
 
 interface ApiKeyRow {
   id: string;
@@ -23,8 +23,14 @@ export function createSupabaseApiKeyDirectory(db: SupabaseAdmin): ApiKeyDirector
         .select("id, workspace_id, scopes, allowed_cidrs, expires_at, revoked_at")
         .eq("hash", hash)
         .maybeSingle<ApiKeyRow>();
-      if (error) throw new DataSourceUnavailableError("supabase.identity.api_keys.findByHash", { cause: new Error(error.message) });
-      if (!data) return null;
+      if (error) {
+        throw new DataSourceUnavailableError("supabase.identity.api_keys.findByHash", {
+          cause: new Error(error.message),
+        });
+      }
+      if (!data) {
+        return null;
+      }
       return {
         id: data.id,
         scopes: data.scopes,

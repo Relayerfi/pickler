@@ -8,16 +8,19 @@ import {
   validateApplication,
   type Applicant,
   type ApplicationInput,
-} from "../domain/application";
-import type { ApplicantRepository } from "../ports/applicant-repository";
+} from "../domain/application.js";
+import type { ApplicantRepository } from "../ports/applicant-repository.js";
 
 export function createGetApplicant(repository: ApplicantRepository) {
-  return async (token: string | null): Promise<Applicant | null> => (token ? repository.findByToken(token) : null);
+  return async (token: string | null): Promise<Applicant | null> =>
+    token ? repository.findByToken(token) : null;
 }
 
 export function createSubmitApplication(repository: ApplicantRepository) {
   return async (token: string | null, input: ApplicationInput): Promise<Applicant> => {
-    if (!token) throw new ApplicantNotFoundError();
+    if (!token) {
+      throw new ApplicantNotFoundError();
+    }
     const application = validateApplication(input);
 
     switch (await repository.submit(token, application)) {
@@ -34,7 +37,9 @@ export function createSubmitApplication(repository: ApplicantRepository) {
     }
 
     const applicant = await repository.findByToken(token);
-    if (!applicant) throw new ApplicantNotFoundError();
+    if (!applicant) {
+      throw new ApplicantNotFoundError();
+    }
     return applicant;
   };
 }
@@ -43,7 +48,9 @@ export function createCheckTicker(repository: ApplicantRepository) {
   return async (raw: string): Promise<{ ticker: string; available: boolean }> => {
     const ticker = normalizeTicker(raw);
     if (!ticker) {
-      throw new ApplicationValidationError([{ field: "ticker", message: "Use 2 to 6 letters or digits, starting with a letter." }]);
+      throw new ApplicationValidationError([
+        { field: "ticker", message: "Use 2 to 6 letters or digits, starting with a letter." },
+      ]);
     }
     return { ticker, available: await repository.isTickerAvailable(ticker) };
   };

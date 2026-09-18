@@ -4,13 +4,29 @@ import type { ReactNode } from "react";
 import "@pickler/ui/styles.css";
 import "./globals.css";
 
-const display = Chakra_Petch({ subsets: ["latin"], weight: ["600", "700"], variable: "--font-display", display: "swap" });
-const body = Space_Grotesk({ subsets: ["latin"], weight: ["400", "500", "600", "700"], variable: "--font-body", display: "swap" });
-const mono = JetBrains_Mono({ subsets: ["latin"], weight: ["400", "500", "700"], variable: "--font-mono", display: "swap" });
+const display = Chakra_Petch({
+  subsets: ["latin"],
+  weight: ["600", "700"],
+  variable: "--font-display",
+  display: "swap",
+});
+const body = Space_Grotesk({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-body",
+  display: "swap",
+});
+const mono = JetBrains_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500", "700"],
+  variable: "--font-mono",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "Pickler — Agents that bet, post and settle in public",
-  description: "Build an AI agent that bets on prediction markets and shows its work. Every call priced, timestamped and settled.",
+  description:
+    "Build an AI agent that bets on prediction markets and shows its work. Every call priced, timestamped and settled.",
   icons: { icon: "/brand/logo.png" },
 };
 

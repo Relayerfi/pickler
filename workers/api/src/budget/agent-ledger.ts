@@ -12,7 +12,11 @@ import {
   type ReserveInput,
   type ReserveResult,
 } from "@pickler/core";
-import { createSupabaseAdmin, createSupabaseAgentRegistry, createSupabaseBudgetSource } from "@pickler/infrastructure";
+import {
+  createSupabaseAdmin,
+  createSupabaseAgentRegistry,
+  createSupabaseBudgetSource,
+} from "@pickler/infrastructure";
 import { DurableObject } from "cloudflare:workers";
 import type { Env } from "../env";
 import { createSqlLedgerStore, migrateLedger } from "./sql-ledger-store";
@@ -39,11 +43,21 @@ export class AgentLedger extends DurableObject<Env> {
   }
 
   private async ensureHydrated(agentId: string): Promise<void> {
-    if (this.ledger.isHydrated()) return;
+    if (this.ledger.isHydrated()) {
+      return;
+    }
     this.hydrating ??= (async () => {
-      const db = createSupabaseAdmin({ url: this.env.SUPABASE_URL, secretKey: this.env.SUPABASE_SECRET_KEY });
-      const [rows, agent] = await Promise.all([createSupabaseBudgetSource(db).loadBudgets(agentId), createSupabaseAgentRegistry(db).findById(agentId)]);
-      if (!agent) throw new Error("Agent not found for ledger hydration");
+      const db = createSupabaseAdmin({
+        url: this.env.SUPABASE_URL,
+        secretKey: this.env.SUPABASE_SECRET_KEY,
+      });
+      const [rows, agent] = await Promise.all([
+        createSupabaseBudgetSource(db).loadBudgets(agentId),
+        createSupabaseAgentRegistry(db).findById(agentId),
+      ]);
+      if (!agent) {
+        throw new Error("Agent not found for ledger hydration");
+      }
       // Hydration never overwrites state, so a concurrent second hydration is harmless.
       this.atomically(() => this.ledger.hydrate(rows, agent.status));
     })().finally(() => {
@@ -54,9 +68,13 @@ export class AgentLedger extends DurableObject<Env> {
 
   private async scheduleExpiry(): Promise<void> {
     const next = this.ledger.snapshot().nextExpiry;
-    if (!next) return;
+    if (!next) {
+      return;
+    }
     const current = await this.ctx.storage.getAlarm();
-    if (current === null || current > next.getTime()) await this.ctx.storage.setAlarm(next.getTime() + 1);
+    if (current === null || current > next.getTime()) {
+      await this.ctx.storage.setAlarm(next.getTime() + 1);
+    }
   }
 
   async snapshot(agentId: string): Promise<LedgerSnapshot> {
@@ -82,12 +100,19 @@ export class AgentLedger extends DurableObject<Env> {
     this.atomically(() => this.ledger.release(reservationId));
   }
 
-  async record(agentId: string, input: { category: BudgetCategory; amount: string; eventId: string }): Promise<{ applied: boolean; overLimit: boolean }> {
+  async record(
+    agentId: string,
+    input: { category: BudgetCategory; amount: string; eventId: string },
+  ): Promise<{ applied: boolean; overLimit: boolean }> {
     await this.ensureHydrated(agentId);
     return this.atomically(() => this.ledger.record(input));
   }
 
-  async configure(agentId: string, limits: Partial<Record<BudgetCategory, string>>, options: { resetSpent?: boolean } = {}): Promise<void> {
+  async configure(
+    agentId: string,
+    limits: Partial<Record<BudgetCategory, string>>,
+    options: { resetSpent?: boolean } = {},
+  ): Promise<void> {
     await this.ensureHydrated(agentId);
     this.atomically(() => this.ledger.configure(limits, options));
   }

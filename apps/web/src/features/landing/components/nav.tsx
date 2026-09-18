@@ -20,7 +20,15 @@ export function Nav() {
     <nav className={styles.nav} aria-label="Main">
       <div className={`${styles.container} ${styles.navRow}`}>
         <a href="#top" className={styles.brand}>
-          <Image src="/brand/logo.png" alt="" width={128} height={135} className={styles.brandLogo} priority unoptimized />
+          <Image
+            src="/brand/logo.png"
+            alt=""
+            width={128}
+            height={135}
+            className={styles.brandLogo}
+            priority
+            unoptimized
+          />
           <span className={styles.brandName}>PICKLER</span>
         </a>
         <div className={styles.navLinks}>
@@ -42,7 +50,9 @@ export function Nav() {
         </div>
         <a href="#waitlist" className={styles.navCta}>
           JOIN TESTNET
-          <span className={styles.arrowChip} aria-hidden="true">→</span>
+          <span className={styles.arrowChip} aria-hidden="true">
+            →
+          </span>
         </a>
       </div>
     </nav>

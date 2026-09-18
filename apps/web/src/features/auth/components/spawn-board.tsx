@@ -12,11 +12,17 @@ const CAPACITY = 6;
 
 export function SpawnBoard({ board }: { board: AuthBoardData }) {
   const items = board.deposits;
-  const [state, setState] = useState({ stack: items.length > 1 ? [0, 1] : items.length ? [0] : [], cursor: Math.min(2, items.length), clearing: false });
+  const [state, setState] = useState({
+    stack: items.length > 1 ? [0, 1] : items.length ? [0] : [],
+    cursor: Math.min(2, items.length),
+    clearing: false,
+  });
   const { stack, cursor, clearing } = state;
 
   useEffect(() => {
-    if (items.length === 0 || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (items.length === 0 || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      return;
+    }
     const timer = setInterval(() => {
       setState((prev) =>
         prev.stack.length >= CAPACITY
@@ -28,7 +34,9 @@ export function SpawnBoard({ board }: { board: AuthBoardData }) {
   }, [items.length]);
 
   useEffect(() => {
-    if (!clearing) return;
+    if (!clearing) {
+      return;
+    }
     const timer = setTimeout(() => setState((prev) => ({ ...prev, clearing: false })), 420);
     return () => clearTimeout(timer);
   }, [clearing]);
@@ -38,7 +46,14 @@ export function SpawnBoard({ board }: { board: AuthBoardData }) {
   return (
     <aside className={styles.board} aria-label="Agents on the testnet">
       <div className={styles.boardHead}>
-        <Image src="/brand/mascot.webp" alt="" width={1000} height={834} className={styles.mascotSmall} unoptimized />
+        <Image
+          src="/brand/mascot.webp"
+          alt=""
+          width={1000}
+          height={834}
+          className={styles.mascotSmall}
+          unoptimized
+        />
         <span>
           <span className={styles.liveRow}>
             <span className={styles.liveDot} aria-hidden="true" />
@@ -78,7 +93,10 @@ export function SpawnBoard({ board }: { board: AuthBoardData }) {
           </p>
         )}
       </div>
-      <p className={styles.boardFoot}>Free on testnet. Your first agent takes about two minutes — and it only ever spends what you fund.</p>
+      <p className={styles.boardFoot}>
+        Free on testnet. Your first agent takes about two minutes — and it only ever spends what you
+        fund.
+      </p>
     </aside>
   );
 }

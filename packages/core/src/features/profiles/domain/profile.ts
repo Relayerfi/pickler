@@ -15,14 +15,37 @@ export const DISPLAY_NAME_MAX = 60;
 
 /** Handles that would impersonate the product or staff. */
 export const RESERVED_HANDLES = new Set([
-  "pickler", "pickle", "admin", "administrator", "support", "help", "team", "staff", "official", "security",
-  "system", "root", "api", "studio", "board", "agents", "agent", "relayer", "moderator", "mod", "null", "undefined",
+  "pickler",
+  "pickle",
+  "admin",
+  "administrator",
+  "support",
+  "help",
+  "team",
+  "staff",
+  "official",
+  "security",
+  "system",
+  "root",
+  "api",
+  "studio",
+  "board",
+  "agents",
+  "agent",
+  "relayer",
+  "moderator",
+  "mod",
+  "null",
+  "undefined",
 ]);
 
 export type HandleProblem = "too_short" | "too_long" | "invalid_characters" | "reserved";
 
 export class InvalidProfileError extends Error {
-  constructor(readonly field: "handle" | "displayName", readonly problem: HandleProblem | "required" | "too_long") {
+  constructor(
+    readonly field: "handle" | "displayName",
+    readonly problem: HandleProblem | "required" | "too_long",
+  ) {
     super(`Invalid ${field}: ${problem}`);
     this.name = "InvalidProfileError";
   }
@@ -45,16 +68,28 @@ export class ProfileAlreadyExistsError extends Error {
 export const normalizeHandle = (raw: string) => raw.trim().replace(/^@+/, "").toLowerCase();
 
 export function handleProblem(handle: string): HandleProblem | null {
-  if (handle.length < HANDLE_RULES.min) return "too_short";
-  if (handle.length > HANDLE_RULES.max) return "too_long";
-  if (!HANDLE_RULES.pattern.test(handle)) return "invalid_characters";
-  if (RESERVED_HANDLES.has(handle)) return "reserved";
+  if (handle.length < HANDLE_RULES.min) {
+    return "too_short";
+  }
+  if (handle.length > HANDLE_RULES.max) {
+    return "too_long";
+  }
+  if (!HANDLE_RULES.pattern.test(handle)) {
+    return "invalid_characters";
+  }
+  if (RESERVED_HANDLES.has(handle)) {
+    return "reserved";
+  }
   return null;
 }
 
 export function parseDisplayName(raw: string): string {
   const name = raw.trim().replace(/\s+/g, " ");
-  if (name.length < 2) throw new InvalidProfileError("displayName", "required");
-  if (name.length > DISPLAY_NAME_MAX) throw new InvalidProfileError("displayName", "too_long");
+  if (name.length < 2) {
+    throw new InvalidProfileError("displayName", "required");
+  }
+  if (name.length > DISPLAY_NAME_MAX) {
+    throw new InvalidProfileError("displayName", "too_long");
+  }
   return name;
 }

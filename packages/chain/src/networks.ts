@@ -19,7 +19,13 @@ export const MONAD_MAINNET = {
   chainId: 143,
   name: "Monad",
   nativeCurrency: { symbol: "MON", decimals: 18 },
-  publicRpcUrls: ["https://rpc.monad.xyz", "https://rpc1.monad.xyz", "https://rpc2.monad.xyz", "https://rpc3.monad.xyz", "https://rpc-mainnet.monadinfra.com"],
+  publicRpcUrls: [
+    "https://rpc.monad.xyz",
+    "https://rpc1.monad.xyz",
+    "https://rpc2.monad.xyz",
+    "https://rpc3.monad.xyz",
+    "https://rpc-mainnet.monadinfra.com",
+  ],
   explorers: ["https://monadscan.com", "https://monadvision.com"],
   testnet: false,
 } as const satisfies Network;
@@ -28,7 +34,11 @@ export const MONAD_TESTNET = {
   chainId: 10143,
   name: "Monad Testnet",
   nativeCurrency: { symbol: "MON", decimals: 18 },
-  publicRpcUrls: ["https://testnet-rpc.monad.xyz", "https://rpc.ankr.com/monad_testnet", "https://rpc-testnet.monadinfra.com"],
+  publicRpcUrls: [
+    "https://testnet-rpc.monad.xyz",
+    "https://rpc.ankr.com/monad_testnet",
+    "https://rpc-testnet.monadinfra.com",
+  ],
   explorers: ["https://testnet.monadscan.com", "https://testnet.monadvision.com"],
   testnet: true,
 } as const satisfies Network;
@@ -77,13 +87,20 @@ export function networkByChainId(chainId: number): Network | null {
 /** Throws for chains Pickler does not support, instead of falling back to another network (Relayer defaulted to Base/Sepolia). */
 export function requireSupportedChain(chainId: number): SupportedChainId {
   const network = networkByChainId(chainId);
-  if (!network) throw new Error(`Unsupported chain id ${chainId}`);
+  if (!network) {
+    throw new Error(`Unsupported chain id ${chainId}`);
+  }
   return network.chainId as SupportedChainId;
 }
 
 /** Decimal token string → base units, exact. "1.5" AUSD → 1500000n. */
 export function toBaseUnits(amount: string, decimals: number): bigint {
   const match = /^(\d+)(?:\.(\d+))?$/.exec(amount.trim());
-  if (!match || (match[2]?.length ?? 0) > decimals) throw new Error(`Invalid token amount ${amount} for ${decimals} decimals`);
-  return BigInt(match[1]!) * 10n ** BigInt(decimals) + BigInt((match[2] ?? "").padEnd(decimals, "0") || "0");
+  if (!match || (match[2]?.length ?? 0) > decimals) {
+    throw new Error(`Invalid token amount ${amount} for ${decimals} decimals`);
+  }
+  return (
+    BigInt(match[1]!) * 10n ** BigInt(decimals) +
+    BigInt((match[2] ?? "").padEnd(decimals, "0") || "0")
+  );
 }

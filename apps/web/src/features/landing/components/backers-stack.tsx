@@ -13,7 +13,8 @@ const CLEAR_FLASH_MS = 420;
 
 type Deposit = LandingResponse["backing"]["recent"][number];
 
-const depositMeta = (deposit: Deposit) => `${deposit.agent.ticker} · +${formatInteger(deposit.amount)} MON backed`;
+const depositMeta = (deposit: Deposit) =>
+  `${deposit.agent.ticker} · +${formatInteger(deposit.amount)} MON backed`;
 
 export function BackersStack() {
   const { backing } = useLanding().data;
@@ -26,7 +27,9 @@ export function BackersStack() {
   const [clearing, setClearing] = useState(false);
 
   useAnimationInterval(() => {
-    if (deposits.length === 0) return;
+    if (deposits.length === 0) {
+      return;
+    }
     if (stack.length >= STACK_CAPACITY) {
       setStack([]);
       setClearing(true);
@@ -37,7 +40,9 @@ export function BackersStack() {
   }, DROP_MS);
 
   useEffect(() => {
-    if (!clearing) return;
+    if (!clearing) {
+      return;
+    }
     const timer = setTimeout(() => setClearing(false), CLEAR_FLASH_MS);
     return () => clearTimeout(timer);
   }, [clearing]);

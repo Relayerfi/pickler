@@ -8,7 +8,8 @@ export function NoSeat({ referralCode }: { referralCode: string | null }) {
       <p className={styles.eyebrow}>CLOSED TESTNET · MONAD</p>
       <h1 className={styles.title}>GET IN LINE FIRST.</h1>
       <p className={styles.lead}>
-        Applications open right after you join the waitlist, in the same browser. Drop your email on the board and we will bring you back here.
+        Applications open right after you join the waitlist, in the same browser. Drop your email on
+        the board and we will bring you back here.
       </p>
       <Link href={href} className={styles.primaryButton}>
         JOIN THE WAITLIST

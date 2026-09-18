@@ -21,14 +21,22 @@ export function AgentsCreated() {
 
   return (
     <div className={styles.created}>
-      <span className={`${styles.cornerPixel} ${styles.cornerCreated}`} style={accentVars("magenta")} aria-hidden="true" />
+      <span
+        className={`${styles.cornerPixel} ${styles.cornerCreated}`}
+        style={accentVars("magenta")}
+        aria-hidden="true"
+      />
       <div className={styles.labelRow}>
         <span className={styles.liveDot} aria-hidden="true" />
         <h2 className={styles.label}>AGENTS CREATED</h2>
       </div>
       <p className={styles.bigCount}>{formatInteger(stats.agentsCreated)}</p>
       <p className={styles.createdNote}>people are building them right now</p>
-      <div className={styles.awakeGrid} aria-label={`${formatInteger(stats.agentsCreatedToday)} created in the last 24 hours`} role="img">
+      <div
+        className={styles.awakeGrid}
+        aria-label={`${formatInteger(stats.agentsCreatedToday)} created in the last 24 hours`}
+        role="img"
+      >
         {Array.from({ length: GRID_CELLS }, (_, i) => {
           const on = i < lit;
           const fresh = i === lit - 1;
@@ -46,7 +54,9 @@ export function AgentsCreated() {
         <div key={spawnIndex} className={styles.spawn} style={accentVars(spawn.accent)}>
           <span className={styles.pixel} aria-hidden="true" />
           <span className={styles.spawnName}>{spawn.name}</span>
-          <span className={styles.spawnNote}>{spawnedRecently ? "just spawned" : `spawned ${formatAgo(spawn.createdAt, nowMs)}`}</span>
+          <span className={styles.spawnNote}>
+            {spawnedRecently ? "just spawned" : `spawned ${formatAgo(spawn.createdAt, nowMs)}`}
+          </span>
         </div>
       )}
     </div>

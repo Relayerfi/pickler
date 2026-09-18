@@ -9,20 +9,36 @@ import {
   InvalidAccessTokenError,
   type StoredApiKey,
   type Workspace,
-} from "../src/index.ts";
+} from "../src/index.js";
 
-const ws = (id: string, userId: string | null, isActive = true): Workspace => ({ id, name: id, userId, isActive, activeModules: ["agent"] });
+const ws = (id: string, userId: string | null, isActive = true): Workspace => ({
+  id,
+  name: id,
+  userId,
+  isActive,
+  activeModules: ["agent"],
+});
 const NOW = new Date("2026-09-16T12:00:00Z");
 const sha = (v: string) => createHash("sha256").update(v).digest("hex");
 
-function setup(overrides: { keys?: StoredApiKey[]; memberships?: Record<string, { workspaceId: string; role: string | null }[]> } = {}) {
+function setup(
+  overrides: {
+    keys?: StoredApiKey[];
+    memberships?: Record<string, { workspaceId: string; role: string | null }[]>;
+  } = {},
+) {
   const workspaces = [ws("w-ana", "ana"), ws("w-bo", "bo"), ws("w-off", "off", false)];
-  const memberships = overrides.memberships ?? { carl: [{ workspaceId: "w-bo", role: "manager" }], ana: [{ workspaceId: "w-bo", role: "viewer" }] };
+  const memberships = overrides.memberships ?? {
+    carl: [{ workspaceId: "w-bo", role: "manager" }],
+    ana: [{ workspaceId: "w-bo", role: "viewer" }],
+  };
   const keys = overrides.keys ?? [];
   return createAuthenticateRequest({
     tokens: {
       async verify(token) {
-        if (!token.startsWith("jwt:")) throw new InvalidAccessTokenError();
+        if (!token.startsWith("jwt:")) {
+          throw new InvalidAccessTokenError();
+        }
         return { userId: token.slice(4), email: `${token.slice(4)}@x.io` };
       },
     },
@@ -31,7 +47,9 @@ function setup(overrides: { keys?: StoredApiKey[]; memberships?: Record<string, 
       findOwnedBy: async (userId) => workspaces.find((w) => w.userId === userId) ?? null,
       findOldestMembership: async (userId) => memberships[userId]?.[0] ?? null,
       roleOf: async (userId, id) =>
-        workspaces.find((w) => w.id === id)?.userId === userId ? "admin" : memberships[userId]?.find((m) => m.workspaceId === id)?.role ?? null,
+        workspaces.find((w) => w.id === id)?.userId === userId
+          ? "admin"
+          : (memberships[userId]?.find((m) => m.workspaceId === id)?.role ?? null),
     },
     apiKeys: { findByHash: async (hash) => keys.find((k) => sha(`raw-${k.id}`) === hash) ?? null },
     sha256Hex: async (v) => sha(v),
@@ -40,7 +58,14 @@ function setup(overrides: { keys?: StoredApiKey[]; memberships?: Record<string, 
   });
 }
 
-const creds = (c: Partial<{ bearerToken: string; apiKey: string; selectedWorkspaceId: string; clientIp: string }>) => ({
+const creds = (
+  c: Partial<{
+    bearerToken: string;
+    apiKey: string;
+    selectedWorkspaceId: string;
+    clientIp: string;
+  }>,
+) => ({
   bearerToken: c.bearerToken ?? null,
   apiKey: c.apiKey ?? null,
   selectedWorkspaceId: c.selectedWorkspaceId ?? null,
@@ -64,7 +89,10 @@ test("members resolve to their oldest membership, and may select another workspa
   assert.equal(selected.workspace?.id, "w-bo");
   assert.equal(selected.principal.kind === "user" && selected.principal.memberRole, "viewer");
 
-  await assert.rejects(auth(creds({ bearerToken: "jwt:carl", selectedWorkspaceId: "w-ana" })), AccessDeniedError);
+  await assert.rejects(
+    auth(creds({ bearerToken: "jwt:carl", selectedWorkspaceId: "w-ana" })),
+    AccessDeniedError,
+  );
 });
 
 test("signed-in users without a workspace authenticate without a tenant", async () => {
@@ -78,17 +106,36 @@ test("inactive workspaces are rejected", async () => {
 });
 
 test("invalid tokens fall back to the API key unless the route is user-only", async () => {
-  const key: StoredApiKey = { id: "k1", scopes: ["integrator"], active: true, expiresAt: null, allowedCidrs: null, workspaceId: "w-bo", linkExpiresAt: null };
+  const key: StoredApiKey = {
+    id: "k1",
+    scopes: ["integrator"],
+    active: true,
+    expiresAt: null,
+    allowedCidrs: null,
+    workspaceId: "w-bo",
+    linkExpiresAt: null,
+  };
   const auth = setup({ keys: [key] });
   const viaKey = await auth(creds({ bearerToken: "garbage", apiKey: "raw-k1" }));
   assert.equal(viaKey.principal.kind, "apikey");
   assert.equal(viaKey.workspace?.id, "w-bo");
-  await assert.rejects(auth(creds({ bearerToken: "garbage", apiKey: "raw-k1" }), { userOnly: true }), AuthenticationRequiredError);
+  await assert.rejects(
+    auth(creds({ bearerToken: "garbage", apiKey: "raw-k1" }), { userOnly: true }),
+    AuthenticationRequiredError,
+  );
   await assert.rejects(auth(creds({})), AuthenticationRequiredError);
 });
 
 test("API keys: inactive, expired, expired link, unlinked or unknown keys are refused; CIDR violations are forbidden", async () => {
-  const base: StoredApiKey = { id: "", scopes: [], active: true, expiresAt: null, allowedCidrs: null, workspaceId: "w-bo", linkExpiresAt: null };
+  const base: StoredApiKey = {
+    id: "",
+    scopes: [],
+    active: true,
+    expiresAt: null,
+    allowedCidrs: null,
+    workspaceId: "w-bo",
+    linkExpiresAt: null,
+  };
   const past = new Date("2026-09-01T00:00:00Z");
   const keys: StoredApiKey[] = [
     { ...base, id: "inactive", active: false },
@@ -102,7 +149,13 @@ test("API keys: inactive, expired, expired link, unlinked or unknown keys are re
   for (const id of ["inactive", "expired", "link-expired", "unlinked", "unknown"]) {
     await assert.rejects(auth(creds({ apiKey: `raw-${id}` })), AuthenticationRequiredError, id);
   }
-  await assert.rejects(auth(creds({ apiKey: "raw-cidr", clientIp: "10.0.0.1" })), AccessDeniedError);
-  assert.equal((await auth(creds({ apiKey: "raw-cidr", clientIp: "192.168.4.4" }))).principal.id, "cidr");
+  await assert.rejects(
+    auth(creds({ apiKey: "raw-cidr", clientIp: "10.0.0.1" })),
+    AccessDeniedError,
+  );
+  assert.equal(
+    (await auth(creds({ apiKey: "raw-cidr", clientIp: "192.168.4.4" }))).principal.id,
+    "cidr",
+  );
   await assert.rejects(auth(creds({ apiKey: "raw-off" })), InactiveWorkspaceError);
 });

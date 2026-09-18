@@ -1,6 +1,11 @@
-import { CATEGORIES, DataSourceUnavailableError, PERSONALITIES, type ApplicantRepository } from "@pickler/core";
+import {
+  CATEGORIES,
+  DataSourceUnavailableError,
+  PERSONALITIES,
+  type ApplicantRepository,
+} from "@pickler/core";
 import { z } from "zod";
-import type { SupabaseRestClient } from "./supabase-rest-client";
+import type { SupabaseRestClient } from "./supabase-rest-client.js";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -26,11 +31,19 @@ const applicantSchema = z
   })
   .nullable();
 
-const outcomeSchema = z.enum(["submitted", "not_found", "already_submitted", "ticker_taken", "handle_taken"]);
+const outcomeSchema = z.enum([
+  "submitted",
+  "not_found",
+  "already_submitted",
+  "ticker_taken",
+  "handle_taken",
+]);
 
 function parse<T>(schema: z.ZodType<T>, body: unknown, fn: string): T {
   const parsed = schema.safeParse(body);
-  if (!parsed.success) throw new DataSourceUnavailableError(`supabase.rpc.${fn}`, { cause: parsed.error });
+  if (!parsed.success) {
+    throw new DataSourceUnavailableError(`supabase.rpc.${fn}`, { cause: parsed.error });
+  }
   return parsed.data;
 }
 
@@ -38,11 +51,19 @@ export function createSupabaseApplicants(client: SupabaseRestClient): ApplicantR
   return {
     async findByToken(token) {
       // Malformed tokens would make Postgres reject the uuid cast; they simply match no seat.
-      if (!UUID.test(token)) return null;
-      return parse(applicantSchema, await client.rpc("applicant_by_token", { p_token: token }), "applicant_by_token");
+      if (!UUID.test(token)) {
+        return null;
+      }
+      return parse(
+        applicantSchema,
+        await client.rpc("applicant_by_token", { p_token: token }),
+        "applicant_by_token",
+      );
     },
     async submit(token, application) {
-      if (!UUID.test(token)) return "not_found";
+      if (!UUID.test(token)) {
+        return "not_found";
+      }
       // Not retried: a lost response may have stored the application; the caller re-reads state instead.
       const body = await client.rpc("submit_application", {
         p_token: token,
@@ -57,7 +78,11 @@ export function createSupabaseApplicants(client: SupabaseRestClient): ApplicantR
       return parse(outcomeSchema, body, "submit_application");
     },
     async isTickerAvailable(ticker) {
-      return parse(z.boolean(), await client.rpc("ticker_available", { p_ticker: ticker }), "ticker_available");
+      return parse(
+        z.boolean(),
+        await client.rpc("ticker_available", { p_ticker: ticker }),
+        "ticker_available",
+      );
     },
   };
 }

@@ -8,7 +8,13 @@ import { Submitted } from "./submitted";
 export function ApplyFlow({ initial }: { initial: ApplicantResponse }) {
   const [applicant, setApplicant] = useState(initial);
   if (applicant.application) {
-    return <Submitted applicant={applicant} application={applicant.application} onRefresh={setApplicant} />;
+    return (
+      <Submitted
+        applicant={applicant}
+        application={applicant.application}
+        onRefresh={setApplicant}
+      />
+    );
   }
   return (
     <ApplicationForm

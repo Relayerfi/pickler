@@ -2,9 +2,14 @@ import "server-only";
 import { errorResponse } from "./errors";
 
 /** Reads a small JSON object body, or returns the error response to send. */
-export async function readJsonObject(request: Request, maxBytes: number): Promise<Record<string, unknown> | Response> {
+export async function readJsonObject(
+  request: Request,
+  maxBytes: number,
+): Promise<Record<string, unknown> | Response> {
   const raw = await request.text();
-  if (raw.length > maxBytes) return errorResponse(413, "invalid_request", "Request body too large.");
+  if (raw.length > maxBytes) {
+    return errorResponse(413, "invalid_request", "Request body too large.");
+  }
   let body: unknown;
   try {
     body = JSON.parse(raw);

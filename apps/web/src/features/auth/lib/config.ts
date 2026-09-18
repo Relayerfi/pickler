@@ -8,4 +8,5 @@ export const authConfig = {
   siweChainId: Number(process.env.NEXT_PUBLIC_SIWE_CHAIN_ID ?? "10143"),
 };
 
-export const isAuthConfigured = () => Boolean(authConfig.supabaseUrl && authConfig.supabasePublishableKey && authConfig.apiUrl);
+export const isAuthConfigured = () =>
+  Boolean(authConfig.supabaseUrl && authConfig.supabasePublishableKey && authConfig.apiUrl);

@@ -12,7 +12,7 @@ import {
   type LedgerAgentStatus,
   type LedgerStore,
   type Reservation,
-} from "../src/index.ts";
+} from "../src/index.js";
 
 function memoryStore(): LedgerStore {
   const categories = new Map<BudgetCategory, CategoryState>();
@@ -34,14 +34,26 @@ function memoryStore(): LedgerStore {
 function setup(start = "2026-09-16T12:00:00Z") {
   let now = new Date(start);
   const ledger = createBudgetLedger(memoryStore(), () => now);
-  return { ledger, advance: (ms: number) => void (now = new Date(now.getTime() + ms)), setNow: (iso: string) => void (now = new Date(iso)) };
+  return {
+    ledger,
+    advance: (ms: number) => void (now = new Date(now.getTime() + ms)),
+    setNow: (iso: string) => void (now = new Date(iso)),
+  };
 }
 
-const reserve = (id: string, amount: string, category: BudgetCategory = "payments") => ({ reservationId: id, category, amount, source: "test", ttlMs: 60_000 });
+const reserve = (id: string, amount: string, category: BudgetCategory = "payments") => ({
+  reservationId: id,
+  category,
+  amount,
+  source: "test",
+  ttlMs: 60_000,
+});
 
 test("amounts: integers only, exact USD conversion", () => {
   assert.equal(parseMicroUsd("1000000"), 1_000_000n);
-  for (const bad of ["-5", "1.5", "", "1e6", " 1", "99999999999999999999"]) assert.throws(() => parseMicroUsd(bad), InvalidAmountError, bad);
+  for (const bad of ["-5", "1.5", "", "1e6", " 1", "99999999999999999999"]) {
+    assert.throws(() => parseMicroUsd(bad), InvalidAmountError, bad);
+  }
   assert.equal(usdToMicroUsd(100), 100_000_000n);
   assert.equal(usdToMicroUsd("0.1234565"), 123_457n);
   assert.equal(usdToMicroUsd("0.1"), 100_000n);
@@ -116,9 +128,18 @@ test("expired holds release themselves", () => {
 test("killed or paused agents cannot reserve; records are deduplicated and may exceed the limit", () => {
   const { ledger } = setup();
   ledger.hydrate([{ category: "tokens", limit: "5", spent: "0" }], "active");
-  assert.deepEqual(ledger.record({ category: "tokens", amount: "4", eventId: "e1" }), { applied: true, overLimit: false });
-  assert.deepEqual(ledger.record({ category: "tokens", amount: "4", eventId: "e1" }), { applied: false, overLimit: false });
-  assert.deepEqual(ledger.record({ category: "tokens", amount: "4", eventId: "e2" }), { applied: true, overLimit: true });
+  assert.deepEqual(ledger.record({ category: "tokens", amount: "4", eventId: "e1" }), {
+    applied: true,
+    overLimit: false,
+  });
+  assert.deepEqual(ledger.record({ category: "tokens", amount: "4", eventId: "e1" }), {
+    applied: false,
+    overLimit: false,
+  });
+  assert.deepEqual(ledger.record({ category: "tokens", amount: "4", eventId: "e2" }), {
+    applied: true,
+    overLimit: true,
+  });
   const tokens = ledger.snapshot().categories.find((c) => c.category === "tokens")!;
   assert.equal(tokens.status, "exceeded");
   assert.equal(tokens.remaining, -3n);
@@ -151,10 +172,19 @@ test("spend rolls over at the UTC month boundary; limits and holds carry over", 
 
 test("hydration never overwrites live state and status thresholds match Relayer", () => {
   const { ledger } = setup();
-  ledger.hydrate([{ category: "infra", limit: "1000", spent: "800" }, { category: "bogus", limit: "1", spent: "0" }], "active");
+  ledger.hydrate(
+    [
+      { category: "infra", limit: "1000", spent: "800" },
+      { category: "bogus", limit: "1", spent: "0" },
+    ],
+    "active",
+  );
   ledger.record({ category: "infra", amount: "50", eventId: "e" });
   ledger.hydrate([{ category: "infra", limit: "1", spent: "0" }], "killed");
   const infra = ledger.snapshot().categories.find((c) => c.category === "infra")!;
-  assert.deepEqual([infra.limit, infra.spent, infra.usagePct, infra.status], [1000n, 850n, 85, "warning"]);
+  assert.deepEqual(
+    [infra.limit, infra.spent, infra.usagePct, infra.status],
+    [1000n, 850n, 85, "warning"],
+  );
   assert.equal(ledger.snapshot().status, "active");
 });

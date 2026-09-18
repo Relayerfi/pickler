@@ -9,10 +9,16 @@ export function toLandingResponse(snapshot: LandingSnapshot): LandingResponse {
     graduationTarget: snapshot.graduationTarget,
     stats: { ...snapshot.stats },
     tape: snapshot.tape.map((entry) => ({ ...entry })),
-    spawns: snapshot.spawns.map((spawn) => ({ ...spawn, createdAt: spawn.createdAt.toISOString() })),
+    spawns: snapshot.spawns.map((spawn) => ({
+      ...spawn,
+      createdAt: spawn.createdAt.toISOString(),
+    })),
     backing: {
       fundedTotal: snapshot.backing.fundedTotal,
-      recent: snapshot.backing.recent.map((deposit) => ({ ...deposit, depositedAt: deposit.depositedAt.toISOString() })),
+      recent: snapshot.backing.recent.map((deposit) => ({
+        ...deposit,
+        depositedAt: deposit.depositedAt.toISOString(),
+      })),
     },
     launches: snapshot.launches.map((launch) => ({ ...launch })),
     leaderboard: snapshot.leaderboard.map((score) => ({ ...score })),

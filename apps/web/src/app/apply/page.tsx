@@ -12,7 +12,11 @@ export const metadata: Metadata = {
   robots: { index: false },
 };
 
-export default async function ApplyPage({ searchParams }: { searchParams: Promise<{ ref?: string | string[] }> }) {
+export default async function ApplyPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ ref?: string | string[] }>;
+}) {
   const applicant = await services.getApplicant(await readApplyToken());
   if (!applicant) {
     const { ref } = await searchParams;

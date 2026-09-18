@@ -34,7 +34,9 @@ export function TokenPage({ agent, nowMs }: { agent: AgentProfileDto; nowMs: num
         <div className={styles.heroBody}>
           <div className={styles.heroTitleRow}>
             <h1 className={styles.heroTitle}>{agent.name}</h1>
-            <span className={styles.tickerChip}>{agent.token?.stage === "graduated" ? `${agent.ticker}/MON` : agent.ticker}</span>
+            <span className={styles.tickerChip}>
+              {agent.token?.stage === "graduated" ? `${agent.ticker}/MON` : agent.ticker}
+            </span>
             <StageBadge token={agent.token} />
             <VenueMarks token={agent.token} />
           </div>
@@ -46,21 +48,31 @@ export function TokenPage({ agent, nowMs }: { agent: AgentProfileDto; nowMs: num
               Meet the agent <span aria-hidden="true">→</span>
             </Link>
             {agent.xHandle && (
-              <a href={xUrl(agent.xHandle)} target="_blank" rel="noopener noreferrer" className={styles.chip}>
+              <a
+                href={xUrl(agent.xHandle)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.chip}
+              >
                 {agent.xHandle}
               </a>
             )}
-            {agent.creatorHandle && <span className={`${styles.chip} ${styles.chipMuted}`}>by {agent.creatorHandle}</span>}
-
+            {agent.creatorHandle && (
+              <span className={`${styles.chip} ${styles.chipMuted}`}>by {agent.creatorHandle}</span>
+            )}
           </div>
         </div>
         {market && (
           <div className={styles.heroPrice}>
             <p className={styles.price}>{formatTokenPrice(market.price)} MON</p>
-            <p className={`${styles.change} ${market.change24h < 0 ? styles.toneLoss : styles.toneWin}`}>{formatChange(market.change24h)} 24H</p>
+            <p
+              className={`${styles.change} ${market.change24h < 0 ? styles.toneLoss : styles.toneWin}`}
+            >
+              {formatChange(market.change24h)} 24H
+            </p>
             <p className={styles.priceMeta}>
-              MCAP {agent.token ? formatCompact(agent.token.marketCap) : "—"} MON · {formatInteger(market.holders)} HOLDERS ·{" "}
-              {formatInteger(agent.followers)} FOLLOWING
+              MCAP {agent.token ? formatCompact(agent.token.marketCap) : "—"} MON ·{" "}
+              {formatInteger(market.holders)} HOLDERS · {formatInteger(agent.followers)} FOLLOWING
             </p>
           </div>
         )}
@@ -68,8 +80,16 @@ export function TokenPage({ agent, nowMs }: { agent: AgentProfileDto; nowMs: num
 
       <dl className={`${styles.panel} ${styles.record}`}>
         <RecordItem label="RESOLVED" value={formatInteger(agent.resolved)} />
-        <RecordItem label="HIT RATE" value={formatPercent(agent.hitRate)} className={styles.toneOpen} />
-        <RecordItem label="NET MON" value={formatSigned(agent.net)} className={agent.net < 0 ? styles.toneLoss : styles.toneWin} />
+        <RecordItem
+          label="HIT RATE"
+          value={formatPercent(agent.hitRate)}
+          className={styles.toneOpen}
+        />
+        <RecordItem
+          label="NET MON"
+          value={formatSigned(agent.net)}
+          className={agent.net < 0 ? styles.toneLoss : styles.toneWin}
+        />
         <RecordItem label="OPEN NOW" value={formatInteger(agent.openPicks)} />
         <RecordItem label="ON THE BOARD" value={formatAge(agent.createdAt, nowMs)} />
       </dl>
@@ -78,7 +98,12 @@ export function TokenPage({ agent, nowMs }: { agent: AgentProfileDto; nowMs: num
         <div className={styles.mainColumn}>
           {market && agent.token && (
             <section className={styles.panel} aria-label="Token price">
-              <PriceChart price={market.price} change24h={market.change24h} candles={market.candles} accent={agent.accent} />
+              <PriceChart
+                price={market.price}
+                change24h={market.change24h}
+                candles={market.candles}
+                accent={agent.accent}
+              />
               <dl className={styles.chartStats}>
                 <ChartStat label="MCAP" value={formatCompact(agent.token.marketCap)} />
                 <ChartStat label="VOL 24H" value={formatCompact(agent.token.volume24h)} />
@@ -87,7 +112,11 @@ export function TokenPage({ agent, nowMs }: { agent: AgentProfileDto; nowMs: num
                   value={market.liquidity === null ? "ON CURVE" : formatCompact(market.liquidity)}
                   className={market.liquidity === null ? styles.toneOpen : undefined}
                 />
-                <ChartStat label="BUYBACKS" value={`${formatInteger(market.buybacks)} MON`} className={styles.toneWin} />
+                <ChartStat
+                  label="BUYBACKS"
+                  value={`${formatInteger(market.buybacks)} MON`}
+                  className={styles.toneWin}
+                />
               </dl>
             </section>
           )}
@@ -105,18 +134,24 @@ export function TokenPage({ agent, nowMs }: { agent: AgentProfileDto; nowMs: num
               <ul className={styles.callList}>
                 {agent.calls.map((call) => (
                   <li key={call.id}>
-                    <Link href={`/tokens/${agent.slug}/picks/${call.id}`} className={styles.callRow}>
+                    <Link
+                      href={`/tokens/${agent.slug}/picks/${call.id}`}
+                      className={styles.callRow}
+                    >
                       <time className={styles.callWhen} dateTime={call.calledAt}>
                         {formatAge(call.calledAt, nowMs)}
                       </time>
                       <span className={styles.callText}>
                         <strong>{call.call}</strong>
                         <span>
-                          {formatTwo(call.stake)} MON at {formatProbability(call.entryPrice)} · {call.outcome === "open" ? "open" : "settled"}
+                          {formatTwo(call.stake)} MON at {formatProbability(call.entryPrice)} ·{" "}
+                          {call.outcome === "open" ? "open" : "settled"}
                         </span>
                       </span>
                       <span className={`${styles.result} ${styles[outcomeClass[call.outcome]]}`}>
-                        {call.outcome === "open" || call.pnl === null ? "OPEN" : formatSignedTwo(call.pnl)}
+                        {call.outcome === "open" || call.pnl === null
+                          ? "OPEN"
+                          : formatSignedTwo(call.pnl)}
                       </span>
                     </Link>
                   </li>
@@ -127,7 +162,13 @@ export function TokenPage({ agent, nowMs }: { agent: AgentProfileDto; nowMs: num
         </div>
 
         <div className={styles.sideColumn}>
-          {market && agent.token && <BackPanel agent={{ name: agent.name, ticker: agent.ticker }} token={agent.token} price={market.price} />}
+          {market && agent.token && (
+            <BackPanel
+              agent={{ name: agent.name, ticker: agent.ticker }}
+              token={agent.token}
+              price={market.price}
+            />
+          )}
 
           <section className={`${styles.panel} ${styles.sideCard}`} aria-labelledby="brief-title">
             <h2 id="brief-title" className={styles.label}>
@@ -150,14 +191,23 @@ export function TokenPage({ agent, nowMs }: { agent: AgentProfileDto; nowMs: num
           </section>
 
           {agent.token && (
-            <section className={`${styles.panel} ${styles.sideCard}`} aria-labelledby="token-why-title">
+            <section
+              className={`${styles.panel} ${styles.sideCard}`}
+              aria-labelledby="token-why-title"
+            >
               <h2 id="token-why-title" className={styles.label}>
                 WHY THIS TOKEN EXISTS
               </h2>
-              <TokenFact color={["#C8F03A", "200,240,58"]} title="A share of its winnings buys the token back">
+              <TokenFact
+                color={["#C8F03A", "200,240,58"]}
+                title="A share of its winnings buys the token back"
+              >
                 Ten percent of every settled win goes into buybacks, automatically.
               </TokenFact>
-              <TokenFact color={["#9B7BFF", "155,123,255"]} title={`It graduates at ${formatInteger(agent.token.graduationTarget)} MON`}>
+              <TokenFact
+                color={["#9B7BFF", "155,123,255"]}
+                title={`It graduates at ${formatInteger(agent.token.graduationTarget)} MON`}
+              >
                 The curve closes and the token moves into a pool anyone can trade.
               </TokenFact>
               <TokenFact color={["#5AD8FF", "90,216,255"]} title="Its record is the only story">
@@ -167,7 +217,10 @@ export function TokenPage({ agent, nowMs }: { agent: AgentProfileDto; nowMs: num
           )}
 
           {market && market.topHolders.length > 0 && (
-            <section className={`${styles.panel} ${styles.sideCard}`} aria-labelledby="holders-title">
+            <section
+              className={`${styles.panel} ${styles.sideCard}`}
+              aria-labelledby="holders-title"
+            >
               <h2 id="holders-title" className={styles.label}>
                 HOLDERS · {formatInteger(market.holders)}
               </h2>
@@ -187,7 +240,15 @@ export function TokenPage({ agent, nowMs }: { agent: AgentProfileDto; nowMs: num
   );
 }
 
-function RecordItem({ label, value, className }: { label: string; value: string; className?: string | undefined }) {
+function RecordItem({
+  label,
+  value,
+  className,
+}: {
+  label: string;
+  value: string;
+  className?: string | undefined;
+}) {
   return (
     <div className={styles.recordItem}>
       <dt>{label}</dt>
@@ -196,7 +257,15 @@ function RecordItem({ label, value, className }: { label: string; value: string;
   );
 }
 
-function ChartStat({ label, value, className }: { label: string; value: string; className?: string | undefined }) {
+function ChartStat({
+  label,
+  value,
+  className,
+}: {
+  label: string;
+  value: string;
+  className?: string | undefined;
+}) {
   return (
     <div className={styles.chartStat}>
       <dt>{label}</dt>
@@ -205,7 +274,15 @@ function ChartStat({ label, value, className }: { label: string; value: string; 
   );
 }
 
-function TokenFact({ color, title, children }: { color: [string, string]; title: string; children: string }) {
+function TokenFact({
+  color,
+  title,
+  children,
+}: {
+  color: [string, string];
+  title: string;
+  children: string;
+}) {
   return (
     <div className={styles.fact} style={colorVars(color[0], color[1])}>
       <span className={styles.factDot} aria-hidden="true" />

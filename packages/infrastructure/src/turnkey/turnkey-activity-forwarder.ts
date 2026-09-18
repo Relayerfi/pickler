@@ -15,7 +15,11 @@ import {
   type TurnkeyActivity,
   type TurnkeyReader,
 } from "@pickler/core";
-import { sendStampedRequest, TURNKEY_API_BASE_URL, type TurnkeyTransportConfig } from "./turnkey-transport";
+import {
+  sendStampedRequest,
+  TURNKEY_API_BASE_URL,
+  type TurnkeyTransportConfig,
+} from "./turnkey-transport.js";
 
 export interface ActivityForwarderConfig extends TurnkeyTransportConfig {
   reader: TurnkeyReader;
@@ -26,11 +30,14 @@ export interface ActivityForwarderConfig extends TurnkeyTransportConfig {
 
 const SUBMIT_PATH = /^\/public\/v1\/submit\/[a-z0-9_]+$/;
 
-export function createTurnkeyActivityForwarder(config: ActivityForwarderConfig): SignedActivityForwarder {
+export function createTurnkeyActivityForwarder(
+  config: ActivityForwarderConfig,
+): SignedActivityForwarder {
   const base = new URL(config.baseUrl ?? TURNKEY_API_BASE_URL);
   const pollAttempts = config.pollAttempts ?? 3;
   const pollDelayMs = config.pollDelayMs ?? 1000;
-  const sleep = config.sleep ?? ((ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms)));
+  const sleep =
+    config.sleep ?? ((ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms)));
 
   return {
     async forward(request, expectations) {
@@ -40,8 +47,14 @@ export function createTurnkeyActivityForwarder(config: ActivityForwarderConfig):
       } catch {
         throw new InvalidSignedActivityError("Invalid activity URL");
       }
-      if (url.origin !== base.origin) throw new InvalidSignedActivityError(`Invalid activity URL: must be a Turnkey API endpoint (expected origin: ${base.origin})`);
-      if (!SUBMIT_PATH.test(url.pathname) || url.search) throw new InvalidSignedActivityError("Only Turnkey submit endpoints can be forwarded");
+      if (url.origin !== base.origin) {
+        throw new InvalidSignedActivityError(
+          `Invalid activity URL: must be a Turnkey API endpoint (expected origin: ${base.origin})`,
+        );
+      }
+      if (!SUBMIT_PATH.test(url.pathname) || url.search) {
+        throw new InvalidSignedActivityError("Only Turnkey submit endpoints can be forwarded");
+      }
 
       let body: { type?: unknown; organizationId?: unknown };
       try {
@@ -55,17 +68,29 @@ export function createTurnkeyActivityForwarder(config: ActivityForwarderConfig):
       if (body.organizationId !== expectations.organizationId) {
         throw new InvalidSignedActivityError("Signed activity targets a different organization");
       }
-      if (request.stamp.stampHeaderName.toLowerCase() !== "x-stamp-webauthn" && request.stamp.stampHeaderName.toLowerCase() !== "x-stamp") {
+      if (
+        request.stamp.stampHeaderName.toLowerCase() !== "x-stamp-webauthn" &&
+        request.stamp.stampHeaderName.toLowerCase() !== "x-stamp"
+      ) {
         throw new InvalidSignedActivityError("Unsupported stamp header");
       }
 
       const response = await sendStampedRequest<{ activity?: TurnkeyActivity }>(request, config);
       let activity = response.activity;
-      if (!activity) throw new SigningServiceUnavailableError("Turnkey activity response was empty");
+      if (!activity) {
+        throw new SigningServiceUnavailableError("Turnkey activity response was empty");
+      }
 
-      for (let attempt = 0; attempt < pollAttempts && !isTerminalActivity(activity.status); attempt++) {
+      for (
+        let attempt = 0;
+        attempt < pollAttempts && !isTerminalActivity(activity.status);
+        attempt++
+      ) {
         await sleep(pollDelayMs);
-        activity = await config.reader.getActivity(activity.organizationId ?? expectations.organizationId, activity.id);
+        activity = await config.reader.getActivity(
+          activity.organizationId ?? expectations.organizationId,
+          activity.id,
+        );
       }
       return activity;
     },

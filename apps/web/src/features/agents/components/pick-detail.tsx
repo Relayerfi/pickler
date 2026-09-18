@@ -2,9 +2,22 @@ import type { PickDetailDto } from "@pickler/api-schema";
 import Link from "next/link";
 import { accentVars } from "@/lib/accent";
 import styles from "../agents.module.css";
-import { formatAge, formatInteger, formatProbability, formatSignedTwo, formatTwo, outcomeClass } from "../lib/format";
+import {
+  formatAge,
+  formatInteger,
+  formatProbability,
+  formatSignedTwo,
+  formatTwo,
+  outcomeClass,
+} from "../lib/format";
 
-const toneAccent = { signal: "cyan", agent: "lime", caution: "cyan", win: "lime", loss: "magenta" } as const;
+const toneAccent = {
+  signal: "cyan",
+  agent: "lime",
+  caution: "cyan",
+  win: "lime",
+  loss: "magenta",
+} as const;
 
 export function PickDetail({ pick, nowMs }: { pick: PickDetailDto; nowMs: number }) {
   const open = pick.outcome === "open";
@@ -33,14 +46,22 @@ export function PickDetail({ pick, nowMs }: { pick: PickDetailDto; nowMs: number
           <span className={styles.label}>
             CALLED {age} AGO{open ? " · STILL OPEN" : ""}
           </span>
-          <span className={`${styles.result} ${styles.pickResult} ${styles[outcomeClass[pick.outcome]]}`}>{result}</span>
+          <span
+            className={`${styles.result} ${styles.pickResult} ${styles[outcomeClass[pick.outcome]]}`}
+          >
+            {result}
+          </span>
         </div>
         <h1 className={styles.pickTitle}>{pick.call.toUpperCase()}</h1>
         {pick.thesis && <p className={styles.pickBody}>{pick.thesis}</p>}
         <dl className={styles.receipt}>
           <ReceiptItem label="TOOK IT AT" value={formatProbability(pick.entryPrice)} />
           <ReceiptItem label="SIZE" value={stake} />
-          <ReceiptItem label="WOULD NOT PAY" value={pick.maxPrice === null ? "—" : `ABOVE ${formatProbability(pick.maxPrice)}`} className={styles.toneMuted} />
+          <ReceiptItem
+            label="WOULD NOT PAY"
+            value={pick.maxPrice === null ? "—" : `ABOVE ${formatProbability(pick.maxPrice)}`}
+            className={styles.toneMuted}
+          />
           {open ? (
             <ReceiptItem label="RESOLVES" value="NOT YET" className={styles.toneOpen} />
           ) : (
@@ -62,7 +83,13 @@ export function PickDetail({ pick, nowMs }: { pick: PickDetailDto; nowMs: number
             {pick.steps.map((step, i) => {
               const last = i === pick.steps.length - 1;
               return (
-                <li key={i} className={styles.trailStep} style={accentVars(step.tone === "agent" ? pick.agent.accent : toneAccent[step.tone])}>
+                <li
+                  key={i}
+                  className={styles.trailStep}
+                  style={accentVars(
+                    step.tone === "agent" ? pick.agent.accent : toneAccent[step.tone],
+                  )}
+                >
                   <span className={styles.trailRail} aria-hidden="true">
                     <span className={styles.trailDot} />
                     <span className={styles.trailLine} />
@@ -94,7 +121,11 @@ export function PickDetail({ pick, nowMs }: { pick: PickDetailDto; nowMs: number
               </h2>
               <p className={styles.postText}>“{pick.post.text}”</p>
               <p className={styles.postMeta}>
-                {[pick.agent.xHandle, `${formatAge(pick.calledAt, nowMs)} ago`, pick.post.views === null ? null : `${formatInteger(pick.post.views)} views`]
+                {[
+                  pick.agent.xHandle,
+                  `${formatAge(pick.calledAt, nowMs)} ago`,
+                  pick.post.views === null ? null : `${formatInteger(pick.post.views)} views`,
+                ]
                   .filter(Boolean)
                   .join(" · ")}
                 {pick.post.url && (
@@ -129,7 +160,15 @@ export function PickDetail({ pick, nowMs }: { pick: PickDetailDto; nowMs: number
   );
 }
 
-function ReceiptItem({ label, value, className }: { label: string; value: string; className?: string | undefined }) {
+function ReceiptItem({
+  label,
+  value,
+  className,
+}: {
+  label: string;
+  value: string;
+  className?: string | undefined;
+}) {
   return (
     <div className={styles.receiptItem}>
       <dt>{label}</dt>

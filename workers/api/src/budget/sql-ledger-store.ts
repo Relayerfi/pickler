@@ -1,14 +1,24 @@
 // LedgerStore over Durable Object SQLite (ctx.storage.sql). Amounts are stored as decimal TEXT
 // so bigint values survive exactly; SQLite INTEGER would come back as a JS number.
 
-import type { BudgetCategory, CategoryState, LedgerAgentStatus, LedgerStore, Reservation, ReservationState } from "@pickler/core";
+import type {
+  BudgetCategory,
+  CategoryState,
+  LedgerAgentStatus,
+  LedgerStore,
+  Reservation,
+  ReservationState,
+} from "@pickler/core";
 
 /**
  * The subset of Cloudflare's SqlStorage used here (also satisfied by node:sqlite in tests).
  * Writes always consume the cursor so they run regardless of cursor laziness.
  */
 export interface SqlExec {
-  exec(query: string, ...bindings: (string | number | null)[]): { toArray(): Record<string, unknown>[] };
+  exec(
+    query: string,
+    ...bindings: (string | number | null)[]
+  ): { toArray(): Record<string, unknown>[] };
 }
 
 export const LEDGER_SCHEMA = [
@@ -35,7 +45,9 @@ export const LEDGER_SCHEMA = [
 ];
 
 export function migrateLedger(sql: SqlExec): void {
-  for (const statement of LEDGER_SCHEMA) sql.exec(statement).toArray();
+  for (const statement of LEDGER_SCHEMA) {
+    sql.exec(statement).toArray();
+  }
 }
 
 const toReservation = (row: Record<string, unknown>): Reservation => ({
@@ -64,41 +76,50 @@ export function createSqlLedgerStore(sql: SqlExec): LedgerStore {
         : null;
     },
     putCategory(state: CategoryState) {
-      sql.exec(
-        `INSERT INTO budget (category, limit_amount, spent_amount, reserved_amount, period_key) VALUES (?, ?, ?, ?, ?)
+      sql
+        .exec(
+          `INSERT INTO budget (category, limit_amount, spent_amount, reserved_amount, period_key) VALUES (?, ?, ?, ?, ?)
          ON CONFLICT (category) DO UPDATE SET limit_amount = excluded.limit_amount, spent_amount = excluded.spent_amount,
            reserved_amount = excluded.reserved_amount, period_key = excluded.period_key`,
-        state.category,
-        state.limit.toString(),
-        state.spent.toString(),
-        state.reserved.toString(),
-        state.periodKey,
-      ).toArray();
+          state.category,
+          state.limit.toString(),
+          state.spent.toString(),
+          state.reserved.toString(),
+          state.periodKey,
+        )
+        .toArray();
     },
     getReservation(id) {
       const [row] = sql.exec("SELECT * FROM reservation WHERE id = ?", id).toArray();
       return row ? toReservation(row) : null;
     },
     putReservation(r) {
-      sql.exec(
-        `INSERT INTO reservation (id, category, amount, state, source, source_ref, created_at, expires_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      sql
+        .exec(
+          `INSERT INTO reservation (id, category, amount, state, source, source_ref, created_at, expires_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
          ON CONFLICT (id) DO UPDATE SET state = excluded.state`,
-        r.id,
-        r.category,
-        r.amount.toString(),
-        r.state,
-        r.source,
-        r.sourceRef,
-        r.createdAt.toISOString(),
-        r.expiresAt.toISOString(),
-      ).toArray();
+          r.id,
+          r.category,
+          r.amount.toString(),
+          r.state,
+          r.source,
+          r.sourceRef,
+          r.createdAt.toISOString(),
+          r.expiresAt.toISOString(),
+        )
+        .toArray();
     },
     heldReservations() {
-      return sql.exec("SELECT * FROM reservation WHERE state = 'held' ORDER BY expires_at").toArray().map(toReservation);
+      return sql
+        .exec("SELECT * FROM reservation WHERE state = 'held' ORDER BY expires_at")
+        .toArray()
+        .map(toReservation);
     },
     markProcessed(key, at) {
       const existing = sql.exec("SELECT key FROM processed WHERE key = ?", key).toArray();
-      if (existing.length > 0) return false;
+      if (existing.length > 0) {
+        return false;
+      }
       sql.exec("INSERT INTO processed (key, at) VALUES (?, ?)", key, at.toISOString()).toArray();
       return true;
     },
@@ -107,7 +128,12 @@ export function createSqlLedgerStore(sql: SqlExec): LedgerStore {
       return row ? (String(row.v) as LedgerAgentStatus) : null;
     },
     setStatus(status) {
-      sql.exec("INSERT INTO control (k, v) VALUES ('status', ?) ON CONFLICT (k) DO UPDATE SET v = excluded.v", status).toArray();
+      sql
+        .exec(
+          "INSERT INTO control (k, v) VALUES ('status', ?) ON CONFLICT (k) DO UPDATE SET v = excluded.v",
+          status,
+        )
+        .toArray();
     },
   };
 }

@@ -29,10 +29,19 @@ import {
 } from "@pickler/infrastructure";
 import { readDataSource } from "./config";
 
-function createAdapters(): { landing: LandingReadModel; waitlist: WaitlistRepository; applicants: ApplicantRepository; agents: AgentDirectory } {
+function createAdapters(): {
+  landing: LandingReadModel;
+  waitlist: WaitlistRepository;
+  applicants: ApplicantRepository;
+  agents: AgentDirectory;
+} {
   const source = readDataSource();
   if (source.kind === "supabase") {
-    const growth = createSupabaseRestClient({ url: source.url, secretKey: source.secretKey, schema: "growth" });
+    const growth = createSupabaseRestClient({
+      url: source.url,
+      secretKey: source.secretKey,
+      schema: "growth",
+    });
     // No launched agents exist yet: the landing and board keep sample data until the market schema lands.
     return {
       landing: createSampleLandingReadModel(systemClock),
@@ -44,8 +53,13 @@ function createAdapters(): { landing: LandingReadModel; waitlist: WaitlistReposi
   // Sample mode: signups and applications live in process memory, so they vanish on restart.
   // Next.js bundles pages and route handlers as separate module instances, so the store
   // is pinned to globalThis to keep one per process.
-  const holder = globalThis as typeof globalThis & { __picklerSampleStore?: ReturnType<typeof createInMemoryApplicantStore> };
-  holder.__picklerSampleStore ??= createInMemoryApplicantStore({ initialCount: 1204, reservedTickers: SAMPLE_AGENT_TICKERS });
+  const holder = globalThis as typeof globalThis & {
+    __picklerSampleStore?: ReturnType<typeof createInMemoryApplicantStore>;
+  };
+  holder.__picklerSampleStore ??= createInMemoryApplicantStore({
+    initialCount: 1204,
+    reservedTickers: SAMPLE_AGENT_TICKERS,
+  });
   return {
     landing: createSampleLandingReadModel(systemClock),
     agents: createSampleAgentDirectory(systemClock),

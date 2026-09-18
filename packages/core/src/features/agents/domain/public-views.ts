@@ -2,7 +2,7 @@
 // and the leaderboard. Implemented from the "Pickler Public" design canvas.
 // Amounts are display units; a ratio is 0–1 unless the field says otherwise.
 
-import type { Accent } from "../../landing/domain/landing";
+import type { Accent } from "../../landing/domain/landing.js";
 
 /** Where an agent takes its reads: prediction markets, perpetuals, or both. */
 export const VENUES = ["predictions", "perps", "both"] as const;
@@ -162,6 +162,8 @@ export interface Leaderboard {
 
 /** Under four points the odds are honest; over ten they are talk. */
 export function calibrationVerdict(gap: number): "honest" | "drifting" | "overconfident" {
-  if (gap < 4) return "honest";
+  if (gap < 4) {
+    return "honest";
+  }
   return gap < 10 ? "drifting" : "overconfident";
 }

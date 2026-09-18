@@ -1,7 +1,23 @@
-export const CATEGORIES = ["Politics", "Sports", "Crypto", "Economics", "Culture", "Tech & Science", "World", "Elections"] as const;
+export const CATEGORIES = [
+  "Politics",
+  "Sports",
+  "Crypto",
+  "Economics",
+  "Culture",
+  "Tech & Science",
+  "World",
+  "Elections",
+] as const;
 export type Category = (typeof CATEGORIES)[number];
 
-export const PERSONALITIES = ["Analyst", "Contrarian", "Trash talker", "Deadpan", "Hype", "Professor"] as const;
+export const PERSONALITIES = [
+  "Analyst",
+  "Contrarian",
+  "Trash talker",
+  "Deadpan",
+  "Hype",
+  "Professor",
+] as const;
 export type Personality = (typeof PERSONALITIES)[number];
 
 export const APPLICATION_LIMITS = { agentName: 40, edge: 140, whyYou: 200 } as const;
@@ -9,7 +25,8 @@ export const APPLICATION_LIMITS = { agentName: 40, edge: 140, whyYou: 200 } as c
 /** Places an applicant moves up for each referred creator who submits an application. */
 export const REFERRAL_BOOST = 20;
 
-export type ApplicationField = "agentName" | "ticker" | "xHandle" | "category" | "personality" | "edge" | "whyYou";
+export type ApplicationField =
+  "agentName" | "ticker" | "xHandle" | "category" | "personality" | "edge" | "whyYou";
 
 /** Untrusted answers as typed by the applicant. */
 export type ApplicationInput = Record<ApplicationField, string>;
@@ -106,8 +123,11 @@ export function validateApplication(input: ApplicationInput): Application {
   const issues: FieldIssue[] = [];
   const text = (field: "agentName" | "edge" | "whyYou", max: number) => {
     const value = input[field].trim();
-    if (!value) issues.push({ field, message: "Required." });
-    else if (value.length > max) issues.push({ field, message: `Keep it under ${max} characters.` });
+    if (!value) {
+      issues.push({ field, message: "Required." });
+    } else if (value.length > max) {
+      issues.push({ field, message: `Keep it under ${max} characters.` });
+    }
     return value;
   };
 
@@ -116,21 +136,36 @@ export function validateApplication(input: ApplicationInput): Application {
   const whyYou = text("whyYou", APPLICATION_LIMITS.whyYou);
 
   const ticker = normalizeTicker(input.ticker);
-  if (!ticker) issues.push({ field: "ticker", message: "Use 2 to 6 letters or digits, starting with a letter." });
+  if (!ticker) {
+    issues.push({
+      field: "ticker",
+      message: "Use 2 to 6 letters or digits, starting with a letter.",
+    });
+  }
 
   const xHandle = normalizeXHandle(input.xHandle);
-  if (!xHandle) issues.push({ field: "xHandle", message: "Enter a valid X username." });
+  if (!xHandle) {
+    issues.push({ field: "xHandle", message: "Enter a valid X username." });
+  }
 
   const category = CATEGORIES.find((c) => c === input.category);
-  if (!category) issues.push({ field: "category", message: "Pick a category." });
+  if (!category) {
+    issues.push({ field: "category", message: "Pick a category." });
+  }
 
   const personality = PERSONALITIES.find((p) => p === input.personality);
-  if (!personality) issues.push({ field: "personality", message: "Pick a personality." });
+  if (!personality) {
+    issues.push({ field: "personality", message: "Pick a personality." });
+  }
 
-  if (issues.length > 0 || !ticker || !xHandle || !category || !personality) throw new ApplicationValidationError(issues);
+  if (issues.length > 0 || !ticker || !xHandle || !category || !personality) {
+    throw new ApplicationValidationError(issues);
+  }
   return { agentName, ticker, xHandle, category, personality, edge, whyYou };
 }
 
-export function effectiveLinePosition(applicant: Pick<Applicant, "linePosition" | "referrals">): number {
+export function effectiveLinePosition(
+  applicant: Pick<Applicant, "linePosition" | "referrals">,
+): number {
   return Math.max(1, applicant.linePosition - applicant.referrals * REFERRAL_BOOST);
 }
