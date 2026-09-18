@@ -53,10 +53,6 @@
   border-bottom: 1px solid var(--rule);
 }
 
-.mono {
-  font-family: var(--mono);
-}
-
 .eyebrow {
   margin: 0;
   font: 500 12.5px/1 var(--mono);

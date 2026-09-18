@@ -74,15 +74,6 @@
   animation: grid 9s linear infinite;
 }
 
-.icon {
-  flex: none;
-  width: 16px;
-  height: 16px;
-  background: currentColor;
-  -webkit-mask: var(--icon) center / contain no-repeat;
-  mask: var(--icon) center / contain no-repeat;
-}
-
 /* ---------- Header ---------- */
 
 .header {
