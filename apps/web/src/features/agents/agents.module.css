@@ -63,9 +63,8 @@
 }
 
 .panel {
-  border: 1px solid rgba(245, 246, 255, 0.2);
+  composes: pk-panel from global;
   background: rgba(245, 246, 255, 0.04);
-  border-radius: var(--pk-radius-lg);
 }
 
 .glass {
@@ -278,12 +277,11 @@
 }
 
 .card {
+  composes: pk-panel from global;
   display: flex;
   flex-direction: column;
   height: 100%;
   background: rgba(245, 246, 255, 0.05);
-  border: 1px solid rgba(245, 246, 255, 0.18);
-  border-radius: var(--pk-radius-lg);
   overflow: hidden;
 }
 
@@ -2091,13 +2089,13 @@
 }
 
 .agentCard {
+  composes: pk-panel from global;
   display: flex;
   flex-direction: column;
   gap: 14px;
   padding: 20px;
-  border: 1px solid var(--rule);
+  border-color: var(--rule);
   background: rgba(245, 246, 255, 0.04);
-  border-radius: var(--pk-radius-lg);
 }
 
 /* An agent that is not taking questions steps back rather than disappearing. */

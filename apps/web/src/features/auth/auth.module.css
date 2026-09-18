@@ -312,13 +312,12 @@
 }
 
 .card {
+  composes: pk-panel from global;
   display: flex;
   flex-direction: column;
   gap: 11px;
   margin-bottom: 16px;
   padding: 18px;
-  border: 1px solid rgba(243, 241, 236, 0.14);
-  border-radius: var(--pk-radius-lg);
   background: var(--panel);
   animation: fadeIn 240ms ease-out;
 }

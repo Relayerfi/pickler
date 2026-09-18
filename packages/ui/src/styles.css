@@ -471,3 +471,22 @@
   font-size: 17px;
   padding-left: 16px;
 }
+
+/* ---------- Panel: the surface content sits on ---------- */
+
+.pk-panel {
+  border: 1px solid var(--pk-border);
+  border-radius: var(--pk-radius-lg);
+  background: var(--pk-surface);
+}
+
+/* Raised: the card a form is built from, lit along its top edge. */
+.pk-panel[data-tone="raised"] {
+  background: var(--pk-surface-strong);
+  backdrop-filter: blur(16px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+
+.pk-panel[data-tone="quiet"] {
+  background: transparent;
+}
