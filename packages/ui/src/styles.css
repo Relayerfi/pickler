@@ -24,12 +24,19 @@
   --pk-control-font-md: 600 14px/1;
   --pk-control-font-lg: 600 15px/1;
 
+  /* Accents are the same hue on both surfaces; only the ink and the ground change. */
   --pk-lime: #c8f03a;
   --pk-lime-hover: #d6f95c;
   --pk-on-lime: #0b1200;
   --pk-violet: #9b7bff;
   --pk-on-violet: #0b0618;
   --pk-magenta: #ff5fa2;
+  --pk-cyan: #5ad8ff;
+  --pk-cyan-ink: #7fe3ff;
+  --pk-pink-ink: #ff9ec6;
+  --pk-amber: #ffc93f;
+
+  --pk-font-display: var(--font-display), "Chakra Petch", sans-serif;
 
   --pk-duration: 140ms;
 }
@@ -39,25 +46,42 @@
 :root {
   --pk-font: var(--font-body), Manrope, sans-serif;
   --pk-font-mono: var(--font-mono), "JetBrains Mono", monospace;
+  --pk-bg: #05061a;
   --pk-ink: #f5f6ff;
+  --pk-ink-soft: #dde1f5;
   --pk-ink-dim: #c3c9e4;
+  --pk-ink-muted: #a9b0d0;
   --pk-ink-faint: #8891b5;
+  --pk-ink-placeholder: #6c7398;
+  --pk-panel: rgba(245, 246, 255, 0.05);
+  --pk-field: rgba(5, 6, 26, 0.65);
   --pk-surface: rgba(245, 246, 255, 0.05);
   --pk-surface-strong: rgba(245, 246, 255, 0.09);
   --pk-border: rgba(245, 246, 255, 0.18);
   --pk-border-strong: rgba(245, 246, 255, 0.45);
+  /* Hairlines that separate content, quieter than a control's border. */
+  --pk-rule: rgba(245, 246, 255, 0.16);
+  --pk-rule-strong: rgba(245, 246, 255, 0.24);
 }
 
 /* Console surface: the creator dashboard. Denser and quieter. */
 [data-surface="console"] {
   --pk-font: var(--font-body), Manrope, sans-serif;
+  --pk-bg: #08080a;
   --pk-ink: #f3f1ec;
+  --pk-ink-soft: #b9b9b4;
   --pk-ink-dim: #c9c6bf;
+  --pk-ink-muted: #8c8c88;
   --pk-ink-faint: #8b8880;
+  --pk-ink-placeholder: #6f6f6a;
+  --pk-panel: #0d0d10;
+  --pk-field: #121216;
   --pk-surface: rgba(243, 241, 236, 0.04);
   --pk-surface-strong: rgba(243, 241, 236, 0.09);
   --pk-border: rgba(243, 241, 236, 0.14);
   --pk-border-strong: rgba(243, 241, 236, 0.36);
+  --pk-rule: rgba(243, 241, 236, 0.12);
+  --pk-rule-strong: rgba(243, 241, 236, 0.18);
 }
 
 /* ---------- Button ---------- */

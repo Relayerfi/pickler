@@ -1,20 +1,20 @@
 /* Pickler landing, implemented from the "Pickler Landing" design canvas. */
 
 .page {
-  --ink: #f5f6ff;
-  --ink-soft: #dde1f5;
-  --muted: #a9b0d0;
-  --faint: #7c84a8;
-  --cyan-ink: #7fe3ff;
-  --space: #05061a;
-  --rule: rgba(245, 246, 255, 0.16);
-  --lime: #c8f03a;
-  --cyan: #5ad8ff;
-  --amber: #ffc93f;
-  --magenta: #ff5fa2;
-  --display: var(--font-display), "Chakra Petch", sans-serif;
-  --body: var(--font-body), Manrope, sans-serif;
-  --mono: var(--font-mono), "JetBrains Mono", monospace;
+  --ink: var(--pk-ink);
+  --ink-soft: var(--pk-ink-soft);
+  --muted: var(--pk-ink-muted);
+  --faint: var(--pk-ink-faint);
+  --cyan-ink: var(--pk-cyan-ink);
+  --space: var(--pk-bg);
+  --rule: var(--pk-rule);
+  --lime: var(--pk-lime);
+  --cyan: var(--pk-cyan);
+  --amber: var(--pk-amber);
+  --magenta: var(--pk-magenta);
+  --display: var(--pk-font-display);
+  --body: var(--pk-font);
+  --mono: var(--pk-font-mono);
 
   position: relative;
   min-height: 100vh;

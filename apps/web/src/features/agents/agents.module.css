@@ -1,25 +1,25 @@
 /* Pickler public agent pages, implemented from the "Pickler Public" design canvas. */
 
 .page {
-  --ink: #f5f6ff;
-  --ink-soft: #dde1f5;
-  --ink-dim: #c3c9e4;
-  --muted: #a9b0d0;
-  --faint: #8891b5;
-  --cyan-ink: #7fe3ff;
-  --lime: #c8f03a;
-  --cyan: #5ad8ff;
-  --pink-ink: #ff9ec6;
-  --magenta: #ff5fa2;
-  --rule: rgba(245, 246, 255, 0.16);
-  --display: var(--font-display), "Chakra Petch", sans-serif;
-  --body: var(--font-body), Manrope, sans-serif;
-  --mono: var(--font-mono), "JetBrains Mono", monospace;
+  --ink: var(--pk-ink);
+  --ink-soft: var(--pk-ink-soft);
+  --ink-dim: var(--pk-ink-dim);
+  --muted: var(--pk-ink-muted);
+  --faint: var(--pk-ink-faint);
+  --cyan-ink: var(--pk-cyan-ink);
+  --lime: var(--pk-lime);
+  --cyan: var(--pk-cyan);
+  --pink-ink: var(--pk-pink-ink);
+  --magenta: var(--pk-magenta);
+  --rule: var(--pk-rule);
+  --display: var(--pk-font-display);
+  --body: var(--pk-font);
+  --mono: var(--pk-font-mono);
 
   position: relative;
   min-height: 100vh;
   overflow: hidden;
-  background: #05061a;
+  background: var(--pk-bg);
   color: var(--ink);
   font-family: var(--body);
   -webkit-font-smoothing: antialiased;

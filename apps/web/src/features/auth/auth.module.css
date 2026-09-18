@@ -1,22 +1,22 @@
 /* Pickler sign up / sign in, implemented from the "Pickler Sign Up" design canvas. */
 
 .page {
-  --bg: #08080a;
-  --panel: #0d0d10;
-  --field: #121216;
-  --ink: #f3f1ec;
-  --ink-soft: #b9b9b4;
-  --muted: #8c8c88;
-  --line: rgba(243, 241, 236, 0.12);
-  --line-strong: rgba(243, 241, 236, 0.18);
-  --lime: #c8f03a;
-  --lime-ink: #0b0f00;
-  --cyan-ink: #7fe3ff;
-  --amber: #ffc93f;
-  --magenta: #ff5fa2;
-  --display: var(--font-display), "Chakra Petch", sans-serif;
-  --body: var(--font-body), Manrope, sans-serif;
-  --mono: var(--font-mono), "JetBrains Mono", monospace;
+  --bg: var(--pk-bg);
+  --panel: var(--pk-panel);
+  --field: var(--pk-field);
+  --ink: var(--pk-ink);
+  --ink-soft: var(--pk-ink-soft);
+  --muted: var(--pk-ink-muted);
+  --line: var(--pk-rule);
+  --line-strong: var(--pk-rule-strong);
+  --lime: var(--pk-lime);
+  --lime-ink: var(--pk-on-lime);
+  --cyan-ink: var(--pk-cyan-ink);
+  --amber: var(--pk-amber);
+  --magenta: var(--pk-magenta);
+  --display: var(--pk-font-display);
+  --body: var(--pk-font);
+  --mono: var(--pk-font-mono);
 
   position: relative;
   display: flex;
