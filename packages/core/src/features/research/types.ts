@@ -31,6 +31,7 @@ export interface DiscoveryPolicy {
   maxHorizonDays: number;
 }
 export interface AgentConfig {
+  trading?: import("../trading/types.js").TradingConfig | undefined;
   marketScope?: MarketScope | undefined;
   plugins?: PluginConfig | undefined;
   researchProtocol?: "nfl-winner-v1" | undefined;
@@ -333,6 +334,12 @@ export function assertUncertaintyPolicy(policy: UncertaintyPolicy): void {
 }
 
 export function assertConfig(config: AgentConfig): void {
+  if (
+    config.trading &&
+    (config.trading.version !== 1 || !["off", "manual", "automatic"].includes(config.trading.mode))
+  ) {
+    throw new PilotError("INVALID_INPUT", "Invalid trading configuration");
+  }
   if (config.marketScope) {
     assertMarketScope(config.marketScope);
     if (
@@ -370,7 +377,15 @@ export function assertConfig(config: AgentConfig): void {
     (config.plugins.version !== 1 ||
       new Set(config.plugins.enabled).size !== config.plugins.enabled.length ||
       config.plugins.enabled.some(
-        (id) => !["polymarket", "exa", "balldontlie", "the-odds-api", "paper-trading"].includes(id),
+        (id) =>
+          ![
+            "polymarket",
+            "exa",
+            "balldontlie",
+            "the-odds-api",
+            "paper-trading",
+            "polymarket-trading",
+          ].includes(id),
       ))
   ) {
     throw new PilotError("INVALID_INPUT", "Invalid plugin configuration");
