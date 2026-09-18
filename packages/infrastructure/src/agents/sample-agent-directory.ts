@@ -660,14 +660,15 @@ function calls(agent: SampleAgent, now: Date): (AgentCall & { sample: SampleCall
 }
 
 /** Deterministic candles so the chart is stable between renders. */
-function candles(agent: SampleAgent, range: ChartRange): Candle[] {
+function candles(agent: SampleAgent, range: ChartRange, now: Date): Candle[] {
   const steps: Record<ChartRange, number> = { "5m": 4, "1h": 11, "4h": 23, "1d": 47 };
+  const minutes: Record<ChartRange, number> = { "5m": 5, "1h": 60, "4h": 240, "1d": 1440 };
   let seed = agent.name.length * 37 + steps[range];
   const random = () => {
     seed = (seed * 1103515245 + 12345) % 2147483648;
     return seed / 2147483648;
   };
-  const series: Candle[] = [];
+  const series: Omit<Candle, "at">[] = [];
   let level = 50;
   for (let i = 0; i < 26; i++) {
     const open = level;
@@ -681,7 +682,10 @@ function candles(agent: SampleAgent, range: ChartRange): Candle[] {
   }
   // Scale the unitless walk so the last close equals the current price.
   const scale = agent.price / series.at(-1)!.close;
-  return series.map((c) => ({
+  const step = minutes[range] * 60_000;
+  const start = now.getTime() - (series.length - 1) * step;
+  return series.map((c, i) => ({
+    at: new Date(start + i * step),
     open: c.open * scale,
     high: c.high * scale,
     low: c.low * scale,
@@ -721,7 +725,7 @@ export function createSampleAgentDirectory(clock: Clock): AgentDirectory {
           liquidity: agent.stage === "graduated" ? Math.round(agent.marketCap * 0.18) : null,
           buybacks: Math.max(0, Math.round(agent.net * 0.1)),
           candles: Object.fromEntries(
-            CHART_RANGES.map((range) => [range, candles(agent, range)]),
+            CHART_RANGES.map((range) => [range, candles(agent, range, now)]),
           ) as Record<ChartRange, Candle[]>,
           topHolders: HOLDER_SHARES.map((share, i) => ({
             label: i === 0 ? `${agent.creator} (creator)` : HOLDER_ADDRESSES[i - 1]!,

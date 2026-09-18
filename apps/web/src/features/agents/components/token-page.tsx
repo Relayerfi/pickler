@@ -76,7 +76,6 @@ export function TokenPage({ agent, nowMs }: { agent: AgentProfileDto; nowMs: num
                 price={market.price}
                 change24h={market.change24h}
                 candles={market.candles}
-                accent={agent.accent}
                 marketCap={formatCompact(token.marketCap)}
                 volume24h={formatCompact(token.volume24h)}
               />

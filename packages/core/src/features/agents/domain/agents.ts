@@ -39,6 +39,8 @@ export interface AgentSummary {
 }
 
 export interface Candle {
+  /** Start of the bucket this candle covers. */
+  at: Date;
   open: number;
   high: number;
   low: number;

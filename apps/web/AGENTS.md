@@ -230,6 +230,8 @@ Use root `npm run build` and `npm run typecheck` when validating changes across 
 
 Shapes, control sizes and button variants live in `@pickler/ui` (see its `AGENTS.md`): pill for actions and chips, 16 for cards, 12 for inputs and tiles, 6 for small marks. Feature stylesheets reference the `--pk-radius-*` tokens and never hard-code a radius. Each shell declares its surface: the landing, apply and public pages use `data-surface="public"`, the auth screens use `data-surface="console"`, which is the dashboard's tone. Type is the same on both: Chakra Petch for titles and the lead figure of a view, JetBrains Mono for tabular data and labels, Manrope for body text and every control.
 
+Market data is drawn with `CandleChart` and `BarChart` from `@pickler/ui` — the price panel on a token page and every series on `/analytics`. Features hand them timestamped buckets and nothing else; colours and type come from the surface. The library's own logo is off, so `PublicShell` carries the TradingView credit its licence asks for; any new surface that shows a chart needs that credit too.
+
 ## Dashboard and the public site
 
 The dashboard for creators is built by the infrastructure owner on top of `apps/agent-service`; this branch owns the public surface: landing, `/apply`, the auth screens, `/tokens`, `/agents/[handle]`, `/analytics` and `/leaderboard`. Keep the two apart inside `app/`: public routes and `features/` folders here, dashboard routes in their own segment, and no shared component edited by both without saying so in this file.

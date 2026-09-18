@@ -5,11 +5,13 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import styles from "../agents.module.css";
 import { formatCompact, formatInteger, formatPercent, formatSigned } from "../lib/format";
+import { BarChart } from "@pickler/ui";
 import { ActivityRow } from "./activity-row";
 import { AgentAvatar } from "./agent-parts";
 
 const RANGES: AnalyticsRangeDto[] = ["7d", "30d", "90d"];
-const day = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", timeZone: "UTC" });
+// The series carries one point a day, oldest first, so each bar sits a day after the last.
+const DAY = 86_400_000;
 
 const cardTone: Record<PlatformAnalyticsDto["groups"][number]["cards"][number]["tone"], string> = {
   plain: "",
@@ -107,19 +109,14 @@ export function AnalyticsPage({
             </span>
           </div>
           <p className={styles.quiet}>{series.note}</p>
-          <div className={styles.bars} role="img" aria-label={`${series.label}: ${series.total}`}>
-            {series.points.map((point, i) => (
-              <span
-                key={i}
-                className={`${styles.barColumn} ${series.key === "at-risk" ? "" : point.positive ? styles.barColumnUp : styles.barColumnDown}`}
-                style={{ height: `${Math.min(100, point.value * 0.9 + 10)}%` }}
-              />
-            ))}
-          </div>
-          <p className={styles.barsAxis}>
-            <span>{day.format(new Date(series.from))}</span>
-            <span>{day.format(new Date(series.to))}</span>
-          </p>
+          <BarChart
+            bars={series.points.map((point, i) => ({
+              at: Date.parse(series.from) + i * DAY,
+              value: point.value,
+              positive: series.key === "at-risk" ? true : point.positive,
+            }))}
+            label={`${series.label}: ${series.total}`}
+          />
         </section>
       ))}
 

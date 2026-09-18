@@ -163,7 +163,10 @@ export interface AgentProfileDto extends AgentSummaryDto {
     holders: number;
     liquidity: number | null;
     buybacks: number;
-    candles: Record<ChartRangeDto, { open: number; high: number; low: number; close: number }[]>;
+    candles: Record<
+      ChartRangeDto,
+      { at: string; open: number; high: number; low: number; close: number }[]
+    >;
     topHolders: { label: string; share: number }[];
   } | null;
   calls: AgentCallDto[];

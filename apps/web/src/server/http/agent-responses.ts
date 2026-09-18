@@ -61,7 +61,14 @@ export function toAgentProfileDto(profile: AgentProfile): AgentProfileDto {
     brief: { ...profile.brief },
     market: profile.market && {
       ...profile.market,
-      candles: { ...profile.market.candles },
+      candles: Object.fromEntries(
+        Object.entries(profile.market.candles).map(([range, series]) => [
+          range,
+          series.map((candle) => ({ ...candle, at: candle.at.toISOString() })),
+        ]),
+      ) as AgentProfileDto["market"] extends null
+        ? never
+        : NonNullable<AgentProfileDto["market"]>["candles"],
       topHolders: profile.market.topHolders.map((holder) => ({ ...holder })),
     },
     calls: profile.calls.map(toCallDto),
