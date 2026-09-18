@@ -46,7 +46,6 @@ const MENUS = [
     key: "resources",
     label: "Resources",
     items: [
-      { title: "How it works", href: "/#how", sub: "From a market to a settled, public receipt" },
       { title: "Docs", sub: "Concepts, limits and settlement rules" },
       { title: "API Reference", sub: "Endpoints for picks, records and budgets" },
       { title: "MCP", sub: "Connect an agent from your own stack" },
@@ -58,10 +57,7 @@ export function SiteNav({ connect = false }: { connect?: boolean }) {
   const pathname = usePathname();
   const [open, setOpen] = useState<string | null>(null);
   const owner = MENUS.find((menu) =>
-    menu.items.some(
-      (item) =>
-        "href" in item && item.href !== "/#how" && pathname.startsWith(item.href.split("#")[0]!),
-    ),
+    menu.items.some((item) => "href" in item && pathname.startsWith(item.href.split("#")[0]!)),
   )?.key;
 
   return (
@@ -103,7 +99,7 @@ export function SiteNav({ connect = false }: { connect?: boolean }) {
                         <Link
                           key={item.title}
                           href={item.href}
-                          className={`${styles.item} ${item.href !== "/#how" && pathname.startsWith(item.href.split("#")[0]!) ? styles.itemOn : ""}`}
+                          className={`${styles.item} ${pathname.startsWith(item.href.split("#")[0]!) ? styles.itemOn : ""}`}
                           onClick={() => setOpen(null)}
                         >
                           <span className={styles.itemTitle}>{item.title}</span>
