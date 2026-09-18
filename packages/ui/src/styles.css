@@ -62,6 +62,7 @@
   /* Hairlines that separate content, quieter than a control's border. */
   --pk-rule: rgba(245, 246, 255, 0.16);
   --pk-rule-strong: rgba(245, 246, 255, 0.24);
+  --pk-focus: var(--pk-cyan);
 }
 
 /* Console surface: the creator dashboard. Denser and quieter. */
@@ -82,6 +83,7 @@
   --pk-border-strong: rgba(243, 241, 236, 0.36);
   --pk-rule: rgba(243, 241, 236, 0.12);
   --pk-rule-strong: rgba(243, 241, 236, 0.18);
+  --pk-focus: var(--pk-lime);
 }
 
 /* ---------- Button ---------- */
@@ -341,4 +343,129 @@
   background: var(--pk-lime);
   color: var(--pk-on-lime);
   font-weight: 700;
+}
+
+/* ---------- Field: a label, a control, a note ---------- */
+
+.pk-field {
+  display: block;
+}
+
+.pk-field-label {
+  display: block;
+  margin-bottom: 7px;
+  font: 500 10.5px/1 var(--pk-font-mono);
+  letter-spacing: 0.1em;
+  color: var(--pk-ink-muted);
+}
+
+.pk-field-note {
+  display: block;
+  margin-top: 8px;
+  font: 500 11.5px/1.4 var(--pk-font-mono);
+  color: var(--pk-ink-muted);
+}
+
+.pk-field-note[data-tone="good"] {
+  color: var(--pk-lime);
+}
+
+.pk-field-note[data-tone="warn"] {
+  color: var(--pk-amber);
+}
+
+.pk-field-note[data-tone="bad"] {
+  color: var(--pk-magenta);
+}
+
+.pk-input {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  padding: 13px 15px;
+  border: 1px solid var(--pk-border);
+  border-radius: var(--pk-radius-md);
+  background: var(--pk-field);
+  color: var(--pk-ink);
+  font: 400 14.5px/1.3 var(--pk-font);
+  outline: none;
+  transition: border-color var(--pk-duration);
+}
+
+.pk-input::placeholder {
+  color: var(--pk-ink-placeholder);
+}
+
+.pk-input:focus,
+.pk-input:focus-within {
+  border-color: var(--pk-focus);
+}
+
+.pk-input[aria-invalid="true"] {
+  border-color: var(--pk-magenta);
+}
+
+.pk-input[data-mono="true"] {
+  font-family: var(--pk-font-mono);
+}
+
+.pk-input[data-size="sm"] {
+  padding: 10px 14px;
+  font-size: 13.5px;
+}
+
+.pk-input[data-size="lg"] {
+  padding: 14px 16px;
+  font-size: 17px;
+}
+
+/* A search field is a pill, like the filters it sits beside. */
+.pk-input[data-shape="pill"] {
+  border-radius: var(--pk-radius-pill);
+}
+
+.pk-textarea {
+  line-height: 1.5;
+  resize: vertical;
+}
+
+/* A fixed mark inside the frame — the @ before a handle — so the two read as one control. */
+.pk-input-group {
+  display: flex;
+  align-items: center;
+  padding: 0;
+  overflow: hidden;
+}
+
+.pk-input-prefix {
+  flex: none;
+  padding-left: 15px;
+  font: 500 14.5px/1.3 var(--pk-font-mono);
+  color: var(--pk-ink-muted);
+}
+
+.pk-input-inner {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 13px 15px 13px 3px;
+  border: none;
+  background: transparent;
+  color: var(--pk-ink);
+  font: 400 14.5px/1.3 var(--pk-font);
+  outline: none;
+}
+
+.pk-input-inner[data-mono="true"] {
+  font-family: var(--pk-font-mono);
+}
+
+.pk-input-group[data-size="lg"] .pk-input-inner {
+  padding-top: 14px;
+  padding-bottom: 14px;
+  font-size: 17px;
+}
+
+.pk-input-group[data-size="lg"] .pk-input-prefix {
+  font-size: 17px;
+  padding-left: 16px;
 }

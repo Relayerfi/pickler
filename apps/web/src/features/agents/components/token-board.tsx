@@ -2,7 +2,7 @@
 
 import type { AgentSummaryDto } from "@pickler/api-schema";
 import Link from "next/link";
-import { Icon, Meter, Chip, Segmented } from "@pickler/ui";
+import { Icon, Meter, Chip, Segmented, Input } from "@pickler/ui";
 import { useMemo, useState } from "react";
 import styles from "../agents.module.css";
 import {
@@ -89,8 +89,10 @@ export function TokenBoard({
           ))}
         </div>
         <div className={`${styles.filterRow} ${styles.filterRowSplit}`}>
-          <input
+          <Input
             type="search"
+            shape="pill"
+            size="sm"
             className={styles.search}
             placeholder="search a name or a ticker…"
             aria-label="Search tokens"

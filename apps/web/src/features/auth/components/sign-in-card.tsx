@@ -8,7 +8,7 @@ import styles from "../auth.module.css";
 import { ensureProfile, signInWithWallet, type AccountResult } from "../lib/account";
 import type { AuthBoardData } from "../lib/board-data";
 import { isAuthConfigured } from "../lib/config";
-import { Icon, Button } from "@pickler/ui";
+import { Icon, Button, Input } from "@pickler/ui";
 import { getSupabase } from "../lib/supabase-browser";
 import { AuthHeader } from "./auth-header";
 import { BoardNow } from "./board-now";
@@ -124,8 +124,7 @@ export function SignInCard({ board }: { board: AuthBoardData }) {
             <form className={styles.stack} onSubmit={signInWithEmail}>
               <label>
                 <span className={styles.srOnly}>Email</span>
-                <input
-                  className={styles.input}
+                <Input
                   type="email"
                   autoComplete="email"
                   placeholder="you@email.com"
@@ -136,8 +135,7 @@ export function SignInCard({ board }: { board: AuthBoardData }) {
               </label>
               <label>
                 <span className={styles.srOnly}>Password</span>
-                <input
-                  className={styles.input}
+                <Input
                   type="password"
                   autoComplete="current-password"
                   placeholder="Password"

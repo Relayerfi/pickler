@@ -10,7 +10,7 @@ import {
 } from "@pickler/api-schema";
 import { useEffect, useId, useState, type FormEvent, type ReactNode } from "react";
 import { colorVars } from "@/lib/accent";
-import { Button } from "@pickler/ui";
+import { Button, Input, Textarea } from "@pickler/ui";
 import styles from "../apply.module.css";
 import {
   CATEGORIES,
@@ -183,9 +183,10 @@ export function ApplicationForm({
             {(labelId) => (
               <>
                 <div className={styles.row}>
-                  <input
+                  <Input
                     aria-labelledby={labelId}
-                    className={`${styles.input} ${styles.nameInput}`}
+                    size="lg"
+                    className={styles.nameInput}
                     placeholder="Halftime"
                     maxLength={LIMITS.agentName + 20}
                     value={agentName}
@@ -195,9 +196,11 @@ export function ApplicationForm({
                     }}
                     autoComplete="off"
                   />
-                  <input
+                  <Input
                     aria-label="Ticker"
-                    className={`${styles.input} ${styles.tickerInput}`}
+                    size="lg"
+                    mono
+                    className={styles.tickerInput}
                     placeholder="$HALF"
                     value={ticker}
                     onChange={(e) => {
@@ -234,9 +237,11 @@ export function ApplicationForm({
           >
             {(labelId) => (
               <>
-                <input
+                <Input
                   aria-labelledby={labelId}
-                  className={`${styles.input} ${styles.handleInput}`}
+                  size="lg"
+                  mono
+                  className={styles.handleInput}
                   placeholder="@halftimebot"
                   value={handle}
                   onChange={(e) => {
@@ -536,10 +541,11 @@ function LimitedText({
   const over = value.length > limit;
   return (
     <>
-      <textarea
+      <Textarea
         aria-labelledby={labelId}
         aria-describedby={counterId}
-        aria-invalid={over || undefined}
+        invalid={over}
+        size="lg"
         className={styles.textarea}
         rows={3}
         placeholder={placeholder}

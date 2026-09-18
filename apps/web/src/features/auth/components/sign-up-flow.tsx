@@ -10,7 +10,7 @@ import {
 } from "../lib/account";
 import type { AuthBoardData } from "../lib/board-data";
 import { isAuthConfigured } from "../lib/config";
-import { Icon, Button } from "@pickler/ui";
+import { Button, Field, Icon, Input, type FieldTone } from "@pickler/ui";
 import { isEmail, PASSWORD_MIN, passwordScore } from "../lib/password";
 import { ApiError, checkHandle, type HandleAvailability } from "../lib/pickler-api";
 import { getSupabase } from "../lib/supabase-browser";
@@ -87,34 +87,31 @@ export function SignUpFlow({
   const handleOk = typeof availability === "object" && availability?.available === true;
   const step2Ok = name.trim().length > 1 && handleOk && configured && !busy;
 
-  const handleNote = (() => {
+  const handleNote: { text: string; tone: FieldTone } = (() => {
     if (!handle) {
-      return { text: "3–15 characters, letters, numbers and underscores.", className: undefined };
+      return { text: "3–15 characters, letters, numbers and underscores.", tone: "quiet" };
     }
     if (handle.length < 3) {
-      return { text: "Too short.", className: styles.warn };
+      return { text: "Too short.", tone: "warn" };
     }
     if (!configured) {
-      return {
-        text: "Handle checks are not connected in this environment.",
-        className: styles.warn,
-      };
+      return { text: "Handle checks are not connected in this environment.", tone: "warn" };
     }
     if (availability === null) {
-      return { text: `Checking @${handle}…`, className: undefined };
+      return { text: `Checking @${handle}…`, tone: "quiet" };
     }
     if (availability === "error") {
-      return { text: "Could not check this handle. Try again.", className: styles.warn };
+      return { text: "Could not check this handle. Try again.", tone: "warn" };
     }
     if (availability.available) {
-      return { text: `@${handle} is available.`, className: styles.good };
+      return { text: `@${handle} is available.`, tone: "good" };
     }
     return {
       text:
         availability.reason === "taken"
           ? `@${handle} is taken.`
           : HANDLE_REASONS[availability.reason],
-      className: styles.bad,
+      tone: "bad",
     };
   })();
 
@@ -260,10 +257,8 @@ export function SignUpFlow({
 
               {method === "email" && (
                 <div className={styles.card}>
-                  <label>
-                    <span className={styles.fieldLabel}>EMAIL</span>
-                    <input
-                      className={styles.input}
+                  <Field label="EMAIL">
+                    <Input
                       type="email"
                       autoComplete="email"
                       placeholder="you@email.com"
@@ -271,11 +266,9 @@ export function SignUpFlow({
                       onChange={(e) => setEmail(e.target.value)}
                       required
                     />
-                  </label>
-                  <label>
-                    <span className={styles.fieldLabel}>PASSWORD</span>
-                    <input
-                      className={styles.input}
+                  </Field>
+                  <Field label="PASSWORD">
+                    <Input
                       type="password"
                       autoComplete="new-password"
                       placeholder={`At least ${PASSWORD_MIN} characters`}
@@ -284,7 +277,7 @@ export function SignUpFlow({
                       onChange={(e) => setPassword(e.target.value)}
                       required
                     />
-                  </label>
+                  </Field>
                   <div
                     className={`${styles.strength} ${STRENGTH[score].className ?? ""}`}
                     aria-live="polite"
@@ -324,10 +317,8 @@ export function SignUpFlow({
           ) : (
             <form onSubmit={createAccount}>
               <div className={styles.card} style={{ gap: 14 }}>
-                <label>
-                  <span className={styles.fieldLabel}>YOUR NAME</span>
-                  <input
-                    className={styles.input}
+                <Field label="YOUR NAME">
+                  <Input
                     autoComplete="name"
                     placeholder="Ana Robles"
                     maxLength={60}
@@ -335,36 +326,24 @@ export function SignUpFlow({
                     onChange={(e) => setName(e.target.value)}
                     required
                   />
-                </label>
-                <label>
-                  <span className={styles.fieldLabel}>HANDLE</span>
-                  <span className={styles.handleField}>
-                    <span className={styles.handleAt} aria-hidden="true">
-                      @
-                    </span>
-                    <input
-                      className={styles.handleInput}
-                      autoComplete="username"
-                      autoCapitalize="none"
-                      spellCheck={false}
-                      placeholder="anarobles"
-                      maxLength={15}
-                      value={handle}
-                      onChange={(e) =>
-                        setHandle(e.target.value.replace(/[^a-zA-Z0-9_]/g, "").toLowerCase())
-                      }
-                      aria-describedby="handle-note"
-                      required
-                    />
-                  </span>
-                  <span
-                    id="handle-note"
-                    className={`${styles.note} ${handleNote.className ?? ""}`}
-                    aria-live="polite"
-                  >
-                    {handleNote.text}
-                  </span>
-                </label>
+                </Field>
+                <Field label="HANDLE" note={handleNote.text} tone={handleNote.tone}>
+                  <Input
+                    prefix="@"
+                    mono
+                    autoComplete="username"
+                    autoCapitalize="none"
+                    spellCheck={false}
+                    placeholder="anarobles"
+                    maxLength={15}
+                    value={handle}
+                    onChange={(e) =>
+                      setHandle(e.target.value.replace(/[^a-zA-Z0-9_]/g, "").toLowerCase())
+                    }
+                    invalid={handleNote.tone === "bad"}
+                    required
+                  />
+                </Field>
                 <p className={styles.cardNote}>
                   This is the name on every pick your agents post. Agents get their own handle
                   later.

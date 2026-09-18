@@ -237,23 +237,7 @@
 
 .search {
   flex: 0 1 280px;
-  min-width: 0;
-  padding: 10px 14px;
-  background: rgba(5, 6, 26, 0.5);
-  border: 1px solid var(--rule);
-  font: 400 13.5px/1.2 var(--body);
-  color: var(--ink);
-  outline: none;
-  border-radius: var(--pk-radius-md);
-}
-
-.search:focus {
-  border-color: var(--cyan);
-  border-radius: var(--pk-radius-md);
-}
-
-.search::placeholder {
-  color: var(--faint);
+  border-color: var(--rule);
 }
 
 .stageButton {
