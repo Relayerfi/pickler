@@ -83,7 +83,8 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 14px;
-  padding: 16px 22px;
+  min-height: 60px;
+  padding: 0 22px;
   border-bottom: 1px solid var(--line);
   background: #0b0b0e;
 }

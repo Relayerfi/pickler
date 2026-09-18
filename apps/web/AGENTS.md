@@ -243,7 +243,7 @@ Market data is drawn with `CandleChart` and `BarChart` from `@pickler/ui` — th
 
 `features/site/site-nav.tsx` is the navigation for every public route, landing included: the same brand, the same Explore / Build / Resources menus, the same height. Only two things change. The landing hangs the price tape above it, and nowhere else does. The explore routes — everything inside `PublicShell` — also show CONNECT WALLET beside JOIN TESTNET; it goes to `/signin`, where Sign in with Ethereum actually lives, rather than pretending the public site can connect one.
 
-The brand mark is lit in cyan on every surface, the flows included. Lime stays for what the product does — a filled action, a win, a graduated token — not for who made it.
+The apply flow and the auth screens keep their own bar on purpose — a flow that is asking for something should not offer six ways out of it — but the bar is the same height as the navigation and carries the same brand, so only the right-hand side differs. The brand mark is lit in cyan on every surface, the flows included. Lime stays for what the product does — a filled action, a win, a graduated token — not for who made it.
 
 ## Paid reads
 
