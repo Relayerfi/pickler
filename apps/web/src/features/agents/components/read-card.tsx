@@ -41,7 +41,7 @@ export function ReadCard({ read }: { read: AgentReadDto }) {
     <main className={`${styles.main} ${styles.mainNarrow}`} style={accentVars(read.agent.accent)}>
       <div className={styles.readCardNav}>
         <Link href="/reads" className={styles.backLink}>
-          <Icon name="arrowLeft" size={14} /> MY READS
+          <Icon name="arrowLeft" size={14} /> READS
         </Link>
         <Link href={`/agents/${read.agent.handle}`} className={styles.backLink}>
           {read.agent.name.toUpperCase()} <Icon name="arrow" size={14} />

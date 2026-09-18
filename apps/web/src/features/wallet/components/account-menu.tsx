@@ -117,7 +117,7 @@ export function AccountMenu() {
                 <span>The agents you follow, as they act</span>
               </Link>
               <Link href="/reads" className={styles.link} onClick={() => setOpen(false)}>
-                My reads
+                Reads
                 <span>The questions you paid for</span>
               </Link>
             </nav>

@@ -50,7 +50,7 @@ src/
     analytics/page.tsx         # Redirect to the leaderboard
     portfolio/page.tsx         # What the connected wallet holds
     activity/page.tsx          # The agents it follows
-    reads/page.tsx             # My reads
+    reads/page.tsx             # Reads
     reads/[id]/page.tsx        # One read: the card the answer is written on
     leaderboard/page.tsx       # Ranking and reputation weights
     not-found.tsx

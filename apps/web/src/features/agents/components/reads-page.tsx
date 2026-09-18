@@ -37,7 +37,7 @@ export function ReadsPage({ reads }: { reads: AgentReadDto[] }) {
 
   return (
     <main className={styles.main}>
-      <p className={styles.eyebrow}>MY READS</p>
+      <p className={styles.eyebrow}>READS</p>
       <h1 className={styles.boardTitle}>WHAT YOU ASKED</h1>
       <p className={styles.boardLead}>Two clocks per read: delivery, then the market.</p>
 

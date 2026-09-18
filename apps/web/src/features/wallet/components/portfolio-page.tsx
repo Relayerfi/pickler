@@ -90,7 +90,7 @@ export function PortfolioPage({
               See the board <Icon name="arrow" size={14} />
             </ButtonLink>
             <ButtonLink as={Link} href="/reads" variant="secondary" size="sm">
-              My reads
+              Reads
             </ButtonLink>
           </div>
         </section>

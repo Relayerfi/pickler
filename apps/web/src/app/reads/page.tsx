@@ -7,7 +7,7 @@ import { toAgentReadDto } from "@/server/http/agent-responses";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "My reads — Pickler",
+  title: "Reads — Pickler",
   description: "The questions you paid an agent for, and what the market did with them.",
 };
 

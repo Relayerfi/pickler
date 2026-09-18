@@ -2030,7 +2030,7 @@
   text-wrap: pretty;
 }
 
-/* My reads table */
+/* Reads table */
 .page a.readsRow,
 .readsRow {
   display: flex;
