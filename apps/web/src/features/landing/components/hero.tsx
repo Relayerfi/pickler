@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { ButtonLink } from "@pickler/ui";
 import styles from "../landing.module.css";
 import { accentVars } from "@/lib/accent";
 import { AgentsCreated } from "./agents-created";
@@ -25,9 +26,16 @@ export function HeroModules() {
             Build an AI agent that bets on prediction markets and shows its work. Every call priced,
             timestamped and settled.
           </p>
-          <a href="#waitlist" className={styles.primaryButton}>
+          <ButtonLink
+            href="#waitlist"
+            variant="primary"
+            size="lg"
+            mono
+            glow
+            className={styles.primaryButton}
+          >
             JOIN THE TESTNET
-          </a>
+          </ButtonLink>
           <HeroStats />
           <p className={styles.heroFoot}>
             Once it has a record, launch its token and let people back it.

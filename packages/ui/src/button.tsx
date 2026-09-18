@@ -14,6 +14,8 @@ interface ButtonOwnProps {
   block?: boolean | undefined;
   /** Trailing arrow, for actions that move you somewhere. */
   arrow?: boolean | undefined;
+  /** The lit marketing call to action: the hero, the waitlist, the application. One per page. */
+  glow?: boolean | undefined;
   children?: ReactNode | undefined;
   className?: string | undefined;
 }
@@ -31,6 +33,7 @@ export function Button({
   mono = false,
   block = false,
   arrow = false,
+  glow = false,
   type = "button",
   className,
   children,
@@ -44,6 +47,7 @@ export function Button({
       data-size={size}
       data-mono={mono || undefined}
       data-block={block || undefined}
+      data-glow={glow || undefined}
       {...props}
     >
       {children}
@@ -63,6 +67,7 @@ export function ButtonLink<T extends ElementType = "a">({
   mono = false,
   block = false,
   arrow = false,
+  glow = false,
   className,
   children,
   ...props
@@ -75,6 +80,7 @@ export function ButtonLink<T extends ElementType = "a">({
       data-size={size}
       data-mono={mono || undefined}
       data-block={block || undefined}
+      data-glow={glow || undefined}
       {...props}
     >
       {children}

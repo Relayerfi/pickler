@@ -176,6 +176,30 @@
   font: var(--pk-control-font-lg) var(--pk-font);
 }
 
+/* Glow: the marketing call to action, lit from inside. One per page, and only where the page is
+   asking for something — the hero, the waitlist, the application. */
+.pk-button[data-glow="true"] {
+  border-color: rgba(255, 255, 255, 0.5);
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.4),
+    0 0 40px rgba(200, 240, 58, 0.5);
+  transition:
+    box-shadow 240ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 240ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.pk-button[data-glow="true"]:hover:not(:disabled) {
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.4),
+    0 0 70px rgba(200, 240, 58, 0.85);
+  transform: translateY(-2px);
+}
+
+.pk-button[data-glow="true"]:disabled {
+  box-shadow: none;
+  transform: none;
+}
+
 /* Mono labels: the uppercase micro type used for navigation and utility actions. */
 .pk-button[data-mono="true"] {
   font-family: var(--pk-font-mono);
@@ -183,6 +207,16 @@
   font-weight: 500;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+}
+
+/* Mono type follows the control's size, the way the rest of the label type does. */
+.pk-button[data-mono="true"][data-size="sm"] {
+  font-size: 11px;
+}
+
+.pk-button[data-mono="true"][data-size="lg"] {
+  font-size: 13.5px;
+  letter-spacing: 0.1em;
 }
 
 .pk-button[data-block="true"] {

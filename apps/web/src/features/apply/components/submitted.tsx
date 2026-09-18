@@ -1,6 +1,7 @@
 "use client";
 
 import type { ApplicantResponse, ApplicationDto } from "@pickler/api-schema";
+import { Button, ButtonLink } from "@pickler/ui";
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { colorVars } from "@/lib/accent";
 import styles from "../apply.module.css";
@@ -143,22 +144,27 @@ export function Submitted({
                 to watch.
               </p>
               <div className={styles.row}>
-                <a
+                <ButtonLink
                   href={shareUrl}
                   target="_blank"
                   rel="noopener noreferrer"
+                  variant="primary"
+                  size="lg"
+                  mono
+                  glow
                   className={`${styles.primaryButton} ${styles.shareButton}`}
                 >
                   POST IT FROM {application.xHandle}
-                </a>
-                <button
-                  type="button"
+                </ButtonLink>
+                <Button
+                  variant="secondary"
                   className={styles.secondaryButton}
+                  mono
                   onClick={copyLink}
                   disabled={!origin}
                 >
                   {copied ? "LINK COPIED" : "COPY YOUR LINK"}
-                </button>
+                </Button>
               </div>
               <span className={styles.srOnly} aria-live="polite">
                 {copied ? "Link copied to clipboard" : ""}

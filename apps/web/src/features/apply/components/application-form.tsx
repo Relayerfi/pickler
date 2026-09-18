@@ -10,6 +10,7 @@ import {
 } from "@pickler/api-schema";
 import { useEffect, useId, useState, type FormEvent, type ReactNode } from "react";
 import { colorVars } from "@/lib/accent";
+import { Button } from "@pickler/ui";
 import styles from "../apply.module.css";
 import {
   CATEGORIES,
@@ -340,9 +341,16 @@ export function ApplicationForm({
           </Card>
 
           <div className={styles.submitRow}>
-            <button type="submit" className={styles.primaryButton} disabled={!canSubmit}>
+            <Button
+              type="submit"
+              className={styles.primaryButton}
+              size="lg"
+              mono
+              glow
+              disabled={!canSubmit}
+            >
               {submitting ? "SENDING…" : "SEND IT"}
-            </button>
+            </Button>
             <span className={styles.progressLabel} aria-live="polite">
               {filled === 6
                 ? withinLimits

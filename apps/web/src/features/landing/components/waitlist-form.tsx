@@ -1,6 +1,7 @@
 "use client";
 
 import type { ApiErrorResponse, JoinWaitlistResponse } from "@pickler/api-schema";
+import { Button } from "@pickler/ui";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import styles from "../landing.module.css";
@@ -85,13 +86,16 @@ export function WaitlistForm() {
             aria-describedby={status.kind === "error" ? "waitlist-error" : undefined}
             disabled={joined}
           />
-          <button
+          <Button
             type="submit"
             className={`${styles.primaryButton} ${styles.waitlistButton}`}
+            size="lg"
+            mono
+            glow
             disabled={status.kind === "submitting" || joined}
           >
             {joined ? "YOU ARE IN" : status.kind === "submitting" ? "JOINING…" : "JOIN THE TESTNET"}
-          </button>
+          </Button>
         </form>
         {status.kind === "error" && (
           <p id="waitlist-error" className={styles.formError} role="alert">

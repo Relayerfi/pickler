@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ButtonLink } from "@pickler/ui";
 import styles from "../apply.module.css";
 
 export function NoSeat({ referralCode }: { referralCode: string | null }) {
@@ -11,9 +12,17 @@ export function NoSeat({ referralCode }: { referralCode: string | null }) {
         Applications open right after you join the waitlist, in the same browser. Drop your email on
         the board and we will bring you back here.
       </p>
-      <Link href={href} className={styles.primaryButton}>
+      <ButtonLink
+        as={Link}
+        href={href}
+        variant="primary"
+        size="lg"
+        className={styles.primaryButton}
+        mono
+        glow
+      >
         JOIN THE WAITLIST
-      </Link>
+      </ButtonLink>
     </main>
   );
 }
