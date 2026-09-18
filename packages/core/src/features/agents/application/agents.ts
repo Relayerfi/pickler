@@ -8,6 +8,7 @@ import {
   type Leaderboard,
   type PlatformAnalytics,
 } from "../domain/public-views.js";
+import type { AgentRead, DirectoryAgent } from "../domain/reads.js";
 import type { AgentDirectory } from "../ports/agent-directory.js";
 
 /** The board ranks by settled record first, never by token price. */
@@ -58,6 +59,30 @@ export function createGetAgentPersona(directory: AgentDirectory) {
         decisions: [...persona.decisions].sort((a, b) => b.at.getTime() - a.at.getTime()),
       }
     );
+  };
+}
+
+/**
+ * The directory leads with the agents that are actually taking questions, and inside that with the
+ * ones whose stated odds have been closest to what happened. Price never enters the order.
+ */
+export function createListDirectory(directory: AgentDirectory) {
+  return async (): Promise<DirectoryAgent[]> =>
+    [...(await directory.listDirectory())].sort(
+      (a, b) => Number(b.service.open) - Number(a.service.open) || a.service.gap - b.service.gap,
+    );
+}
+
+export function createListReads(directory: AgentDirectory) {
+  return async (): Promise<AgentRead[]> => directory.listReads();
+}
+
+export function createGetRead(directory: AgentDirectory) {
+  return async (id: string): Promise<AgentRead | null> => {
+    if (id.length === 0 || id.length > 64) {
+      return null;
+    }
+    return directory.getRead(id);
   };
 }
 

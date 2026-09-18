@@ -2057,3 +2057,161 @@
 .creditNote {
   color: var(--faint);
 }
+
+/* ---------- Agents directory ---------- */
+
+.filterGroup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  align-items: center;
+}
+
+.filterSpacer {
+  flex: 1 1 20px;
+}
+
+/* Availability is not a filter like the others: it is the violet of a paid read. */
+.availableChip[aria-pressed="true"] {
+  background: rgba(155, 123, 255, 0.16);
+  border-color: rgba(155, 123, 255, 0.5);
+  color: #b49bff;
+}
+
+.directory {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 14px;
+}
+
+@media (min-width: 900px) {
+  .directory {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.agentCard {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px;
+  border: 1px solid var(--rule);
+  background: rgba(245, 246, 255, 0.04);
+  border-radius: var(--pk-radius-lg);
+}
+
+/* An agent that is not taking questions steps back rather than disappearing. */
+.agentCard[data-open="false"] {
+  border-color: rgba(245, 246, 255, 0.1);
+}
+
+.page a.agentCardHead {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  color: var(--ink);
+}
+
+.page a.agentCardHead:hover strong {
+  color: var(--lime);
+}
+
+.agentCardName {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.agentCardName strong {
+  display: block;
+  font: 700 17px/1.2 var(--body);
+}
+
+.agentCardName .label {
+  display: block;
+  margin-top: 4px;
+}
+
+.agentCardScore {
+  flex: none;
+  text-align: right;
+}
+
+.agentCardScore strong {
+  display: block;
+  font: 700 18px/1 var(--mono);
+}
+
+.agentCardScore .label {
+  display: block;
+  margin-top: 4px;
+}
+
+.agentCardDecides {
+  flex: 1 1 auto;
+  margin: 0;
+  font: 400 14px/1.5 var(--body);
+  color: var(--muted);
+  text-wrap: pretty;
+}
+
+.agentStats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 12px 0;
+  border-top: 1px solid rgba(245, 246, 255, 0.1);
+  border-bottom: 1px solid rgba(245, 246, 255, 0.1);
+}
+
+.agentStat {
+  min-width: 0;
+}
+
+.agentStat dd {
+  margin: 0;
+  font: 600 13.5px/1.2 var(--mono);
+}
+
+.agentStat dt {
+  margin-top: 4px;
+}
+
+.agentCardActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* A paid read is violet everywhere it appears: asking is not backing. */
+.page .askButton,
+.page a.askButton {
+  background: var(--pk-violet);
+  color: var(--pk-on-violet);
+  font-weight: 700;
+}
+
+.page .askButton:hover,
+.page a.askButton:hover {
+  background: #b49bff;
+  color: var(--pk-on-violet);
+}
+
+.closedTag {
+  padding: 11px 16px;
+  border-style: dashed;
+  font: 600 12.5px/1 var(--body);
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--faint);
+}
+
+.emptyNote {
+  margin: 0;
+  padding: 22px;
+  border: 1px dashed var(--rule);
+  border-radius: var(--pk-radius-lg);
+  font: 400 14px/1.5 var(--body);
+  color: var(--faint);
+  text-align: center;
+}

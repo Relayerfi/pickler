@@ -11,14 +11,19 @@ import {
   type AgentCall,
   type AgentDirectory,
   type AgentProfile,
+  type AgentRead,
   type AgentSummary,
+  type DirectoryAgent,
+  type ReadService,
   type Candle,
   type ChartRange,
   type Clock,
   type PickDetail,
   type PickOutcome,
+  agentScore,
 } from "@pickler/core";
 import { ACTIVITY, PERSONAS, REPUTATION_WEIGHTS } from "./sample-personas.js";
+import { READS, SERVICES, type SampleRead, type SampleService } from "./sample-reads.js";
 
 // Sample content from the "Pickler Public" design. Not live data. Wallets and
 // transaction hashes are placeholders and do not exist on any network.
@@ -695,6 +700,55 @@ function candles(agent: SampleAgent, range: ChartRange, now: Date): Candle[] {
 
 const RANGE_DAYS: Record<AnalyticsRange, number> = { "7d": 7, "30d": 30, "90d": 90 };
 
+/** The service without the answer it would write; that part only belongs on a delivered read. */
+const offering = (service: SampleService): ReadService => ({
+  open: service.open,
+  closedNote: service.closedNote,
+  price: service.price,
+  markets: service.markets,
+  typical: service.typical,
+  sla: service.sla,
+  slots: service.slots,
+  evaluated: service.evaluated,
+  gap: service.gap,
+});
+
+function readOf(row: SampleRead): AgentRead | null {
+  const agent = AGENTS.find((a) => a.ticker === row.ticker);
+  const service = SERVICES[row.ticker];
+  if (!agent || !service) {
+    return null;
+  }
+  const p = persona(agent);
+  const delivered = row.delivery === "delivered";
+  return {
+    id: row.id,
+    agent: { name: agent.name, handle: p.handle, ticker: agent.ticker, accent: agent.accent },
+    beat: agent.beat,
+    venue: p.venue,
+    market: row.market,
+    paid: row.paid,
+    when: row.when,
+    delivery: row.delivery,
+    evaluation: row.evaluation,
+    evaluatesIn: row.evaluatesIn,
+    isPublic: row.isPublic,
+    answer: delivered
+      ? {
+          probability: service.probability,
+          summary: service.summary,
+          reasons: service.reasons,
+          sources: service.sources,
+          limits: service.limits,
+          reference: row.reference ?? "—",
+          issuedAt: row.issuedAt ?? "—",
+          evaluatesAt: row.evaluatesAt ?? "—",
+        }
+      : null,
+    outcome: row.final && row.observedAt ? { final: row.final, observedAt: row.observedAt } : null,
+  };
+}
+
 export function createSampleAgentDirectory(clock: Clock): AgentDirectory {
   const find = (ticker: string) => AGENTS.find((agent) => agent.ticker === ticker);
 
@@ -874,7 +928,43 @@ export function createSampleAgentDirectory(clock: Clock): AgentDirectory {
         askPrice: p.askPrice,
         answers: p.answers,
         decisions: activity(now).filter((event) => event.agent.ticker === agent.ticker),
+        service: offering(SERVICES[agent.ticker]!),
+        reads: READS.filter(
+          (row) => row.ticker === agent.ticker && row.isPublic && row.delivery === "delivered",
+        )
+          .map(readOf)
+          .filter((read): read is AgentRead => read !== null),
       };
+    },
+
+    async listDirectory(): Promise<DirectoryAgent[]> {
+      return AGENTS.map((agent) => {
+        const p = persona(agent);
+        return {
+          agent: { name: agent.name, handle: p.handle, ticker: agent.ticker, accent: agent.accent },
+          beat: agent.beat,
+          venue: p.venue,
+          decides: p.decides,
+          score: agentScore({
+            calibrationGap: p.calibrationGap,
+            resolved: agent.resolved,
+            net: agent.net,
+          }),
+          hitRate: agent.hitRate,
+          resolved: agent.resolved,
+          net: agent.net,
+          service: offering(SERVICES[agent.ticker]!),
+        };
+      });
+    },
+
+    async listReads(): Promise<AgentRead[]> {
+      return READS.map(readOf).filter((read): read is AgentRead => read !== null);
+    },
+
+    async getRead(id): Promise<AgentRead | null> {
+      const row = READS.find((read) => read.id === id);
+      return row ? readOf(row) : null;
     },
 
     async getAnalytics(range): Promise<PlatformAnalytics> {

@@ -95,6 +95,7 @@ export interface PickDetail extends AgentCall {
 }
 
 export * from "./public-views.js";
+export * from "./reads.js";
 
 /** URL slug for a token: "$HALF" → "half". */
 export const agentSlug = (ticker: string) => ticker.replace(/^\$/, "").toLowerCase();

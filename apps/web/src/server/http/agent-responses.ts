@@ -1,12 +1,15 @@
 import "server-only";
 import {
   agentSlug,
+  readQuestion,
   type ActivityAgent,
   type ActivityEvent,
   type AgentCall,
   type AgentPersona,
   type AgentProfile,
+  type AgentRead,
   type AgentSummary,
+  type DirectoryAgent,
   type Leaderboard,
   type PickDetail,
   type PlatformAnalytics,
@@ -17,7 +20,9 @@ import type {
   AgentCallDto,
   AgentPersonaDto,
   AgentProfileDto,
+  AgentReadDto,
   AgentSummaryDto,
+  DirectoryAgentDto,
   LeaderboardDto,
   PickDetailDto,
   PlatformAnalyticsDto,
@@ -99,10 +104,35 @@ const toActivityEventDto = (event: ActivityEvent): ActivityEventDto => ({
   at: event.at.toISOString(),
 });
 
+/** The question is the same for every read, so it is written once here rather than stored. */
+export function toAgentReadDto(read: AgentRead): AgentReadDto {
+  return {
+    ...read,
+    agent: toActivityAgentDto(read.agent),
+    question: readQuestion(read.venue, read.market),
+    answer: read.answer && {
+      ...read.answer,
+      reasons: [...read.answer.reasons],
+      sources: read.answer.sources.map((source) => ({ ...source })),
+    },
+    outcome: read.outcome && { ...read.outcome },
+  };
+}
+
+export function toDirectoryAgentDto(entry: DirectoryAgent): DirectoryAgentDto {
+  return {
+    ...entry,
+    agent: toActivityAgentDto(entry.agent),
+    service: { ...entry.service, markets: [...entry.service.markets] },
+  };
+}
+
 export function toAgentPersonaDto(persona: AgentPersona): AgentPersonaDto {
   return {
     ...persona,
     slug: agentSlug(persona.ticker),
+    service: { ...persona.service, markets: [...persona.service.markets] },
+    reads: persona.reads.map(toAgentReadDto),
     meters: persona.meters.map((meter) => ({ ...meter })),
     rules: [...persona.rules],
     brief: persona.brief.map((item) => ({ ...item })),

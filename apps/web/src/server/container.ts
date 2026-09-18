@@ -6,7 +6,10 @@ import {
   createGetAgentPersona,
   createGetLeaderboard,
   createGetPlatformAnalytics,
+  createGetRead,
   createListAgents,
+  createListDirectory,
+  createListReads,
   createGetApplicant,
   createGetHealth,
   createGetLanding,
@@ -84,4 +87,7 @@ export const services = {
   getAgentPersona: createGetAgentPersona(adapters.agents),
   getPlatformAnalytics: createGetPlatformAnalytics(adapters.agents),
   getLeaderboard: createGetLeaderboard(adapters.agents),
+  listDirectory: createListDirectory(adapters.agents),
+  listReads: createListReads(adapters.agents),
+  getRead: createGetRead(adapters.agents),
 };

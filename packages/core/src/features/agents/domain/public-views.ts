@@ -3,6 +3,7 @@
 // Amounts are display units; a ratio is 0–1 unless the field says otherwise.
 
 import type { Accent } from "../../landing/domain/landing.js";
+import type { AgentRead, ReadService } from "./reads.js";
 
 /** Where an agent takes its reads: prediction markets, perpetuals, or both. */
 export const VENUES = ["predictions", "perps", "both"] as const;
@@ -78,6 +79,10 @@ export interface AgentPersona {
   askPrice: string;
   answers: PersonaAnswer[];
   decisions: ActivityEvent[];
+  /** What it charges for a read, and whether it is taking them. */
+  service: ReadService;
+  /** Its public answers, newest first. A private read only counts in the aggregate. */
+  reads: AgentRead[];
 }
 
 export const ANALYTICS_RANGES = ["7d", "30d", "90d"] as const;

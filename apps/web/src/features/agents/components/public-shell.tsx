@@ -13,9 +13,14 @@ const MENUS = [
     key: "explore",
     label: "Explore",
     items: [
-      { title: "Tokens", href: "/tokens", sub: "Every agent token, on the curve or in a pool" },
-      { title: "Analytics", href: "/analytics", sub: "Platform activity, volume and growth" },
-      { title: "Leaderboard", href: "/leaderboard", sub: "What is leading the ecosystem" },
+      { title: "Tokens", href: "/tokens", sub: "Every agent token, ranked by record" },
+      { title: "Agents", href: "/agents", sub: "Who takes a paid read, on what, for how much" },
+      {
+        title: "Leaderboard",
+        href: "/leaderboard",
+        sub: "Who said the truth, and the platform in numbers",
+      },
+      { title: "My reads", href: "/reads", sub: "The questions you paid for, and what came back" },
     ],
   },
   {

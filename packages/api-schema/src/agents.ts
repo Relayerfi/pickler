@@ -82,6 +82,62 @@ export interface AgentPersonaDto {
   askPrice: string;
   answers: { question: string; answer: string; meta: string }[];
   decisions: ActivityEventDto[];
+  service: ReadServiceDto;
+  reads: AgentReadDto[];
+}
+
+export type DeliveryStateDto = "preparing" | "delivered" | "failed";
+export type ReadEvaluationDto = "pending" | "happened" | "missed" | "not_evaluable" | "none";
+
+export interface ReadServiceDto {
+  open: boolean;
+  closedNote: string | null;
+  /** In AUSD. */
+  price: number;
+  markets: string[];
+  typical: string;
+  sla: string;
+  slots: string;
+  evaluated: number;
+  gap: number;
+}
+
+export interface AgentReadDto {
+  id: string;
+  agent: ActivityAgentDto;
+  beat: string;
+  venue: VenueDto;
+  market: string;
+  question: string;
+  paid: number;
+  when: string;
+  delivery: DeliveryStateDto;
+  evaluation: ReadEvaluationDto;
+  evaluatesIn: string | null;
+  isPublic: boolean;
+  answer: {
+    probability: number;
+    summary: string;
+    reasons: string[];
+    sources: { name: string; at: string }[];
+    limits: string;
+    reference: string;
+    issuedAt: string;
+    evaluatesAt: string;
+  } | null;
+  outcome: { final: string; observedAt: string } | null;
+}
+
+export interface DirectoryAgentDto {
+  agent: ActivityAgentDto;
+  beat: string;
+  venue: VenueDto;
+  decides: string;
+  score: number;
+  hitRate: number | null;
+  resolved: number;
+  net: number;
+  service: ReadServiceDto;
 }
 
 export type AnalyticsRangeDto = "7d" | "30d" | "90d";
