@@ -1,5 +1,7 @@
 "use client";
 
+import { Button } from "@pickler/ui";
+
 export default function Error({
   reset,
 }: {
@@ -7,13 +9,13 @@ export default function Error({
   reset: () => void;
 }) {
   return (
-    <main className="fallback">
+    <main className="fallback" data-surface="public">
       <p className="fallback-eyebrow">PICKLER</p>
       <h1>We could not load the board.</h1>
       <p>The data source did not answer. Try again in a moment.</p>
-      <button type="button" onClick={reset}>
+      <Button variant="primary" mono onClick={reset}>
         TRY AGAIN
-      </button>
+      </Button>
     </main>
   );
 }

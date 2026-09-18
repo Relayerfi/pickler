@@ -1,4 +1,5 @@
 import type { ComponentPropsWithoutRef, ElementType, ReactNode } from "react";
+import { Icon } from "./icon";
 
 export type ButtonVariant = "primary" | "secondary" | "ghost" | "tile";
 export type ButtonSize = "sm" | "md" | "lg";
@@ -44,7 +45,7 @@ export function Button({
       {...props}
     >
       {children}
-      {arrow && <span aria-hidden="true">→</span>}
+      {arrow && <Icon name="arrow" size={16} />}
     </button>
   );
 }
@@ -75,7 +76,7 @@ export function ButtonLink<T extends ElementType = "a">({
       {...props}
     >
       {children}
-      {arrow && <span aria-hidden="true">→</span>}
+      {arrow && <Icon name="arrow" size={16} />}
     </Component>
   );
 }
