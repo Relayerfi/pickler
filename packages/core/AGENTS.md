@@ -10,14 +10,59 @@ Current source layout:
 
 ```text
 src/
-  domain/                  # Reserved for domain models; currently empty
+  domain/                  # Reserved for shared domain models; currently empty
+  features/                # landing, waitlist (see below)
+  shared/                  # Cross-feature errors
   application/get-health.ts
   ports/clock.ts
   index.ts                 # Public exports
 test/                      # Package-root tests, alongside src/
 ```
 
-The actual test is `test/health.test.ts`. `createGetHealth` and the `Clock` interface are the current public API. As real features appear, prefer `src/features/<feature>/{domain,application,ports}`; do not create speculative modules in advance.
+Features:
+
+```text
+src/
+  shared/errors.ts                         # DataSourceUnavailableError
+  features/landing/
+    domain/landing.ts                      # LandingSnapshot read model and value types
+    ports/landing-read-model.ts            # LandingReadModel
+    application/get-landing.ts             # createGetLanding: ordering and display limits
+  features/access/
+    domain/                                # Abilities (CASL), principal, permission decision, modules, scopes, IP allowlist, errors
+    ports/                                 # AccessTokenVerifier, WorkspaceDirectory, ApiKeyDirectory
+    application/authenticate-request.ts    # Bearer JWT or API key → principal + workspace
+  features/agent-registry/
+    domain/                                # RegisteredAgent (agent.agents without secrets), events, analytics aggregation, audit query parsing
+    ports/agent-registry.ts                # AgentRegistry, AgentEventLog
+    application/agent-queries.ts           # Tenant-isolated list/get/status/analytics/audit
+    application/authenticate-agent.ts      # Agent SDK HMAC verification
+  features/budget/
+    domain/amounts.ts                      # micro-USD parsing (non-negative integers), exact USD → micro-USD
+    domain/ledger.ts                       # Reservation ledger (reserve/commit/release/record/configure/hydrate/snapshot) over a sync LedgerStore
+    ports/budget-source.ts                 # Read-only budget rows from agent.agent_budgets
+  features/signing/
+    domain/turnkey-activity.ts             # Turnkey activity shape, signed request, forward expectations, signing errors
+    ports/signing.ts                       # SignedActivityForwarder, TurnkeyReader
+  features/profiles/
+    domain/profile.ts                      # Display name and @handle rules, reserved handles, profile errors
+    ports/profile-repository.ts            # ProfileRepository (atomic create)
+    application/profiles.ts                # checkHandle, getProfile, createProfile (idempotent per user)
+  features/agents/
+    domain/agents.ts                       # AgentSummary, AgentProfile, PickDetail, agentSlug
+    ports/agent-directory.ts               # AgentDirectory
+    application/agents.ts                  # createListAgents (ranked by record), createGetAgentProfile, createGetPickDetail
+  features/applications/
+    domain/application.ts                  # Validation, ticker/handle/referral rules, REFERRAL_BOOST, errors
+    ports/applicant-repository.ts          # ApplicantRepository
+    application/applications.ts            # createGetApplicant, createSubmitApplication, createCheckTicker
+  features/waitlist/
+    domain/email.ts                        # normalizeEmail, InvalidEmailError
+    ports/waitlist-repository.ts           # WaitlistRepository
+    application/join-waitlist.ts           # createJoinWaitlist: apply token only for new seats or its holder
+```
+
+Tests: `test/health.test.ts`, `test/landing.test.ts`, `test/waitlist.test.ts`, `test/applications.test.ts`, `test/agents.test.ts`, `test/access.test.ts`, `test/authenticate-request.test.ts`, `test/agent-registry.test.ts`, `test/budget-ledger.test.ts`. `features/agent-registry` (Relayer's operational agents) is distinct from `features/agents` (the public board read model). `features/access` is ported from Relayer; each file names its source and behaviour changes. Category and personality lists are duplicated as wire values in `@pickler/api-schema`; change both together. The landing snapshot is a presentation read model with MON amounts as display numbers; do not use it for accounting. Organize new features under `src/features/<feature>/{domain,application,ports}`; do not create speculative modules in advance.
 
 ## Rules
 
@@ -31,4 +76,4 @@ The actual test is `test/health.test.ts`. `createGetHealth` and the `Clock` inte
 
 ## Checks
 
-From the repository root, run `npm run typecheck --workspace=@pickler/core`, `npm test`, and `npm run lint` as relevant. Tests use Node's test runner with `tsx`. The root test command currently finds only `packages/core/test/*.test.ts`; update it if introducing nested tests or other suites. Use injected test doubles to check success, rejection, and authorization paths without networking or framework startup.
+From the repository root, run `npm run typecheck --workspace=@pickler/core`, `npm test`, and `npm run lint` as relevant. Tests use Node's test runner with `tsx`. The root test command finds `packages/core/test/*.test.ts` and `packages/infrastructure/test/*.test.ts`; update it if introducing nested tests or other suites. Use injected test doubles to check success, rejection, and authorization paths without networking or framework startup.

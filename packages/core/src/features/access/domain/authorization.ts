@@ -1,0 +1,31 @@
+// Ported from Relayer apps/api/src/core/auth/guards/permission.guard.ts (commit bb6bb1226e92):
+// the decision tree only, without NestJS. The HTTP layer maps the result to 403.
+
+import { API_SCOPES } from "./api-scopes";
+import type { Actions, Subjects } from "./abilities";
+import type { Principal } from "./principal";
+
+export type PermissionDecision = { allowed: true } | { allowed: false; reason: string };
+
+const allow: PermissionDecision = { allowed: true };
+const deny = (reason: string): PermissionDecision => ({ allowed: false, reason });
+
+export function checkPermission(principal: Principal | null, required: { action: Actions; subject: Subjects } | null): PermissionDecision {
+  if (!required) return allow;
+  if (!principal) return deny("Not authenticated");
+
+  switch (principal.kind) {
+    case "apikey":
+    case "service":
+      // Non-admin keys are limited by their scopes at authentication time.
+      if (!principal.scopes.includes(API_SCOPES.ADMIN)) return allow;
+      return principal.abilities.can(required.action, required.subject) ? allow : deny("Insufficient permissions");
+    case "agent":
+      // Bounded by HMAC, wallet policies and budget instead.
+      return allow;
+    case "user":
+      if (!principal.tenantId) return deny("No integrator context");
+      if (!principal.memberRole) return deny("Not a member");
+      return principal.abilities.can(required.action, required.subject) ? allow : deny("Insufficient permissions");
+  }
+}
