@@ -261,6 +261,8 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  /* A status reads on one line or it is not a status. */
+  white-space: nowrap;
   padding: 4px 9px;
   border: 1px solid var(--pk-border);
   border-radius: var(--pk-radius-pill);

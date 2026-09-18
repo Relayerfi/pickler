@@ -2156,7 +2156,8 @@
 
 .agentStats {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  /* Four figures need the room; on a phone they read as two rows rather than four columns. */
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
   margin: 0;
   padding: 12px 0;
@@ -2175,6 +2176,12 @@
 
 .agentStat dt {
   margin-top: 4px;
+}
+
+@media (min-width: 560px) {
+  .agentStats {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
 }
 
 .agentCardActions {
