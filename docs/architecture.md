@@ -32,7 +32,11 @@ Server-side reads use infrastructure adapters implementing business ports. Walle
 
 A submitted transaction is not a finalized operation. When implementing writes, model pending, confirmed, and failed states; account for network-specific confirmations, replacements, and reorganizations. Deduplicate events by network, transaction hash, and log index. Off-chain storage and blockchain writes are not atomic: introduce persistent state, idempotency, and reconciliation when these operations are added.
 
-The network, contracts, authorization rules, confirmation policy, and external providers remain undefined. No SDK or provider has been provisioned.
+The network, contracts, authorization rules, and confirmation policy remain undefined. No blockchain SDK or RPC provider has been provisioned.
+
+## Data storage
+
+Supabase Postgres (project `pickler`) holds one schema per domain: `identity`, `agents`, `budget`, `audit`, `growth` (see `supabase/AGENTS.md`). Servers reach it with a server-only secret key, through tables or `security definer` functions (the waitlist uses `growth.join_waitlist`); tables have row-level security enabled with no public policies. Agent tokens are modelled in `market` (see [market/token-launch.md](market/token-launch.md)); landing and agent board data stay sample content until the indexer fills it. Adapters use plain `fetch`, so they also run on Cloudflare Workers. Redis is not used; add it only as a cache behind the same port if measured load requires it. Without Supabase configuration the app serves labelled sample data.
 
 ## Future backend extraction
 

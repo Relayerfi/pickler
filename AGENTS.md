@@ -13,6 +13,7 @@ Keep each project's `AGENTS.md` updated in the same change whenever its structur
 | Project | Responsibility | Required local instructions |
 | --- | --- | --- |
 | `apps/web` | Next.js presentation and HTTP entry points | [AGENTS.md](apps/web/AGENTS.md) |
+| `workers/api` | Backend API on Cloudflare Workers (Hono), ported from Relayer | [AGENTS.md](workers/api/AGENTS.md) |
 | `packages/core` | Business rules, use cases, and ports | [AGENTS.md](packages/core/AGENTS.md) |
 | `packages/infrastructure` | Implementations of business ports | [AGENTS.md](packages/infrastructure/AGENTS.md) |
 | `packages/api-schema` | Public HTTP DTOs | [AGENTS.md](packages/api-schema/AGENTS.md) |
@@ -20,6 +21,7 @@ Keep each project's `AGENTS.md` updated in the same change whenever its structur
 | `packages/chain` | Public blockchain metadata and future generated ABIs | [AGENTS.md](packages/chain/AGENTS.md) |
 | `packages/typescript-config` | Shared compiler configuration | [AGENTS.md](packages/typescript-config/AGENTS.md) |
 | `contracts` | Foundry/Solidity project | [AGENTS.md](contracts/AGENTS.md) |
+| `supabase` | Postgres schema, RPC functions, and local seed | [AGENTS.md](supabase/AGENTS.md) |
 
 See [README.md](README.md) for setup and [docs/architecture.md](docs/architecture.md) for architectural decisions.
 
@@ -30,7 +32,7 @@ See [README.md](README.md) for setup and [docs/architecture.md](docs/architectur
 - Keep Next.js, React, transport objects, database clients, and provider SDKs out of core. Use business-owned interfaces and dependency injection.
 - Keep HTTP DTOs in `api-schema`; keep public on-chain artifacts in `chain`. Neither package carries credentials or server implementation details.
 - Use declared workspace dependencies and public package exports. Do not bypass package boundaries with relative imports into another project's source.
-- External providers, networks, and business contracts have not been selected. Do not document planned integrations as operational.
+- Supabase (Postgres) is the selected store for landing data and the waitlist, accessed only from the server through infrastructure adapters. Other providers, networks, and business contracts have not been selected. Do not document planned integrations as operational.
 
 ## Branch and pull request workflow
 
@@ -52,7 +54,7 @@ npm run contracts:build
 npm run contracts:test
 ```
 
-Run checks relevant to the change. Documentation-only changes require checking links, paths, examples, and command accuracy; they do not require a full application build. `npm test` currently discovers only `packages/core/test/*.test.ts`; extend test discovery if adding tests elsewhere. Foundry commands are separate from the web build and currently have no contracts to compile or test.
+Run checks relevant to the change. Documentation-only changes require checking links, paths, examples, and command accuracy; they do not require a full application build. `npm test` discovers `packages/core/test/*.test.ts`, `packages/infrastructure/test/*.test.ts`, `packages/chain/test/*.test.ts` and `workers/api/test/*.test.ts`; extend test discovery if adding tests elsewhere. Foundry commands are separate from the web build and currently have no contracts to compile or test.
 
 Never commit dependencies, build output, secrets, private keys, or local environment files. Keep changes scoped to the request and preserve unrelated work.
 

@@ -40,7 +40,7 @@ contracts/                  # Independent Foundry project
   script/                   # Deployment scripts
 ```
 
-The initial implementation connects a Route Handler to a use case and an injected system clock. The health endpoint checks that the application responds; it does not check external dependencies. No providers, database, wallet, or business contracts are connected yet. The initial HTTP contract is expressed in TypeScript; future request inputs require runtime validation.
+The landing page reads a snapshot through `GET /api/v1/landing` and accepts signups through `POST /api/v1/waitlist`, which then opens the creator application at `/apply`. The public board lives at `/agents`, with agent and pick pages beneath it. By default it serves sample data (labelled in the footer). To use Supabase, copy `apps/web/.env.example` to `apps/web/.env.local` and set `PICKLER_DATA_SOURCE=supabase`, `SUPABASE_URL`, and `SUPABASE_SECRET_KEY`, after applying `supabase/migrations`. The health endpoint checks that the application responds; it does not check external dependencies. No wallet or business contracts are connected yet.
 
 See [architecture decisions](docs/architecture.md) and [repository agent instructions](AGENTS.md). Every app and package has its own `AGENTS.md`; read it before working in that project and update it when the project changes. Repository documentation is maintained in English.
 

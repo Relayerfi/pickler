@@ -4,7 +4,8 @@
   "packageManager": "npm@10.9.3",
   "workspaces": [
     "apps/*",
-    "packages/*"
+    "packages/*",
+    "workers/*"
   ],
   "engines": {
     "node": ">=22.0.0"
@@ -14,7 +15,7 @@
     "build": "turbo run build",
     "typecheck": "turbo run typecheck",
     "lint": "eslint .",
-    "test": "node --import tsx --test packages/core/test/*.test.ts",
+    "test": "node --import tsx --test packages/core/test/*.test.ts packages/infrastructure/test/*.test.ts packages/chain/test/*.test.ts workers/api/test/*.test.ts",
     "contracts:build": "forge build --root contracts",
     "contracts:test": "forge test --root contracts"
   },
