@@ -21,7 +21,7 @@ export function NoSeat({ referralCode }: { referralCode: string | null }) {
         mono
         glow
       >
-        JOIN THE WAITLIST
+        JOIN WAITLIST
       </ButtonLink>
     </main>
   );

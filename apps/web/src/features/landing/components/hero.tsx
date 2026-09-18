@@ -34,7 +34,7 @@ export function HeroModules() {
             glow
             className={styles.primaryButton}
           >
-            JOIN THE TESTNET
+            JOIN WAITLIST
           </ButtonLink>
           <HeroStats />
           <p className={styles.heroFoot}>

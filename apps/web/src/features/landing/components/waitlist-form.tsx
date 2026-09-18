@@ -1,7 +1,7 @@
 "use client";
 
 import type { ApiErrorResponse, JoinWaitlistResponse } from "@pickler/api-schema";
-import { Button } from "@pickler/ui";
+import { Button, Input } from "@pickler/ui";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import styles from "../landing.module.css";
@@ -67,13 +67,15 @@ export function WaitlistForm() {
           <label htmlFor="waitlist-email" className={styles.srOnly}>
             Email
           </label>
-          <input
+          <Input
             id="waitlist-email"
             type="email"
             name="email"
             required
             autoComplete="email"
             placeholder="you@email.com"
+            size="lg"
+            shape="pill"
             className={styles.emailInput}
             value={email}
             onChange={(event) => {
@@ -82,19 +84,19 @@ export function WaitlistForm() {
                 setStatus({ kind: "idle" });
               }
             }}
-            aria-invalid={status.kind === "error" || undefined}
+            invalid={status.kind === "error"}
             aria-describedby={status.kind === "error" ? "waitlist-error" : undefined}
             disabled={joined}
           />
           <Button
             type="submit"
-            className={`${styles.primaryButton} ${styles.waitlistButton}`}
+            className={styles.primaryButton}
             size="lg"
             mono
             glow
             disabled={status.kind === "submitting" || joined}
           >
-            {joined ? "YOU ARE IN" : status.kind === "submitting" ? "JOINING…" : "JOIN THE TESTNET"}
+            {joined ? "YOU ARE IN" : status.kind === "submitting" ? "JOINING…" : "JOIN WAITLIST"}
           </Button>
         </form>
         {status.kind === "error" && (

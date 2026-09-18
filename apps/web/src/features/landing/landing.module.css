@@ -1245,26 +1245,12 @@
   margin: 0 auto;
 }
 
+/* The field beside the lit action: the system input, in the shape of the button it sits next to. */
 .emailInput {
   flex: 1 1 250px;
-  min-width: 0;
   padding: 17px 20px;
   background: rgba(5, 6, 26, 0.6);
-  border: 1px solid rgba(245, 246, 255, 0.4);
-  font: 400 17px/1 var(--body);
-  color: #fff;
-  outline: none;
-  border-radius: var(--pk-radius-md);
-}
-
-.emailInput:focus {
-  border-color: var(--cyan);
-  border-radius: var(--pk-radius-md);
-}
-
-.emailInput[aria-invalid="true"] {
-  border-color: var(--magenta);
-  border-radius: var(--pk-radius-md);
+  border-color: rgba(245, 246, 255, 0.4);
 }
 
 .lineLabel {

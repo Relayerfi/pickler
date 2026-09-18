@@ -125,7 +125,7 @@ export function SiteNav({ connect = false }: { connect?: boolean }) {
               thing and stays out of this bar. */}
           {connect && <AccountMenu />}
           <Link href="/#waitlist" className={styles.cta}>
-            JOIN TESTNET
+            JOIN WAITLIST
             <span className={styles.arrow} aria-hidden="true">
               <Icon name="arrow" size={13} />
             </span>
