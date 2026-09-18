@@ -82,6 +82,8 @@ export interface AgentPersonaDto {
   askPrice: string;
   answers: { question: string; answer: string; meta: string }[];
   decisions: ActivityEventDto[];
+  /** 0–100, the same score the leaderboard ranks by. */
+  score: number;
   service: ReadServiceDto;
   reads: AgentReadDto[];
 }
@@ -94,7 +96,8 @@ export interface ReadServiceDto {
   closedNote: string | null;
   /** In AUSD. */
   price: number;
-  markets: string[];
+  /** Each market with the question a read on it would answer. */
+  markets: { name: string; question: string }[];
   typical: string;
   sla: string;
   slots: string;

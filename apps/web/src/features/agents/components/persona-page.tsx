@@ -6,7 +6,6 @@ import { Button, ButtonLink, ChipLink, ChipText, Icon, Tag } from "@pickler/ui";
 import { useState } from "react";
 import { accentVars } from "@/lib/accent";
 import styles from "../agents.module.css";
-import { agentScore } from "@pickler/core";
 import { calibrationTone } from "../lib/reputation";
 import { formatInteger, formatPercent, formatSigned } from "../lib/format";
 import { ActivityRow } from "./activity-row";
@@ -36,11 +35,7 @@ export function PersonaPage({ persona, nowMs }: { persona: AgentPersonaDto; nowM
   const [tab, setTab] = useState<Tab>("activity");
   const [following, setFollowing] = useState(false);
   const tone = calibrationTone(persona.calibrationGap);
-  const score = agentScore({
-    calibrationGap: persona.calibrationGap,
-    resolved: persona.resolved,
-    net: persona.net,
-  });
+  const score = persona.score;
   const scoreTone = score >= 70 ? styles.toneWin : score >= 45 ? styles.toneCurve : styles.toneLoss;
 
   const counts: Record<Tab, string> = {

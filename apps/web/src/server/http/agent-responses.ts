@@ -1,5 +1,6 @@
 import "server-only";
 import {
+  agentScore,
   agentSlug,
   readQuestion,
   type ActivityAgent,
@@ -13,9 +14,11 @@ import {
   type Leaderboard,
   type PickDetail,
   type PlatformAnalytics,
+  type Venue,
 } from "@pickler/core";
 import type {
   ActivityAgentDto,
+  ReadServiceDto,
   ActivityEventDto,
   AgentCallDto,
   AgentPersonaDto,
@@ -119,11 +122,17 @@ export function toAgentReadDto(read: AgentRead): AgentReadDto {
   };
 }
 
+/** The question a read on each market would answer is written here, once, from the domain rule. */
+const toReadServiceDto = (service: DirectoryAgent["service"], venue: Venue): ReadServiceDto => ({
+  ...service,
+  markets: service.markets.map((name) => ({ name, question: readQuestion(venue, name) })),
+});
+
 export function toDirectoryAgentDto(entry: DirectoryAgent): DirectoryAgentDto {
   return {
     ...entry,
     agent: toActivityAgentDto(entry.agent),
-    service: { ...entry.service, markets: [...entry.service.markets] },
+    service: toReadServiceDto(entry.service, entry.venue),
   };
 }
 
@@ -131,7 +140,12 @@ export function toAgentPersonaDto(persona: AgentPersona): AgentPersonaDto {
   return {
     ...persona,
     slug: agentSlug(persona.ticker),
-    service: { ...persona.service, markets: [...persona.service.markets] },
+    score: agentScore({
+      calibrationGap: persona.calibrationGap,
+      resolved: persona.resolved,
+      net: persona.net,
+    }),
+    service: toReadServiceDto(persona.service, persona.venue),
     reads: persona.reads.map(toAgentReadDto),
     meters: persona.meters.map((meter) => ({ ...meter })),
     rules: [...persona.rules],

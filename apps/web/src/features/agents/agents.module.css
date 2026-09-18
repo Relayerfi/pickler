@@ -2628,3 +2628,225 @@
   padding: 14px 20px;
   border-top: 1px solid rgba(245, 246, 255, 0.1);
 }
+
+/* ---------- Ask flow ---------- */
+
+/* Going back a step is the same shape as the link that goes back a page. */
+.backButton {
+  align-self: flex-start;
+  margin-bottom: 14px;
+  padding: 9px 13px;
+  font-size: 11.5px;
+  border-color: rgba(245, 246, 255, 0.2);
+}
+
+.askMain {
+  max-width: 760px;
+}
+
+.askSteps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 18px;
+  padding: 0;
+  list-style: none;
+}
+
+.askStep {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 11px;
+  border: 1px solid rgba(245, 246, 255, 0.12);
+  border-radius: var(--pk-radius-pill);
+  font: 600 10px/1 var(--mono);
+  letter-spacing: 0.08em;
+  color: #5c6484;
+}
+
+.askStep[data-state="on"] {
+  border-color: rgba(155, 123, 255, 0.6);
+  color: var(--ink);
+}
+
+.askStep[data-state="done"] {
+  color: #b49bff;
+}
+
+.askStepNumber {
+  display: grid;
+  place-items: center;
+  width: 15px;
+  height: 15px;
+  border-radius: var(--pk-radius-pill);
+  background: rgba(245, 246, 255, 0.1);
+  font: 700 9px/1 var(--mono);
+  color: #5c6484;
+}
+
+.askStep[data-state="on"] .askStepNumber,
+.askStep[data-state="done"] .askStepNumber {
+  background: var(--pk-violet);
+  color: var(--pk-on-violet);
+}
+
+.askAgent {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+  border: 1px solid var(--rule);
+  background: rgba(245, 246, 255, 0.04);
+  border-radius: var(--pk-radius-lg);
+}
+
+.askAgentName {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.askAgentName strong {
+  display: block;
+  font: 700 15px/1.2 var(--body);
+}
+
+.askAgentName .quiet,
+.askAgentPrice .quiet {
+  display: block;
+  margin-top: 3px;
+}
+
+.askAgentPrice {
+  flex: none;
+  text-align: right;
+}
+
+.askAgentPrice strong {
+  font: 700 15px/1 var(--mono);
+  color: #b49bff;
+}
+
+.askStack {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.askChoices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+}
+
+.askLabelSpaced {
+  margin-top: 18px;
+}
+
+/* A market is chosen in violet, like everything else a paid read touches. */
+.askChip[aria-pressed="true"] {
+  background: rgba(155, 123, 255, 0.16);
+  border-color: rgba(155, 123, 255, 0.55);
+  color: #b49bff;
+}
+
+.askChip {
+  padding: 10px 14px;
+  font-size: 12px;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.askChipOn {
+  background: rgba(155, 123, 255, 0.16);
+  border-color: rgba(155, 123, 255, 0.55);
+  color: #b49bff;
+  padding: 10px 14px;
+  font: 600 12px/1 var(--mono);
+  letter-spacing: 0;
+}
+
+.askChipSoon {
+  padding: 10px 14px;
+  border-color: rgba(245, 246, 255, 0.1);
+  font: 600 12px/1 var(--mono);
+  letter-spacing: 0;
+  color: #5c6484;
+}
+
+/* The question is the agent's, not the asker's, so it gets the violet frame. */
+.askQuestion {
+  padding: 18px;
+  border: 1px solid rgba(155, 123, 255, 0.45);
+  background: rgba(155, 123, 255, 0.07);
+  border-radius: var(--pk-radius-lg);
+}
+
+.askQuestionText {
+  margin: 8px 0;
+  font: 600 17px/1.4 var(--body);
+  text-wrap: pretty;
+}
+
+.askFoot {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.askReview {
+  margin: 0;
+}
+
+.askReviewRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  padding: 13px 0;
+  border-bottom: 1px solid rgba(245, 246, 255, 0.1);
+}
+
+.askReviewRow:last-child {
+  border-bottom: none;
+}
+
+.askReviewRow dt {
+  flex: none;
+  width: 120px;
+  line-height: 1.6;
+}
+
+.askReviewRow dd {
+  flex: 1 1 240px;
+  min-width: 0;
+  margin: 0;
+  font: 400 14px/1.5 var(--body);
+  color: var(--ink-soft);
+  text-wrap: pretty;
+}
+
+.askPay {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+  padding: 18px;
+  border: 1px solid rgba(155, 123, 255, 0.45);
+  background: rgba(155, 123, 255, 0.07);
+  border-radius: var(--pk-radius-lg);
+}
+
+.askPayPrice {
+  flex: 1 1 200px;
+}
+
+.askPayPrice strong {
+  display: block;
+  font: 700 26px/1 var(--mono);
+}
+
+.askPayPrice .quiet {
+  display: block;
+  margin-top: 7px;
+}
