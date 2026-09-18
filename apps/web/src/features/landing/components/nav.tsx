@@ -10,7 +10,7 @@ import { useLanding } from "../lib/landing-data";
 // Routes first, then the page's own sections.
 const links = [
   { href: "/tokens", label: "TOKENS", route: true },
-  { href: "/analytics", label: "ANALYTICS", route: true },
+  { href: "/agents", label: "AGENTS", route: true },
   { href: "/leaderboard", label: "LEADERBOARD", route: true },
   { href: "#how", label: "HOW IT WORKS", route: false },
 ];

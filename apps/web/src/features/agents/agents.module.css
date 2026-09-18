@@ -2850,3 +2850,17 @@
   display: block;
   margin-top: 7px;
 }
+
+/* ---------- The platform, under the ranking ---------- */
+
+.platform {
+  margin-top: 34px;
+  padding-top: 26px;
+  border-top: 1px solid var(--rule);
+}
+
+.platformTitle {
+  margin: 0 0 6px;
+  font: 700 clamp(22px, 3vw, 30px) / 1 var(--display);
+  letter-spacing: -0.03em;
+}

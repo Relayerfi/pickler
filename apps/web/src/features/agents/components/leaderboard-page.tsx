@@ -1,6 +1,6 @@
 "use client";
 
-import type { LeaderboardDto } from "@pickler/api-schema";
+import type { LeaderboardDto, PlatformAnalyticsDto } from "@pickler/api-schema";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { Meter, Chip } from "@pickler/ui";
@@ -14,6 +14,7 @@ import {
   scoreTone,
 } from "../lib/reputation";
 import { AgentAvatar } from "./agent-parts";
+import { PlatformNumbers } from "./platform-numbers";
 
 const SORTS = ["Score", "Said vs did", "Settled", "P&L"] as const;
 type Sort = (typeof SORTS)[number];
@@ -21,7 +22,13 @@ type Sort = (typeof SORTS)[number];
 const venueLabel = (venue: LeaderboardDto["entries"][number]["venue"]) =>
   venue === "perps" ? "PERPL" : venue === "both" ? "PREDICTIONS + PERPL" : "PREDICTIONS";
 
-export function LeaderboardPage({ board }: { board: LeaderboardDto }) {
+export function LeaderboardPage({
+  board,
+  analytics,
+}: {
+  board: LeaderboardDto;
+  analytics: PlatformAnalyticsDto;
+}) {
   const [sort, setSort] = useState<Sort>("Score");
   const [picked, setPicked] = useState(board.calibration[0]?.agent.handle ?? "");
 
@@ -208,6 +215,8 @@ export function LeaderboardPage({ board }: { board: LeaderboardDto }) {
           </section>
         )}
       </div>
+
+      <PlatformNumbers analytics={analytics} />
     </main>
   );
 }

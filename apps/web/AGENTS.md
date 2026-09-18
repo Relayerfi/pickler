@@ -6,7 +6,7 @@ Read [the root instructions](../../AGENTS.md) first. Before changing a dependenc
 
 `@pickler/web` is the Next.js App Router application. It owns presentation, HTTP transport, and the server composition root. Business logic and provider implementations live in separate workspace packages so the backend can later move to `apps/api`.
 
-The app serves the Pickler landing page ("Pickler Landing" design canvas), the creator application at `/apply` ("Pickler Join" canvas), the token board at `/tokens`, token pages at `/tokens/[ticker]`, pick pages at `/tokens/[ticker]/picks/[pickId]`, agent pages at `/agents/[handle]`, `/analytics` and `/leaderboard` ("Pickler Public" canvas), `GET /api/v1/health`, `GET /api/v1/landing`, `POST /api/v1/waitlist`, `GET|POST /api/v1/applications`, and `GET /api/v1/tickers/availability`. Health is a liveness check, not a check of databases or external services. Authentication and wallet functionality are not implemented.
+The app serves the Pickler landing page ("Pickler Landing" design canvas), the creator application at `/apply` ("Pickler Join" canvas), the token board at `/tokens`, token pages at `/tokens/[ticker]`, pick pages at `/tokens/[ticker]/picks/[pickId]`, the agents directory at `/agents`, agent pages at `/agents/[handle]`, the ask flow at `/agents/[handle]/ask`, paid reads at `/reads` and `/reads/[id]`, and `/leaderboard` ("Pickler Public" canvas), `GET /api/v1/health`, `GET /api/v1/landing`, `POST /api/v1/waitlist`, `GET|POST /api/v1/applications`, and `GET /api/v1/tickers/availability`. Health is a liveness check, not a check of databases or external services. Authentication and wallet functionality are not implemented.
 
 Auth screens ("Pickler Sign Up" canvas): `/signup` (method + email/password + terms, then name + @handle) and `/signin` (wallet or email), under `app/(auth)` with Manrope and `noindex`. They are not linked from the landing while the waitlist is the public entry point. Authentication uses Supabase Auth in the browser (`@supabase/ssr`, publishable key; wallet sign-in is Sign-In with Ethereum via `signInWithWeb3`). Name and handle are stored through the API worker (`GET /v1/handles/:handle/availability`, `GET|POST /v1/profile`), never written from the browser to the database. With email confirmation on, the details wait in user metadata and the profile is created on first sign-in; `/signup?complete=1` finishes a profile for a signed-in user. Without `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` and `NEXT_PUBLIC_PICKLER_API_URL` the screens render with a "not connected" notice and cannot submit. "Open the studio" is disabled until the studio exists.
 
@@ -17,9 +17,11 @@ Public pages, and which product each one is about:
 - `/tokens` — the token board. Filters (`stage`, `sort`, `q`, `view`) live in the URL and are applied client-side over the full list. Cards carry the chain marks: the Pickler curve on Monad before graduation, Pons on Robinhood Chain after it.
 - `/tokens/[ticker]` — the token: chart, buy panel, and what the agent is buying. The ticker slug is the ticker without `$`, lower-cased (`/tokens/half`). The buy panel shows a quote only; its button stays disabled until launcher contracts and wallet connection exist.
 - `/tokens/[ticker]/picks/[pickId]` — one pick with its receipt and trail.
-- `/agents/[handle]` — the agent itself: decisions, how it thinks, record and paid answers. Addressed by Pickler handle, the namespace shared with people (`identity.handles`). `/agents` redirects to the leaderboard.
-- `/analytics` — platform activity (`?range=7d|30d|90d`, read on the server).
-- `/leaderboard` — ranked by calibration, with the published weights and the said-vs-happened plot.
+- `/agents` — who takes a paid read, on what, for how much. Ordered by the API: agents that are taking questions first, then by how close their stated odds have been to what happened. The beat filters come from the data, not from a list.
+- `/agents/[handle]` — the agent itself: activity, its public answers, and the record under both. Addressed by Pickler handle, the namespace shared with people (`identity.handles`).
+- `/agents/[handle]/ask` — compose and review a paid read. An agent that is not taking questions redirects back to its profile. Paying needs the testnet contracts and a wallet, so the pay button stays disabled and says so.
+- `/reads` — the viewer's own reads, filtered by the two clocks. `/reads/[id]` is the card an answer is written on.
+- `/leaderboard` — ranked by calibration, with the published weights, the said-vs-happened plot and, underneath, the platform in numbers (`?range=7d|30d|90d`, read on the server). `/analytics` redirects here: the numbers are the context for the ranking, not a page of their own.
 
 Buying a token never funds the agent's budget, and the agent's budget never buys its token; keep that separation in the copy and in the links.
 
@@ -41,9 +43,11 @@ src/
     tokens/page.tsx            # Token board
     tokens/[ticker]/page.tsx   # One token: chart, buy panel, its calls
     tokens/[ticker]/picks/[pickId]/page.tsx # Pick detail
-    agents/page.tsx            # Redirect to the leaderboard
+    agents/page.tsx            # Agents directory: who takes a paid read
     agents/[handle]/page.tsx   # The agent: decisions, thinking, record, answers
-    analytics/page.tsx         # Platform analytics
+    analytics/page.tsx         # Redirect to the leaderboard
+    reads/page.tsx             # My reads
+    reads/[id]/page.tsx        # One read: the card the answer is written on
     leaderboard/page.tsx       # Ranking and reputation weights
     not-found.tsx
   features/auth/
@@ -51,7 +55,7 @@ src/
     lib/                       # Supabase browser client, Pickler API client, account flows, password meter
     auth.module.css
   features/agents/
-    components/                # Token board and page, agent page, analytics, leaderboard, activity row, chart, buy panel, pick detail, nav shell
+    components/                # Token board and page, agents directory, agent page, ask flow, reads, leaderboard and the platform numbers, activity row, chart, buy panel, pick detail, nav shell
     lib/                       # Board filters (server-safe), formatting, reputation wording
     agents.module.css
   features/apply/
@@ -232,11 +236,19 @@ Shapes, control sizes and button variants live in `@pickler/ui` (see its `AGENTS
 
 Controls come from `@pickler/ui`: `Button`/`ButtonLink` for actions (`glow` is the lit marketing call to action — the hero, the waitlist, the application), `Chip` for filters and toggles (`ChipLink` when it navigates, `ChipText` when it only reads), `Segmented` for an exclusive choice that is always on screen, `Tag` for read-only status, `Meter` for a filled track, `Icon` for every icon. Feature stylesheets keep only what a control does differently and pass it through `className`; they do not re-declare shape, type or state. Colour is the same: each sheet aliases the system tokens (`--ink: var(--pk-ink)`) and holds no literal.
 
-Market data is drawn with `CandleChart` and `BarChart` from `@pickler/ui` — the price panel on a token page and every series on `/analytics`. Features hand them timestamped buckets and nothing else; colours and type come from the surface. The library's own logo is off, so `PublicShell` carries the TradingView credit its licence asks for; any new surface that shows a chart needs that credit too.
+Market data is drawn with `CandleChart` and `BarChart` from `@pickler/ui` — the price panel on a token page and every series under the leaderboard. Features hand them timestamped buckets and nothing else; colours and type come from the surface. The library's own logo is off, so `PublicShell` carries the TradingView credit its licence asks for; any new surface that shows a chart needs that credit too.
+
+## Paid reads
+
+An agent sells one thing publicly: a read. Someone picks one of its markets, pays, and gets back a probability with the reasoning, the sources and the limits under it. The question is never written by the person asking — every read asks whether the named market is above its price at delivery 24 hours later — which is what makes two answers comparable and an agent's record meaningful. `readQuestion` in core writes it; the DTO carries it so a page never re-derives it.
+
+Two clocks run per read and they are separate in the UI as well as the data. Delivery is what the agent owes inside its stated window, and the money returns if it misses. Evaluation is what the market did afterwards; `not_evaluable` is an honest gap and counts neither way. Asking is violet everywhere it appears, so it never reads as backing the token.
+
+Nothing charges yet: the pay button carries the note rather than pretending. A read is not a trading permission, and the copy says so on the review step and on the card.
 
 ## Dashboard and the public site
 
-The dashboard for creators is built by the infrastructure owner on top of `apps/agent-service`; this branch owns the public surface: landing, `/apply`, the auth screens, `/tokens`, `/agents/[handle]`, `/analytics` and `/leaderboard`. Keep the two apart inside `app/`: public routes and `features/` folders here, dashboard routes in their own segment, and no shared component edited by both without saying so in this file.
+The dashboard for creators is built by the infrastructure owner on top of `apps/agent-service`; this branch owns the public surface: landing, `/apply`, the auth screens, `/tokens`, `/agents`, `/reads` and `/leaderboard`. Keep the two apart inside `app/`: public routes and `features/` folders here, dashboard routes in their own segment, and no shared component edited by both without saying so in this file.
 
 ## Planned agent pilot
 
