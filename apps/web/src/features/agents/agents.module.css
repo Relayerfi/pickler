@@ -892,6 +892,7 @@
   padding: 6px 10px;
   border: 1px solid;
   font: 700 12px/1 var(--mono);
+  border-radius: var(--pk-radius-pill);
 }
 
 .resultWon {
@@ -1139,6 +1140,7 @@
 .pickResult {
   margin-left: auto;
   padding: 6px 11px;
+  border-radius: var(--pk-radius-pill);
 }
 
 .pickTitle {
@@ -1215,6 +1217,7 @@
   width: 11px;
   height: 11px;
   background: var(--accent);
+  border-radius: var(--pk-radius-pill);
 }
 
 .trailLine {
@@ -1509,6 +1512,10 @@
 }
 
 .venueChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 12px 4px 4px;
   border-color: rgba(90, 216, 255, 0.4);
   color: var(--cyan-ink);
   border-radius: var(--pk-radius-pill);

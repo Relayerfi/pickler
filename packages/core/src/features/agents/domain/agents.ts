@@ -31,6 +31,10 @@ export interface AgentSummary {
     price: number;
     /** 24h price change as a ratio, e.g. 0.184 for +18.4%. */
     change24h: number;
+    /** Contract address, lower case. Null until the token is deployed and indexed. */
+    address: string | null;
+    /** CAIP-2 chain the token lives on, e.g. "eip155:143". */
+    chain: string;
   } | null;
 }
 

@@ -28,6 +28,8 @@ export interface AgentSummaryDto {
     volume24h: number;
     price: number;
     change24h: number;
+    address: string | null;
+    chain: string;
   } | null;
 }
 

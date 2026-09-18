@@ -540,6 +540,16 @@ const HOLDER_SHARES = [0.182, 0.094, 0.061, 0.048];
 const HOLDER_ADDRESSES = ["0x41c9…7de2", "0x77a2…9b13", "0x2f80…5ac7"];
 
 const slug = (ticker: string) => ticker.slice(1).toLowerCase();
+
+/** A placeholder contract address derived from the ticker. It exists on no network. */
+function sampleAddress(ticker: string): string {
+  let hash = 0;
+  for (const character of ticker) {
+    hash = (hash * 31 + character.charCodeAt(0)) % 0xffffffff;
+  }
+  const body = hash.toString(16).padStart(8, "0").repeat(5).slice(0, 40);
+  return `0x${body}`;
+}
 const hours = (now: Date, n: number) => new Date(now.getTime() - n * 3_600_000);
 
 const persona = (agent: SampleAgent) => PERSONAS[agent.ticker]!;
@@ -564,6 +574,8 @@ function summary(agent: SampleAgent, now: Date): AgentSummary {
       volume24h: Math.round(agent.marketCap * 0.42),
       price: agent.price,
       change24h: agent.change24h,
+      address: sampleAddress(agent.ticker),
+      chain: agent.stage === "graduated" ? "eip155:4663" : "eip155:143",
     },
   };
 }

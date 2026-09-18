@@ -14,6 +14,7 @@ import {
   outcomeClass,
 } from "../lib/format";
 import { AgentAvatar, StageBadge, VenueChips } from "./agent-parts";
+import { TokenActions } from "./token-actions";
 import { PriceChart } from "./price-chart";
 import { TradePanel } from "./trade-panel";
 
@@ -47,6 +48,7 @@ export function TokenPage({ agent, nowMs }: { agent: AgentProfileDto; nowMs: num
               </div>
               {agent.blurb && <p className={styles.blurb}>{agent.blurb}</p>}
               <div className={styles.chips}>
+                <TokenActions address={token?.address ?? null} name={agent.name} />
                 {agent.xHandle && (
                   <a
                     href={xUrl(agent.xHandle)}
@@ -56,11 +58,6 @@ export function TokenPage({ agent, nowMs }: { agent: AgentProfileDto; nowMs: num
                   >
                     {agent.xHandle} <span aria-hidden="true">↗</span>
                   </a>
-                )}
-                {agent.creatorHandle && (
-                  <span className={`${styles.chip} ${styles.chipMuted}`}>
-                    by {agent.creatorHandle}
-                  </span>
                 )}
                 <Link
                   href={`/agents/${agent.handle}`}

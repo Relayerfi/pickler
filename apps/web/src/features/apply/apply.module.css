@@ -635,6 +635,7 @@
   background: var(--lime);
   box-shadow: 0 0 10px rgba(200, 240, 58, 0.9);
   animation: blink 1.4s steps(1, end) infinite;
+  border-radius: var(--pk-radius-pill);
 }
 
 .sentTitle {
