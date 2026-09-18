@@ -2215,3 +2215,416 @@
   color: var(--faint);
   text-align: center;
 }
+
+/* ---------- Persona head ---------- */
+
+.personaHead {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 22px;
+  margin-bottom: 28px;
+}
+
+.personaDecides {
+  margin: 0 0 16px;
+  max-width: 560px;
+  font: 400 15px/1.5 var(--body);
+  color: var(--ink-soft);
+  text-wrap: pretty;
+}
+
+.keyStats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 26px;
+  margin: 0 0 18px;
+}
+
+.keyStat dd {
+  margin: 0;
+  font: 700 20px/1 var(--mono);
+}
+
+.keyStat dt {
+  margin-top: 5px;
+}
+
+.personaActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.beatChip {
+  letter-spacing: 0.06em;
+  color: var(--accent);
+  border-color: rgba(var(--accent-rgb), 0.45);
+}
+
+.page .followingButton {
+  border-color: rgba(200, 240, 58, 0.5);
+  color: var(--lime);
+}
+
+/* ---------- Reads ---------- */
+
+.deliveryTag[data-state="preparing"] {
+  border-color: rgba(90, 216, 255, 0.4);
+  color: var(--cyan-ink);
+}
+
+.deliveryTag[data-state="delivered"] {
+  border-color: rgba(245, 246, 255, 0.3);
+  color: var(--ink);
+}
+
+.deliveryTag[data-state="failed"] {
+  border-color: rgba(255, 95, 162, 0.4);
+  color: var(--pink-ink);
+}
+
+.evalTag[data-state="pending"] {
+  background: rgba(90, 216, 255, 0.12);
+  border-color: rgba(90, 216, 255, 0.4);
+  color: var(--cyan-ink);
+}
+
+.evalTag[data-state="happened"] {
+  background: rgba(200, 240, 58, 0.12);
+  border-color: rgba(200, 240, 58, 0.4);
+  color: var(--lime);
+}
+
+.evalTag[data-state="missed"] {
+  background: rgba(255, 95, 162, 0.12);
+  border-color: rgba(255, 95, 162, 0.4);
+  color: var(--pink-ink);
+}
+
+.evalTag[data-state="not_evaluable"] {
+  background: rgba(255, 201, 63, 0.12);
+  border-color: rgba(255, 201, 63, 0.4);
+  color: #ffc93f;
+}
+
+.chipCount {
+  color: var(--faint);
+}
+
+.page a.newReadButton {
+  border: 1px solid rgba(155, 123, 255, 0.5);
+  color: #b49bff;
+}
+
+.page a.newReadButton:hover {
+  background: rgba(155, 123, 255, 0.16);
+  color: #b49bff;
+}
+
+/* The answers list on a profile: the number it stated, the question, the verdict. */
+.page a.readRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 18px;
+  border: 1px solid var(--rule);
+  background: rgba(245, 246, 255, 0.03);
+  border-radius: var(--pk-radius-lg);
+}
+
+.page a.readRow:hover {
+  border-color: rgba(155, 123, 255, 0.5);
+  color: var(--ink);
+}
+
+.readProb {
+  flex: none;
+  font: 700 22px/1 var(--mono);
+  color: #b49bff;
+}
+
+.readQuestion {
+  flex: 1 1 240px;
+  min-width: 0;
+  font: 500 14.5px/1.4 var(--body);
+  color: var(--ink-soft);
+  text-wrap: pretty;
+}
+
+/* My reads table */
+.page a.readsRow,
+.readsRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(245, 246, 255, 0.1);
+  color: var(--ink);
+}
+
+.page a.readsRow:hover {
+  background: rgba(245, 246, 255, 0.05);
+  color: var(--ink);
+}
+
+.readsMark {
+  flex: none;
+  width: 26px;
+}
+
+.readsTitle {
+  flex: 1 1 220px;
+  min-width: 0;
+}
+
+.readsTitle strong {
+  display: block;
+  font: 600 14px/1.3 var(--body);
+}
+
+.readsTitle .quiet {
+  display: block;
+  margin-top: 3px;
+}
+
+.readsDelivery {
+  flex: none;
+  width: 130px;
+}
+
+.readsMarket {
+  flex: none;
+  width: 160px;
+}
+
+.readsPaid {
+  flex: none;
+  width: 56px;
+  text-align: right;
+  font: 500 12px/1 var(--mono);
+}
+
+.tonePink {
+  color: var(--pink-ink);
+}
+
+/* The card itself */
+.readCardNav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.readCard {
+  border: 1px solid rgba(155, 123, 255, 0.45);
+  background: rgba(245, 246, 255, 0.03);
+  border-radius: var(--pk-radius-lg);
+  overflow: hidden;
+}
+
+.readCardHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 9px;
+  padding: 14px 20px;
+  background: rgba(155, 123, 255, 0.08);
+  border-bottom: 1px solid rgba(155, 123, 255, 0.3);
+  font: 700 14px/1 var(--body);
+}
+
+.readCardWhen {
+  margin-left: auto;
+  font: 500 11px/1 var(--mono);
+  color: var(--faint);
+}
+
+.readCardBody {
+  padding: 20px;
+}
+
+.readCardQuestion {
+  margin: 0 0 20px;
+  font: 600 18px/1.4 var(--body);
+  text-wrap: pretty;
+}
+
+.readAnswer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  align-items: stretch;
+  padding: 18px;
+  margin-bottom: 20px;
+  border: 1px solid rgba(245, 246, 255, 0.14);
+  background: rgba(5, 6, 26, 0.45);
+  border-radius: var(--pk-radius-md);
+}
+
+.readAnswerProb strong {
+  display: block;
+  font: 700 52px/1 var(--mono);
+  color: #b49bff;
+}
+
+.readAnswerProb .label {
+  display: block;
+  margin-top: 6px;
+}
+
+.readFacts {
+  flex: 1 1 260px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+  gap: 12px;
+  align-content: center;
+  margin: 0;
+}
+
+.readFacts dd {
+  margin: 0;
+  font: 600 13px/1.2 var(--mono);
+}
+
+.readFacts dt {
+  margin-top: 4px;
+}
+
+.readSummary {
+  margin: 0 0 18px;
+  font: 400 15.5px/1.55 var(--body);
+  color: var(--ink-soft);
+  text-wrap: pretty;
+}
+
+.readReasons {
+  margin: 0 0 18px;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.readReasons li {
+  position: relative;
+  padding-left: 16px;
+  font: 400 14px/1.5 var(--body);
+  color: var(--ink-soft);
+  text-wrap: pretty;
+}
+
+.readReasons li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 8px;
+  width: 6px;
+  height: 6px;
+  background: #b49bff;
+  border-radius: var(--pk-radius-pill);
+}
+
+.readSplit {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.readBox {
+  padding: 14px;
+  border: 1px solid rgba(245, 246, 255, 0.12);
+  border-radius: var(--pk-radius-md);
+}
+
+.readSources {
+  margin: 0;
+}
+
+.readSources > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(245, 246, 255, 0.08);
+  font: 500 12px/1.3 var(--mono);
+}
+
+.readSources dt {
+  color: var(--ink-soft);
+}
+
+.readSources dd {
+  flex: none;
+  margin: 0;
+  color: var(--faint);
+}
+
+.readLimits {
+  margin: 0;
+  font: 400 13px/1.5 var(--body);
+  color: var(--muted);
+  text-wrap: pretty;
+}
+
+/* The verdict, in the tone of what happened. */
+.readOutcome {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  align-items: center;
+  padding: 16px 18px;
+  border: 1px solid rgba(245, 246, 255, 0.16);
+  border-radius: var(--pk-radius-md);
+}
+
+.readOutcome strong {
+  display: block;
+  font: 700 20px/1 var(--display);
+}
+
+.readOutcome .quiet {
+  display: block;
+  margin-top: 5px;
+}
+
+.readOutcome[data-tone="win"] {
+  border-color: rgba(200, 240, 58, 0.4);
+  background: rgba(200, 240, 58, 0.07);
+}
+
+.readOutcome[data-tone="win"] strong {
+  color: var(--lime);
+}
+
+.readOutcome[data-tone="loss"] {
+  border-color: rgba(255, 95, 162, 0.4);
+  background: rgba(255, 95, 162, 0.07);
+}
+
+.readOutcome[data-tone="loss"] strong {
+  color: var(--pink-ink);
+}
+
+.readOutcome[data-tone="curve"] {
+  border-color: rgba(255, 201, 63, 0.4);
+  background: rgba(255, 201, 63, 0.07);
+}
+
+.readOutcome[data-tone="curve"] strong {
+  color: #ffc93f;
+}
+
+.readCardFoot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 20px;
+  border-top: 1px solid rgba(245, 246, 255, 0.1);
+}

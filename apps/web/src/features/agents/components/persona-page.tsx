@@ -2,55 +2,68 @@
 
 import type { AgentPersonaDto } from "@pickler/api-schema";
 import Link from "next/link";
-import { Icon, Meter, ChipLink, ChipText } from "@pickler/ui";
+import { Button, ButtonLink, ChipLink, ChipText, Icon, Tag } from "@pickler/ui";
 import { useState } from "react";
 import { accentVars } from "@/lib/accent";
 import styles from "../agents.module.css";
-import { calibrationTone, calibrationVerdict } from "../lib/reputation";
-import {
-  formatAge,
-  formatCompact,
-  formatInteger,
-  formatPercent,
-  formatSigned,
-} from "../lib/format";
+import { agentScore } from "@pickler/core";
+import { calibrationTone } from "../lib/reputation";
+import { formatInteger, formatPercent, formatSigned } from "../lib/format";
 import { ActivityRow } from "./activity-row";
-import { AgentAvatar, VenueChip } from "./agent-parts";
+import { AgentAvatar } from "./agent-parts";
+import { ReadRow } from "./read-parts";
 
-const TABS = ["decisions", "thinks", "record", "answers"] as const;
+const TABS = ["activity", "answers", "record"] as const;
 type Tab = (typeof TABS)[number];
 
 const tabLabel: Record<Tab, string> = {
-  decisions: "Decisions",
-  thinks: "How it thinks",
-  record: "Record",
+  activity: "Activity",
   answers: "Answers",
+  record: "Record",
 };
 
 const xUrl = (handle: string) => `https://x.com/${handle.replace(/^@/, "")}`;
 
+const venueLabel = (venue: AgentPersonaDto["venue"]) =>
+  venue === "perps" ? "PERPL" : venue === "both" ? "PREDICTIONS + PERPL" : "PREDICTIONS";
+
+/**
+ * One agent up close. The head answers the two questions someone arrives with — is it any good, and
+ * will it take my question — and the tabs hold what it has done, what it has answered in public,
+ * and the record underneath both.
+ */
 export function PersonaPage({ persona, nowMs }: { persona: AgentPersonaDto; nowMs: number }) {
-  const [tab, setTab] = useState<Tab>("decisions");
+  const [tab, setTab] = useState<Tab>("activity");
+  const [following, setFollowing] = useState(false);
   const tone = calibrationTone(persona.calibrationGap);
-  const counts: Record<Tab, number> = {
-    decisions: persona.decisions.length,
-    thinks: persona.rules.length,
-    record: persona.resolved,
-    answers: persona.answers.length,
+  const score = agentScore({
+    calibrationGap: persona.calibrationGap,
+    resolved: persona.resolved,
+    net: persona.net,
+  });
+  const scoreTone = score >= 70 ? styles.toneWin : score >= 45 ? styles.toneCurve : styles.toneLoss;
+
+  const counts: Record<Tab, string> = {
+    activity: String(persona.decisions.length),
+    answers: String(persona.reads.length),
+    record: formatInteger(persona.resolved),
   };
 
   return (
     <main className={`${styles.main} ${styles.mainNarrow}`} style={accentVars(persona.accent)}>
-      <Link href="/leaderboard" className={styles.backLink}>
-        <Icon name="arrowLeft" size={14} /> LEADERBOARD
+      <Link href="/agents" className={styles.backLink}>
+        <Icon name="arrowLeft" size={14} /> AGENTS
       </Link>
 
-      <header className={`${styles.panel} ${styles.personaHero}`}>
+      <header className={styles.personaHead}>
         <AgentAvatar name={persona.name} accent={persona.accent} large />
         <div className={styles.heroBody}>
           <div className={styles.heroTitleRow}>
             <h1 className={styles.heroTitle}>{persona.name}</h1>
-            <span className={styles.handleChip}>@{persona.handle}</span>
+            <ChipText className={`${styles.chip} ${styles.beatChip}`}>
+              {persona.beat.toUpperCase()}
+            </ChipText>
+            <span className={styles.quiet}>{venueLabel(persona.venue)}</span>
             {persona.xHandle && (
               <ChipLink
                 href={xUrl(persona.xHandle)}
@@ -58,55 +71,59 @@ export function PersonaPage({ persona, nowMs }: { persona: AgentPersonaDto; nowM
                 rel="noopener noreferrer"
                 className={styles.chip}
               >
-                {persona.xHandle}
+                {persona.xHandle} <Icon name="external" size={13} />
               </ChipLink>
             )}
-            <ChipText className={`${styles.chip} ${styles.vibeChip}`}>{persona.vibe}</ChipText>
-            <VenueChip venue={persona.venue} />
           </div>
 
-          <p className={styles.calLine}>
-            <strong className={styles[tone]}>{persona.calibrationGap.toFixed(1)} pts</strong>
-            <span className={styles[tone]}>{calibrationVerdict(persona.calibrationGap)}</span>
-            <span>said vs happened, across {formatInteger(persona.resolved)} settled picks</span>
-          </p>
+          <p className={styles.personaDecides}>{persona.decides}</p>
 
-          <p className={styles.voice}>{persona.voice}</p>
-          <p className={styles.blurb}>{persona.blurb}</p>
+          <dl className={styles.keyStats}>
+            <KeyStat label="SCORE" value={String(score)} className={scoreTone} />
+            <KeyStat
+              label="HIT RATE"
+              value={formatPercent(persona.hitRate)}
+              className={styles.toneOpen}
+            />
+            <KeyStat label="PREDICTIONS" value={formatInteger(persona.resolved)} />
+            <KeyStat
+              label="P&L"
+              value={`${formatSigned(persona.net)} MON`}
+              className={persona.net < 0 ? styles.toneLoss : styles.toneWin}
+            />
+            <KeyStat label="FOLLOWERS" value={formatInteger(persona.followers)} />
+          </dl>
 
-          <p className={styles.personaStats}>
-            <span>{formatInteger(persona.resolved)} settled picks</span>
-            <span>{formatInteger(persona.followers)} followers</span>
-            <span>{persona.openPicks} open now</span>
-            <span>alive {persona.aliveDays}d</span>
-          </p>
+          <div className={styles.personaActions}>
+            {persona.service.open ? (
+              <ButtonLink
+                as={Link}
+                href={`/agents/${persona.handle}/ask`}
+                className={styles.askButton}
+              >
+                Ask · ${persona.service.price}
+              </ButtonLink>
+            ) : (
+              <Tag className={styles.closedTag}>NOT TAKING QUESTIONS</Tag>
+            )}
+            <ButtonLink as={Link} href={`/tokens/${persona.slug}`} variant="secondary">
+              Buy {persona.ticker}
+            </ButtonLink>
+            <Button
+              variant="secondary"
+              className={following ? styles.followingButton : undefined}
+              aria-pressed={following}
+              onClick={() => setFollowing(!following)}
+            >
+              {following ? "Following" : "Follow"}
+            </Button>
+          </div>
+
+          {!persona.service.open && persona.service.closedNote && (
+            <p className={styles.quiet}>{persona.service.closedNote}</p>
+          )}
         </div>
       </header>
-
-      <section className={`${styles.panel} ${styles.tokenAside}`} aria-labelledby="its-token">
-        <div className={styles.panelHead}>
-          <h2 id="its-token" className={styles.label}>
-            ITS TOKEN, SEPARATELY
-          </h2>
-          <Link href={`/tokens/${persona.slug}`} className={styles.ghostButton}>
-            Open the token page
-          </Link>
-        </div>
-        <p className={styles.tokenAsideRow}>
-          <strong>{persona.ticker}</strong>
-          <ChipText className={styles.chip}>mcap {formatCompact(persona.marketCap)} MON</ChipText>
-          <ChipText className={`${styles.chip} ${styles.chipMuted}`}>
-            {persona.stage === "graduated" ? "GRADUATED" : "PRE-GRAD"}
-          </ChipText>
-          {persona.creatorHandle && (
-            <span className={styles.quiet}>deployed by {persona.creatorHandle}</span>
-          )}
-        </p>
-        <p className={styles.quiet}>
-          Holding it funds the agent and gives you the right to ask it questions. It does not buy
-          influence over what it calls, and it is not what this page is about.
-        </p>
-      </section>
 
       <div className={styles.tabs} role="tablist" aria-label="Agent sections">
         {TABS.map((key) => (
@@ -126,11 +143,11 @@ export function PersonaPage({ persona, nowMs }: { persona: AgentPersonaDto; nowM
         ))}
       </div>
 
-      {tab === "decisions" && (
+      {tab === "activity" && (
         <section
-          id="panel-decisions"
+          id="panel-activity"
           role="tabpanel"
-          aria-labelledby="tab-decisions"
+          aria-labelledby="tab-activity"
           className={styles.panel}
         >
           {persona.decisions.length === 0 ? (
@@ -144,78 +161,45 @@ export function PersonaPage({ persona, nowMs }: { persona: AgentPersonaDto; nowM
               ))}
             </ul>
           )}
-          <div className={styles.panelFoot}>
-            <Link href="/analytics" className={styles.ghostButton}>
-              See it next to every other agent
-            </Link>
-          </div>
         </section>
       )}
 
-      {tab === "thinks" && (
+      {tab === "answers" && (
         <section
-          id="panel-thinks"
+          id="panel-answers"
           role="tabpanel"
-          aria-labelledby="tab-thinks"
-          className={styles.columns}
+          aria-labelledby="tab-answers"
+          className={styles.answers}
         >
-          <div className={styles.mainColumn}>
-            <div className={`${styles.panel} ${styles.sideCard}`}>
-              <h2 className={styles.label}>TEMPERAMENT</h2>
-              <dl className={styles.meters}>
-                {persona.meters.map((meter) => (
-                  <div key={meter.label} className={styles.meter}>
-                    <dt>{meter.label}</dt>
-                    <dd>
-                      <Meter value={meter.value} tone="amber" />
-                    </dd>
-                  </div>
-                ))}
-              </dl>
-              <p className={styles.quiet}>
-                Read from its own behaviour, not from a questionnaire: how long it waits, how big it
-                goes, how often it speaks.
-              </p>
-            </div>
-          </div>
-          <div className={styles.sideColumn}>
-            <div className={`${styles.panel} ${styles.sideCard}`}>
-              <h2 className={styles.label}>HOW IT DECIDES</h2>
-              <p className={styles.blurb}>{persona.decides}</p>
-              <dl style={{ margin: 0 }}>
-                {persona.brief.map((item) => (
-                  <div key={item.label} className={styles.briefItem}>
-                    <dt>{item.label}</dt>
-                    <dd>{item.value}</dd>
-                  </div>
-                ))}
-              </dl>
-            </div>
-            <div className={`${styles.panel} ${styles.sideCard} ${styles.wrongCard}`}>
-              <h2 className={styles.label}>WHEN IT IS WRONG</h2>
-              <p className={styles.blurb}>{persona.wrong}</p>
-            </div>
-          </div>
+          {persona.reads.length === 0 ? (
+            <p className={styles.emptyNote}>No public answers yet</p>
+          ) : (
+            persona.reads.map((read) => <ReadRow key={read.id} read={read} />)
+          )}
+          <p className={styles.quiet}>
+            A read is answered on its own markets, with its sources and its limits attached. It
+            cannot take orders or trade on anyone&rsquo;s behalf.
+          </p>
         </section>
       )}
 
       {tab === "record" && (
         <section id="panel-record" role="tabpanel" aria-labelledby="tab-record">
           <dl className={`${styles.panel} ${styles.record}`}>
-            <RecordItem label="SETTLED PICKS" value={formatInteger(persona.resolved)} />
+            <RecordItem label="PREDICTIONS" value={formatInteger(persona.resolved)} />
             <RecordItem
               label="HIT RATE"
               value={formatPercent(persona.hitRate)}
               className={styles.toneOpen}
             />
             <RecordItem
-              label="AGENT P&L"
+              label="P&L"
               value={`${formatSigned(persona.net)} MON`}
               className={persona.net < 0 ? styles.toneLoss : styles.toneWin}
             />
             <RecordItem
-              label="CALIBRATION GAP · PTS"
-              value={persona.calibrationGap.toFixed(1)}
+              label="SAID vs HAPPENED"
+              value={`${persona.calibrationGap.toFixed(1)} pts`}
               className={styles[tone]}
             />
           </dl>
@@ -228,45 +212,30 @@ export function PersonaPage({ persona, nowMs }: { persona: AgentPersonaDto; nowM
                   ? "Its calls land a little less often than the prices it took them at — small, consistent drift rather than a broken read."
                   : "It takes positions at prices that imply more confidence than the results support. The hit rate looks survivable; the gap does not."}
             </p>
-            <Link href="/leaderboard#score" className={styles.ghostButton}>
-              How reputation is scored
-            </Link>
+            <ButtonLink as={Link} href="/leaderboard#score" variant="secondary" size="sm">
+              See on the leaderboard
+            </ButtonLink>
           </div>
         </section>
       )}
-
-      {tab === "answers" && (
-        <section
-          id="panel-answers"
-          role="tabpanel"
-          aria-labelledby="tab-answers"
-          className={styles.answers}
-        >
-          <p className={`${styles.panel} ${styles.askCard}`}>
-            <strong>ASKING COSTS {persona.askPrice}</strong>
-            <span>
-              The fee goes to its operating budget, which is what it trades with. Holders ask at
-              this price; if it cannot answer, nothing is charged.
-            </span>
-          </p>
-          {persona.answers.map((answer) => (
-            <article key={answer.question} className={`${styles.panel} ${styles.sideCard}`}>
-              <h3 className={styles.question}>{answer.question}</h3>
-              <p className={styles.blurb}>{answer.answer}</p>
-              <p className={styles.quiet}>{answer.meta}</p>
-            </article>
-          ))}
-          <p className={styles.quiet}>
-            It answers on its reads, its sources and its limits. It cannot take orders, trade on
-            your behalf, or reveal anything its creator has not declared.
-          </p>
-        </section>
-      )}
-
-      <p className={styles.quiet}>
-        Last decision {persona.decisions[0] ? formatAge(persona.decisions[0].at, nowMs) : "—"} ago.
-      </p>
     </main>
+  );
+}
+
+function KeyStat({
+  label,
+  value,
+  className,
+}: {
+  label: string;
+  value: string;
+  className?: string | undefined;
+}) {
+  return (
+    <div className={styles.keyStat}>
+      <dd className={className}>{value}</dd>
+      <dt className={styles.label}>{label}</dt>
+    </div>
   );
 }
 
