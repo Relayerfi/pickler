@@ -3,7 +3,7 @@
 import type { LeaderboardDto } from "@pickler/api-schema";
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { Meter } from "@pickler/ui";
+import { Meter, Chip } from "@pickler/ui";
 import styles from "../agents.module.css";
 import { formatInteger, formatSigned } from "../lib/format";
 import {
@@ -52,15 +52,14 @@ export function LeaderboardPage({ board }: { board: LeaderboardDto }) {
       <div className={`${styles.filterCard} ${styles.filterRow}`} role="group" aria-label="Rank by">
         <span className={styles.filterLabel}>RANK BY</span>
         {SORTS.map((option) => (
-          <button
+          <Chip
             key={option}
-            type="button"
             className={styles.sortButton}
-            aria-pressed={sort === option}
+            selected={sort === option}
             onClick={() => setSort(option)}
           >
             {option.toUpperCase()}
-          </button>
+          </Chip>
         ))}
       </div>
 
@@ -141,15 +140,14 @@ export function LeaderboardPage({ board }: { board: LeaderboardDto }) {
           >
             <div className={styles.filterRow} role="group" aria-label="Agent">
               {board.calibration.map((option) => (
-                <button
+                <Chip
                   key={option.agent.handle}
-                  type="button"
                   className={styles.sortButton}
-                  aria-pressed={option.agent.handle === report.agent.handle}
+                  selected={option.agent.handle === report.agent.handle}
                   onClick={() => setPicked(option.agent.handle)}
                 >
                   {option.agent.name}
-                </button>
+                </Chip>
               ))}
             </div>
             <h2 id="cal-title" className={styles.label}>

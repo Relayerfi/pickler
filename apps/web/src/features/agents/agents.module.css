@@ -227,23 +227,12 @@
 .sortButton {
   padding: 10px 14px;
   background: rgba(5, 6, 26, 0.5);
-  border: 1px solid rgba(245, 246, 255, 0.2);
+  border-color: rgba(245, 246, 255, 0.2);
   font: 600 13px/1 var(--body);
-  color: var(--ink-dim);
-  cursor: pointer;
-  border-radius: var(--pk-radius-pill);
 }
 
 .sortButton:hover {
   border-color: var(--ink);
-  border-radius: var(--pk-radius-pill);
-}
-
-.sortButton[aria-pressed="true"] {
-  background: rgba(200, 240, 58, 0.14);
-  border-color: rgba(200, 240, 58, 0.45);
-  color: var(--lime);
-  border-radius: var(--pk-radius-pill);
 }
 
 .search {
@@ -268,28 +257,20 @@
 }
 
 .stageButton {
-  display: inline-flex;
-  align-items: center;
   gap: 8px;
   padding: 9px 13px;
-  background: transparent;
-  border: 1px solid rgba(245, 246, 255, 0.18);
-  font: 500 12.5px/1 var(--mono);
-  color: var(--ink-dim);
-  cursor: pointer;
-  border-radius: var(--pk-radius-pill);
+  font-size: 12.5px;
 }
 
 .stageButton:hover {
   border-color: var(--ink);
-  border-radius: var(--pk-radius-pill);
 }
 
+/* A stage is where a token is, not a filter you switch on, so it lights in ink, not in lime. */
 .stageButton[aria-pressed="true"] {
   background: rgba(245, 246, 255, 0.14);
   border-color: var(--ink);
   color: var(--ink);
-  border-radius: var(--pk-radius-pill);
 }
 
 .stageButton span {
@@ -643,25 +624,9 @@
 
 .rangeButton {
   padding: 6px 10px;
-  background: transparent;
-  border: 1px solid var(--rule);
-  font: 500 11px/1 var(--mono);
+  border-color: var(--rule);
+  font-size: 11px;
   color: var(--faint);
-  cursor: pointer;
-  border-radius: var(--pk-radius-pill);
-}
-
-.rangeButton:hover {
-  border-color: var(--ink);
-  color: var(--ink);
-  border-radius: var(--pk-radius-pill);
-}
-
-.rangeButton[aria-pressed="true"] {
-  background: rgba(200, 240, 58, 0.16);
-  border-color: rgba(200, 240, 58, 0.45);
-  color: var(--lime);
-  border-radius: var(--pk-radius-pill);
 }
 
 .chartEmpty {
@@ -1969,20 +1934,16 @@
   color: var(--faint);
 }
 
-.ctaButton {
-  width: 100%;
+/* The trade action fills the panel and squares off with the fields above it, so it takes the
+   input radius rather than the pill every other action wears. */
+.page .ctaButton {
   padding: 16px;
-  background: var(--lime);
-  border: none;
   border-radius: var(--pk-radius-md);
-  font: 700 14px/1 var(--body);
-  color: #0b1200;
-  cursor: pointer;
+  font-weight: 700;
 }
 
 .ctaButton:disabled {
   opacity: 0.45;
-  cursor: not-allowed;
 }
 
 .quickRow {

@@ -2,7 +2,7 @@
 
 import type { AgentSummaryDto } from "@pickler/api-schema";
 import Link from "next/link";
-import { Icon, Meter } from "@pickler/ui";
+import { Icon, Meter, Chip } from "@pickler/ui";
 import { useMemo, useState } from "react";
 import styles from "../agents.module.css";
 import {
@@ -73,11 +73,10 @@ export function TokenBoard({
       <div className={styles.filterCard}>
         <div className={styles.filterRow} role="group" aria-label="Token stage">
           {STAGES.map((stage) => (
-            <button
+            <Chip
               key={stage}
-              type="button"
               className={styles.stageButton}
-              aria-pressed={filters.stage === stage}
+              selected={filters.stage === stage}
               onClick={() => update({ stage })}
             >
               {stageLabel[stage]}
@@ -86,7 +85,7 @@ export function TokenBoard({
                   ? agents.length
                   : agents.filter((a) => a.token?.stage === stage).length}
               </span>
-            </button>
+            </Chip>
           ))}
         </div>
         <div className={`${styles.filterRow} ${styles.filterRowSplit}`}>
@@ -100,15 +99,14 @@ export function TokenBoard({
           />
           <span className={styles.filterLabel}>BEST BY</span>
           {SORTS.map((sort) => (
-            <button
+            <Chip
               key={sort}
-              type="button"
               className={styles.sortButton}
-              aria-pressed={filters.sort === sort}
+              selected={filters.sort === sort}
               onClick={() => update({ sort })}
             >
               {sort.toUpperCase()}
-            </button>
+            </Chip>
           ))}
           <span className={styles.viewToggle} role="group" aria-label="Layout">
             {VIEWS.map((view) => (

@@ -2,6 +2,7 @@
 
 import type { AgentProfileDto } from "@pickler/api-schema";
 import { useState } from "react";
+import { Button } from "@pickler/ui";
 import styles from "../agents.module.css";
 import { formatInteger, formatTokenPrice } from "../lib/format";
 import { CurveProgress } from "./agent-parts";
@@ -69,9 +70,9 @@ export function TradePanel({ agent }: { agent: AgentProfileDto }) {
       <p className={styles.balanceRow}>No wallet connected</p>
 
       {/* Trading opens with the testnet contracts and a wallet connection, which do not exist yet. */}
-      <button type="button" className={styles.ctaButton} disabled aria-describedby="trade-status">
+      <Button className={styles.ctaButton} block disabled aria-describedby="trade-status">
         Connect wallet
-      </button>
+      </Button>
 
       <div className={styles.quickRow} role="group" aria-label="Amount">
         {QUICK_AMOUNTS.map((quick) => (

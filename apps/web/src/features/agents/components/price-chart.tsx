@@ -1,7 +1,7 @@
 "use client";
 
 import type { AgentProfileDto, ChartRangeDto } from "@pickler/api-schema";
-import { CandleChart } from "@pickler/ui";
+import { CandleChart, Chip } from "@pickler/ui";
 import { useState } from "react";
 import styles from "../agents.module.css";
 import { formatChange } from "../lib/format";
@@ -43,15 +43,14 @@ export function PriceChart({
         <span className={styles.panelHeadValue}>{volume24h}</span>
         <span className={styles.ranges} role="group" aria-label="Chart range">
           {RANGES.map((option) => (
-            <button
+            <Chip
               key={option}
-              type="button"
               className={styles.rangeButton}
-              aria-pressed={option === range}
+              selected={option === range}
               onClick={() => setRange(option)}
             >
               {option.toUpperCase()}
-            </button>
+            </Chip>
           ))}
         </span>
       </div>
