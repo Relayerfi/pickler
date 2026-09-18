@@ -4,16 +4,20 @@ import type { AgentProfileDto } from "@pickler/api-schema";
 import { useState } from "react";
 import { Button, Segmented, Chip } from "@pickler/ui";
 import styles from "../agents.module.css";
+import { useWallet } from "@/features/wallet/lib/wallet-context";
+import { formatBalance, shortAddress, TARGET_CHAIN } from "@/features/wallet/lib/provider";
 import { formatInteger, formatTokenPrice } from "../lib/format";
 import { CurveProgress } from "./agent-parts";
 
 const QUICK_AMOUNTS = [10, 25, 100, 250];
 
 /**
- * Buy or sell the agent's token. The quote is an estimate from the sample price: there is no
- * wallet connection and no launcher contract yet, so the action stays disabled.
+ * Buy or sell the agent's token. Connecting a wallet works today, so the panel's first action is a
+ * live one; the trade behind it does not, because the launcher contract is not deployed. The button
+ * says which of the two is missing rather than sitting disabled for both reasons at once.
  */
 export function TradePanel({ agent }: { agent: AgentProfileDto }) {
+  const wallet = useWallet();
   const [side, setSide] = useState<"buy" | "sell">("buy");
   const [amount, setAmount] = useState("");
 
@@ -61,12 +65,40 @@ export function TradePanel({ agent }: { agent: AgentProfileDto }) {
         <span className={styles.unitChip}>MON</span>
       </div>
 
-      <p className={styles.balanceRow}>No wallet connected</p>
+      <p className={styles.balanceRow}>
+        {wallet.status !== "connected"
+          ? "No wallet connected"
+          : !wallet.onTargetChain
+            ? `Wrong network · switch to ${TARGET_CHAIN.name}`
+            : `${wallet.balance === null ? "—" : formatBalance(wallet.balance)} ${TARGET_CHAIN.nativeCurrency.symbol} · ${shortAddress(wallet.address!)}`}
+      </p>
 
-      {/* Trading opens with the testnet contracts and a wallet connection, which do not exist yet. */}
-      <Button className={styles.ctaButton} block disabled aria-describedby="trade-status">
-        Connect wallet
-      </Button>
+      {wallet.status === "connected" ? (
+        !wallet.onTargetChain ? (
+          <Button className={styles.ctaButton} block onClick={() => void wallet.switchChain()}>
+            Switch to {TARGET_CHAIN.name}
+          </Button>
+        ) : (
+          // Connected and on the right chain; what is missing now is the launcher contract.
+          <Button className={styles.ctaButton} block disabled aria-describedby="trade-status">
+            {side === "buy" ? (graduated ? "Buy" : "Back") : "Sell"} {agent.ticker}
+          </Button>
+        )
+      ) : (
+        <Button
+          className={styles.ctaButton}
+          block
+          onClick={() => void wallet.connect()}
+          disabled={wallet.status === "connecting" || wallet.status === "unsupported"}
+          aria-describedby="trade-status"
+        >
+          {wallet.status === "connecting"
+            ? "Waiting for your wallet…"
+            : wallet.status === "unsupported"
+              ? "No wallet found"
+              : "Connect wallet"}
+        </Button>
+      )}
 
       <div className={styles.quickRow} role="group" aria-label="Amount">
         {QUICK_AMOUNTS.map((quick) => (
@@ -102,8 +134,9 @@ export function TradePanel({ agent }: { agent: AgentProfileDto }) {
       )}
 
       <p id="trade-status" className={styles.disclaimer}>
-        Trading opens with the testnet contracts. Backing an agent is not a bet on a game — it is a
-        bet on its record.
+        {wallet.status === "connected"
+          ? "Trading opens with the testnet contracts; your wallet is connected and nothing is charged today. Backing an agent is not a bet on a game — it is a bet on its record."
+          : "Connect a wallet to back this agent. Trading opens with the testnet contracts, and backing an agent is not a bet on a game — it is a bet on its record."}
       </p>
     </section>
   );
