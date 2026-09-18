@@ -2,8 +2,14 @@ import { timingSafeEqual } from "node:crypto";
 import { Hono } from "hono";
 import { bodyLimit } from "hono/body-limit";
 import { z } from "zod";
-import { PilotError, type ResearchRepository, type MarketData } from "@pickler/core";
 import {
+  MARKET_CATALOG,
+  PilotError,
+  type ResearchRepository,
+  type MarketData,
+} from "@pickler/core";
+import {
+  marketCatalogSchema,
   agentResponseSchema,
   runResponseSchema,
   eventResponseSchema,
@@ -67,6 +73,7 @@ export function createApi(deps: {
     return c.json({ error: "INTERNAL_OR_PROVIDER_FAILURE" }, 500);
   });
   const repo = deps.repository;
+  api.get("/market-categories", (c) => c.json(marketCatalogSchema.parse(MARKET_CATALOG)));
   api.get("/categories", async (c) =>
     c.json({
       categories: await deps.markets.categories(AbortSignal.timeout(20_000)),

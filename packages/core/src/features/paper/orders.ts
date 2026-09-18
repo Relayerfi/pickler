@@ -1,4 +1,9 @@
 import {
+  assertConfiguredMarket,
+  configuredMarketExclusion,
+  protocolForMarket,
+} from "../research/market-scope.js";
+import {
   PilotError,
   assertMarket,
   type AgentRecord,
@@ -8,7 +13,6 @@ import {
   type OrderBook,
 } from "../research/types.js";
 import { pluginEnabled, requireTool } from "../research/plugins.js";
-import { marketExclusion } from "../research/eligibility.js";
 import { nflMarketEligible } from "../research/nfl.js";
 
 export interface PaperConditions {
@@ -78,6 +82,17 @@ export function assertPaperAllowed(
   }
   const decision = run.decision;
   if (
+    decision &&
+    "schemaVersion" in decision &&
+    decision.schemaVersion === 4 &&
+    decision.protocol !== "nfl-winner-v1"
+  ) {
+    throw new PilotError(
+      "PAPER_UNSUPPORTED_PROTOCOL",
+      "Paper trading currently supports NFL game winners only",
+    );
+  }
+  if (
     run.status !== "completed" ||
     !decision ||
     decision.action !== "TRADE" ||
@@ -95,10 +110,15 @@ export function assertPaperAllowed(
   }
 }
 export function assertPaperFillCurrent(fill: PaperFill, run: RunRecord, now: number): void {
-  assertMarket(fill.market, run.config.categoryIds, now);
+  if (run.config.marketScope) {
+    assertConfiguredMarket(fill.market, run.config, now);
+  } else {
+    assertMarket(fill.market, run.config.categoryIds ?? [], now);
+  }
   if (
-    marketExclusion(fill.market, now, run.config.discoveryPolicy) ||
-    (run.config.researchProtocol && !nflMarketEligible(fill.market))
+    configuredMarketExclusion(fill.market, run.config, now) ||
+    (run.config.marketScope && protocolForMarket(fill.market, run.config) !== "nfl-winner-v1") ||
+    ((run.config.researchProtocol || run.config.marketScope) && !nflMarketEligible(fill.market))
   ) {
     throw new PilotError("PAPER_MARKET_INELIGIBLE", "Market eligibility expired before commit");
   }
@@ -254,9 +274,19 @@ export function createPaperService(
       try {
         const { run } = await repository.guard(order);
         const market = await markets.get(order.marketId, signal);
-        assertMarket(market, run.config.categoryIds, now());
+        if (run.config.marketScope) {
+          assertConfiguredMarket(market, run.config, now());
+          if (protocolForMarket(market, run.config) !== "nfl-winner-v1") {
+            throw new PilotError(
+              "PAPER_UNSUPPORTED_PROTOCOL",
+              "Paper requires NFL winner protocol",
+            );
+          }
+        } else {
+          assertMarket(market, run.config.categoryIds ?? [], now());
+        }
         if (
-          marketExclusion(market, now(), run.config.discoveryPolicy) ||
+          configuredMarketExclusion(market, run.config, now()) ||
           (run.config.researchProtocol && !nflMarketEligible(market))
         ) {
           throw new PilotError("PAPER_MARKET_INELIGIBLE", "Market no longer eligible");
@@ -269,7 +299,7 @@ export function createPaperService(
         const book = await markets.book(order.outcomeId, signal);
         await repository.guard(order);
         signal.throwIfAborted();
-        if (marketExclusion(market, now(), run.config.discoveryPolicy)) {
+        if (configuredMarketExclusion(market, run.config, now())) {
           throw new PilotError("PAPER_MARKET_INELIGIBLE", "Event eligibility expired");
         }
         const result = simulatePaperBuy(market, book, conditions, run.decision!.limitPrice!, now());

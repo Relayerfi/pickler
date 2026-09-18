@@ -28,3 +28,5 @@ Plugin configuration is optional for historical reads. New NFL output uses `nflA
 `src/paper.ts` exports the manual simulation response schema. The POST body accepts no size, price override, credentials or tenant identity. Public orders include virtual budget and fill evidence but no internal lease columns. Research DTOs retain their shape.
 
 NFL coverage `sourceIds` may identify retrieved sources or section-scoped execution context references recorded in the `research_references` event. Market/quote/availability references are not independent sports evidence. Top-level decision `sourceIds` remain retrieved-source identifiers; the public DTO shape is unchanged. Core enforces reference scope and quote attribution.
+
+`marketScopeSchema` and `marketCatalogSchema` describe the version-1 two-level sports catalog. Scoped configs reject mixed legacy selection fields. `generalAssessmentSchema` has eight coverage sections; `decisionV4Schema` discriminates NFL and general outputs while `decisionSchema` still accepts v1/v2/v3. Plugins remain independent of sports selection.

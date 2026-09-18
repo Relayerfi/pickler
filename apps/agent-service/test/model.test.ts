@@ -1,3 +1,4 @@
+import { generalDecisionSystemPrompt } from "../src/prompts/general-decision-system";
 import { test } from "node:test";
 import { DEFAULT_CONFIG, assertConfig, evaluateDecision } from "@pickler/core";
 import { agentConfigSchema, decisionSchema, modelAssessmentSchema } from "@pickler/api-schema";
@@ -248,6 +249,7 @@ test("runtime metadata identifies the exact immutable system prompts without cre
     marketSelection: marketSelectionSystemPrompt,
     decision: decisionSystemPrompt,
     nflDecision: nflDecisionSystemPrompt,
+    generalDecision: generalDecisionSystemPrompt,
   });
   for (const prompt of Object.values(metadata.prompts)) {
     if (prompt.id !== "research-system") {

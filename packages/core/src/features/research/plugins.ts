@@ -20,6 +20,7 @@ export const TOOL_PLUGIN: Record<ToolName, PluginId> = {
 export const PLUGINS = PLUGIN_IDS.map((id) => ({
   id,
   version: "1.0.0",
+  coverage: id === "balldontlie" || id === "the-odds-api" ? ["nfl-winner-v1"] : ["all"],
   tools: Object.entries(TOOL_PLUGIN)
     .filter(([, owner]) => owner === id)
     .map(([tool]) => tool as ToolName),

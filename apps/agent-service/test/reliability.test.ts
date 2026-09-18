@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { DEFAULT_CONFIG, PilotError } from "@pickler/core";
+import { DEFAULT_CONFIG, GENERAL_SECTIONS, PilotError } from "@pickler/core";
 import { createModel } from "../src/composition/model";
 import { modelDiagnostic } from "../src/composition/model-diagnostics";
 import { validatedModelOutput } from "../src/composition/model-output";
@@ -85,6 +85,7 @@ function completion(
 test("two phases persist safe step diagnostics before malformed final outputs and never retry", async (t) => {
   for (const scenario of [
     "valid",
+    "general",
     "empty",
     "json",
     "schema",
@@ -117,7 +118,29 @@ test("two phases persist safe step diagnostics before malformed final outputs an
           );
         }
         let content: string | null =
-          calls === 2 ? "Untrusted summary source" : JSON.stringify(assessment);
+          calls === 2
+            ? "Untrusted summary source"
+            : JSON.stringify(
+                scenario === "general"
+                  ? {
+                      ...assessment,
+                      report: {
+                        protocol: "general-market-v1",
+                        forecast: {
+                          outcomeId: "1",
+                          probability: null,
+                          inabilityReason: "Fixture has insufficient evidence",
+                        },
+                        sections: GENERAL_SECTIONS.map((section) => ({
+                          section,
+                          status: "missing",
+                          explanation: "Fixture",
+                          sourceIds: [],
+                        })),
+                      },
+                    }
+                  : assessment,
+              );
         if (calls === 3 && scenario === "empty") {
           content = null;
         }
@@ -137,6 +160,7 @@ test("two phases persist safe step diagnostics before malformed final outputs an
       const invoke = () =>
         createModel(env).research({
           market,
+          ...(scenario === "general" ? { protocol: "general-market-v1" as const } : {}),
           profile: "Fixture",
           limits: { ...DEFAULT_CONFIG.limits, steps: 4 },
           selectionSteps: 1,
@@ -165,7 +189,7 @@ test("two phases persist safe step diagnostics before malformed final outputs an
             },
           },
         });
-      if (scenario === "valid") {
+      if (scenario === "valid" || scenario === "general") {
         const result = await invoke();
         assert.equal(result.decision.action, "ABSTAIN");
         assert.deepEqual(result.usage, {

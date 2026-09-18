@@ -23,6 +23,35 @@ export const discoveryPolicySchema = z
     maxHorizonDays: z.number().int().min(1).max(7),
   })
   .strict();
+export const marketScopeSchema = z
+  .object({
+    version: z.literal(1),
+    category: z.literal("sports"),
+    subcategories: z.union([
+      z.literal("all"),
+      z
+        .array(z.enum(["soccer", "american-football", "basketball", "tennis"]))
+        .min(1)
+        .max(4)
+        .refine((ids) => new Set(ids).size === ids.length),
+    ]),
+  })
+  .strict();
+export const marketCatalogSchema = z.object({
+  version: z.literal(1),
+  categories: z.array(
+    z.object({
+      id: z.literal("sports"),
+      label: z.string(),
+      subcategories: z.array(
+        z.object({
+          id: z.enum(["soccer", "american-football", "basketball", "tennis"]),
+          label: z.string(),
+        }),
+      ),
+    }),
+  ),
+});
 export const agentConfigSchema = z
   .object({
     limits: z
@@ -36,7 +65,8 @@ export const agentConfigSchema = z
       })
       .strict(),
     profile: z.string().trim().min(1).max(4000),
-    categoryIds: z.array(z.string().regex(/^\d+$/)).max(10),
+    marketScope: marketScopeSchema.optional(),
+    categoryIds: z.array(z.string().regex(/^\d+$/)).max(10).optional(),
     tools: z.array(toolNameSchema).max(6),
     plugins: z
       .object({
@@ -52,7 +82,16 @@ export const agentConfigSchema = z
     uncertaintyPolicy: uncertaintyPolicySchema.optional(),
     discoveryPolicy: discoveryPolicySchema.optional(),
   })
-  .strict();
+  .strict()
+  .refine(
+    (config) =>
+      config.marketScope
+        ? config.categoryIds === undefined &&
+          config.researchProtocol === undefined &&
+          config.discoveryPolicy === undefined
+        : config.categoryIds !== undefined,
+    { message: "Choose marketScope or legacy selection fields, never both" },
+  );
 export const configUpdateSchema = z
   .object({ expectedVersion: z.number().int().positive(), config: agentConfigSchema })
   .strict();
@@ -162,7 +201,49 @@ export const decisionV3Schema = decisionV2Schema
     coverage: researchReportSchema.shape.sections,
   })
   .strict();
-export const decisionSchema = z.union([decisionV3Schema, decisionV2Schema, legacyDecisionSchema]);
+export const generalReportSchema = researchReportSchema
+  .extend({
+    protocol: z.literal("general-market-v1"),
+    sections: z
+      .array(
+        researchReportSchema.shape.sections.element.extend({
+          section: z.enum([
+            "identity",
+            "timing",
+            "rules",
+            "context",
+            "supporting",
+            "contradicting",
+            "quotes",
+            "limitations",
+          ]),
+        }),
+      )
+      .length(8),
+  })
+  .strict();
+export const generalAssessmentSchema = modelAssessmentSchema
+  .extend({ report: generalReportSchema })
+  .strict();
+export const decisionV4Schema = z.union([
+  decisionV3Schema
+    .extend({ schemaVersion: z.literal(4), protocol: z.literal("nfl-winner-v1") })
+    .strict(),
+  decisionV3Schema
+    .extend({
+      schemaVersion: z.literal(4),
+      protocol: z.literal("general-market-v1"),
+      modelAssessment: generalAssessmentSchema,
+      coverage: generalReportSchema.shape.sections,
+    })
+    .strict(),
+]);
+export const decisionSchema = z.union([
+  decisionV4Schema,
+  decisionV3Schema,
+  decisionV2Schema,
+  legacyDecisionSchema,
+]);
 export type ResearchDecisionDto = z.infer<typeof decisionSchema>;
 export const agentResponseSchema = z.object({
   id: z.string(),

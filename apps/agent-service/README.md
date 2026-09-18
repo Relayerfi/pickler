@@ -259,3 +259,7 @@ See [research reliability](RELIABILITY.md) for the two-phase model flow, pre-eve
 See [Configurable NFL research](NFL-RESEARCH.md) for plugin configuration, structured sources, decision v3 and explicit evaluation commands.
 
 See [Manual paper trading](PAPER-TRADING.md) for the optional paper plugin, endpoints, CLI, migration and simulation assumptions.
+
+## Sports categories
+
+See [MARKET-CATEGORIES.md](MARKET-CATEGORIES.md) for category/subcategory configuration, automatic NFL/general research protocols, decision v4, compatibility and local validation.

@@ -1,3 +1,10 @@
+import {
+  MARKET_CATALOG,
+  hasMarketSelection,
+  configuredMarketExclusion,
+  assertConfiguredMarket,
+  protocolForMarket,
+} from "./market-scope.js";
 import { PLUGINS, effectivePlugins, requireTool, toolEnabled, pluginEnabled } from "./plugins.js";
 import {
   nflMarketEligible,
@@ -96,43 +103,33 @@ export function createResearchRunner(deps: {
       await guard("getMarketRules");
       await guard("getOrderBook");
       const availability: Record<string, string> = {};
-      for (const [id, tool, adapter] of [
-        ["balldontlie", "getSportsContext", deps.sports],
-        ["the-odds-api", "getExternalOdds", deps.odds],
-      ] as const) {
-        availability[id] =
-          !pluginEnabled(run.config, id) || !toolEnabled(run.config, tool)
-            ? "disabled"
-            : adapter
-              ? "available"
-              : "not_configured";
-        if (availability[id] === "not_configured") {
-          throw new PilotError(
-            "PLUGIN_NOT_CONFIGURED",
-            "Enabled sports plugin requires operator credentials",
-          );
-        }
-      }
-      await event("plugin_availability", availability);
       let marketId = run.marketId;
-      if (!run.config.categoryIds.length) {
+      if (!hasMarketSelection(run.config)) {
         throw new PilotError("CATEGORIES_REQUIRED", "Select categories before researching");
       }
       if (!marketId) {
         await guard("getMarketRules");
         const discovered = await external("candidates", () =>
-          deps.markets.list(run.config.categoryIds, signal, (data) =>
-            event("discovery_scan", data),
-          ),
+          run.config.marketScope
+            ? (() => {
+                if (!deps.markets.listScope) {
+                  throw new PilotError(
+                    "CAPABILITY_UNAVAILABLE",
+                    "Market scope discovery unavailable",
+                  );
+                }
+                return deps.markets.listScope(run.config.marketScope, signal, (data) =>
+                  event("discovery_scan", data),
+                );
+              })()
+            : deps.markets.list(run.config.categoryIds ?? [], signal, (data) =>
+                event("discovery_scan", data),
+              ),
         );
         const selectionTime = now();
         const exclusions = discovered.map((m) => ({
           marketId: m.id,
-          reason: m.categoryIds.some((c) => run.config.categoryIds.includes(c))
-            ? run.config.researchProtocol && !nflMarketEligible(m)
-              ? "UNSUPPORTED_NFL_MARKET"
-              : marketExclusion(m, selectionTime, run.config.discoveryPolicy)
-            : "CATEGORY_NOT_ALLOWED",
+          reason: configuredMarketExclusion(m, run.config, selectionTime),
         }));
         await event(
           "discovery_exclusions",
@@ -166,18 +163,53 @@ export function createResearchRunner(deps: {
       }
       await guard("getMarketRules");
       const market = await external("market", () => deps.markets.get(marketId, signal));
-      assertMarket(market, run.config.categoryIds, now());
-      if (run.config.researchProtocol && !nflMarketEligible(market)) {
-        throw new PilotError(
-          "UNSUPPORTED_NFL_MARKET",
-          "Only NFL full-game moneylines are supported",
-        );
+      if (run.config.marketScope) {
+        assertConfiguredMarket(market, run.config, now());
+      } else {
+        assertMarket(market, run.config.categoryIds ?? [], now());
+        if (run.config.researchProtocol && !nflMarketEligible(market)) {
+          throw new PilotError(
+            "UNSUPPORTED_NFL_MARKET",
+            "Only NFL full-game moneylines are supported",
+          );
+        }
+        const exclusion = marketExclusion(market, now(), run.config.discoveryPolicy);
+        if (exclusion) {
+          throw new PilotError("NO_ELIGIBLE_MARKETS", exclusion);
+        }
       }
-      const exclusion = marketExclusion(market, now(), run.config.discoveryPolicy);
-      if (exclusion) {
-        throw new PilotError("NO_ELIGIBLE_MARKETS", exclusion);
+      const protocol = protocolForMarket(market, run.config);
+      await event("market_classification", {
+        catalog: run.config.marketScope ? MARKET_CATALOG : null,
+        classification: market.classification ?? null,
+        protocol: protocol ?? null,
+        temporalPolicy: run.config.marketScope
+          ? market.classification?.temporalClass === "match"
+            ? { mode: "pre-event", minLeadMinutes: 15, maxHorizonDays: 7 }
+            : { mode: "open-market", requiresFutureClose: true }
+          : (run.config.discoveryPolicy ?? { mode: "open-market" }),
+      });
+      for (const [id, tool, adapter] of [
+        ["balldontlie", "getSportsContext", deps.sports],
+        ["the-odds-api", "getExternalOdds", deps.odds],
+      ] as const) {
+        availability[id] =
+          run.config.marketScope && protocol !== "nfl-winner-v1"
+            ? "not_applicable"
+            : !pluginEnabled(run.config, id) || !toolEnabled(run.config, tool)
+              ? "disabled"
+              : adapter
+                ? "available"
+                : "not_configured";
+        if (availability[id] === "not_configured") {
+          throw new PilotError(
+            "PLUGIN_NOT_CONFIGURED",
+            "Enabled sports plugin requires operator credentials",
+          );
+        }
       }
-      if (run.config.researchProtocol) {
+      await event("plugin_availability", availability);
+      if (protocol) {
         const rules: Source = {
           id: `polymarket:${market.id}:rules`,
           externalId: market.id,
@@ -301,7 +333,7 @@ export function createResearchRunner(deps: {
         ["balldontlie", "getSportsContext", deps.sports, 6],
         ["the-odds-api", "getExternalOdds", deps.odds, 2],
       ] as const) {
-        if (!toolEnabled(run.config, tool) || !adapter) {
+        if (availability[id] === "not_applicable" || !toolEnabled(run.config, tool) || !adapter) {
           continue;
         }
         let calls = 0;
@@ -322,13 +354,13 @@ export function createResearchRunner(deps: {
           return context;
         };
         // Establish structured context before the model, without spending another model step.
-        if (run.config.researchProtocol) {
+        if (protocol) {
           await tools[tool]!();
         }
       }
       await guard();
       const result = await deps.model.research({
-        ...(run.config.researchProtocol ? { protocol: run.config.researchProtocol } : {}),
+        ...(protocol ? { protocol } : {}),
         availability,
         beforeStep: async () => {
           await guard();
@@ -340,9 +372,7 @@ export function createResearchRunner(deps: {
         evidence: () => ({
           sources: [...sources.values()],
           quotes,
-          ...(run.config.researchProtocol
-            ? { references: researchReferences(market, quotes, availability) }
-            : {}),
+          ...(protocol ? { references: researchReferences(market, quotes, availability) } : {}),
         }),
         onDiagnostic: (data) => event("model_diagnostic", data),
         market,
@@ -358,7 +388,7 @@ export function createResearchRunner(deps: {
         throw new PilotError("PROVIDER_FAILURE", "A provider failed; research is incomplete");
       }
       const decision = result.decision;
-      if (run.config.researchProtocol) {
+      if (protocol) {
         await event("research_references", researchReferences(market, quotes, availability));
       }
       await event("model_assessment", decision);
@@ -396,8 +426,15 @@ export function createResearchRunner(deps: {
         const freshMarket = await external("final_market", () =>
           deps.markets.get(market.id, signal),
         );
-        assertMarket(freshMarket, run.config.categoryIds, now());
-        const exclusion = marketExclusion(freshMarket, now(), run.config.discoveryPolicy);
+        if (run.config.marketScope) {
+          assertConfiguredMarket(freshMarket, run.config, now());
+          if (protocolForMarket(freshMarket, run.config) !== protocol) {
+            throw new PilotError("MARKET_CLASSIFICATION_CHANGED", "Market protocol changed");
+          }
+        } else {
+          assertMarket(freshMarket, run.config.categoryIds ?? [], now());
+        }
+        const exclusion = configuredMarketExclusion(freshMarket, run.config, now());
         if (exclusion) {
           throw new PilotError("NO_ELIGIBLE_MARKETS", exclusion);
         }
@@ -423,18 +460,20 @@ export function createResearchRunner(deps: {
         run.config.uncertaintyPolicy,
         now(),
       );
-      const report = run.config.researchProtocol
+      const report = protocol
         ? validateReport(
             decision,
             market,
             [...sources.values()],
             researchReferences(market, quotes, availability),
+            protocol,
           )
         : undefined;
       const finalDecision = report
         ? {
             ...evaluated,
-            schemaVersion: 3 as const,
+            schemaVersion: run.config.marketScope ? (4 as const) : (3 as const),
+            ...(run.config.marketScope ? { protocol: protocol! } : {}),
             forecast: report.forecast,
             coverage: report.sections,
           }

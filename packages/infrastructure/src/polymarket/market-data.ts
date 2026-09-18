@@ -1,8 +1,10 @@
+import { classifyPolymarket, scopeTags } from "./classification.js";
 import { z } from "zod";
 import {
   PilotError,
   publicSourceUrl,
   type Market,
+  type MarketScope,
   type MarketData,
   type Category,
   type OrderBook,
@@ -64,7 +66,11 @@ function parseGameStart(value: string | null | undefined): string | null {
   return Number.isFinite(timestamp) ? new Date(timestamp).toISOString() : null;
 }
 
-function mapMarket(m: z.infer<typeof wireMarket>, categories: string[]): Market {
+function mapMarket(
+  m: z.infer<typeof wireMarket>,
+  categories: string[],
+  verifiedTags = categories,
+): Market {
   let labels: string[], ids: string[];
   try {
     labels = parse(z.array(z.string().min(1)).min(2).max(10), JSON.parse(m.outcomes));
@@ -82,8 +88,10 @@ function mapMarket(m: z.infer<typeof wireMarket>, categories: string[]): Market 
   if (m.description.length > 16000) {
     throw new PilotError("RULES_TOO_LARGE", "Resolution rules exceed pilot context limit");
   }
+  const classification = classifyPolymarket(verifiedTags, m);
   return {
     id: m.id,
+    ...(classification ? { classification } : {}),
     question: m.question.slice(0, 1000),
     rules: m.description,
     categoryIds: categories,
@@ -118,14 +126,31 @@ export class PolymarketData implements MarketData, PaperMarketData {
     }));
   }
 
+  async listScope(
+    scope: MarketScope,
+    signal: AbortSignal,
+    report?: (data: unknown) => Promise<void>,
+  ): Promise<Market[]> {
+    return this.scan(scopeTags(scope), signal, report);
+  }
   async list(
+    categoryIds: string[],
+    signal: AbortSignal,
+    report?: (data: unknown) => Promise<void>,
+  ): Promise<Market[]> {
+    if (categoryIds.length > 10) {
+      throw new PilotError("INVALID_INPUT", "Too many legacy categories");
+    }
+    return this.scan(categoryIds, signal, report);
+  }
+  private async scan(
     categoryIds: string[],
     signal: AbortSignal,
     report?: (data: unknown) => Promise<void>,
   ): Promise<Market[]> {
     if (
       !categoryIds.length ||
-      categoryIds.length > 10 ||
+      categoryIds.length > 20 ||
       categoryIds.some((id) => !/^\d+$/.test(id))
     ) {
       throw new PilotError("CATEGORIES_REQUIRED", "Select categories");
@@ -158,9 +183,11 @@ export class PolymarketData implements MarketData, PaperMarketData {
         const old = candidates.get(row.id);
         candidates.set(
           row.id,
-          mapMarket(row, [
-            ...new Set([...(old?.categoryIds ?? []), ...(row.tags?.map((t) => t.id) ?? []), id]),
-          ]),
+          mapMarket(
+            row,
+            [...new Set([...(old?.categoryIds ?? []), ...(row.tags?.map((t) => t.id) ?? []), id])],
+            row.tags?.map((t) => t.id) ?? [],
+          ),
         );
       }
     }

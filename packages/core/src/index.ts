@@ -1,3 +1,4 @@
+export * from "./features/research/market-scope.js";
 export * from "./features/research/plugins.js";
 export * from "./features/research/nfl.js";
 export type { Clock } from "./ports/clock.js";
