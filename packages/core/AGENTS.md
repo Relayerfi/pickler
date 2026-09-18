@@ -6,7 +6,7 @@ Read [the root instructions](../../AGENTS.md) first. Read the local instructions
 
 `@pickler/core` owns the business layer: domain entities and invariants, application use cases, authorization rules, and ports for external capabilities. It must remain usable without Next.js or any specific provider.
 
-Current source includes `application/get-health.ts`, `ports/clock.ts` and `features/research/{types,policy,run-research}.ts`. Public exports include research capability/repository ports, entities, configuration and schedule policy, decimal price comparison and `createResearchRunner`.
+Current source includes `application/get-health.ts`, `ports/clock.ts`, `features/research/{types,policy,decision-policy,run-research}.ts` and the public product features ported from Relayer: `features/{access,agent-registry,budget,signing,profiles,agents,landing,waitlist,applications}`. Public exports include research capability/repository ports, entities, configuration and schedule policy, decimal price comparison and `createResearchRunner`.
 
 The runner owns permission rechecks, evidence attribution, bounded capability use and final quote verification. It accepts trusted scope from persisted jobs. API, Studio and scheduling share the same queue/runner. Core never accepts a model-supplied tenant or grants permissions from external content. Research failures and valid abstentions remain separate states.
 
