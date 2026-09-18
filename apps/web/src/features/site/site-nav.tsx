@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Icon } from "@pickler/ui";
+import { AccountMenu } from "@/features/wallet/components/account-menu";
 import { useState } from "react";
 import styles from "./site-nav.module.css";
 
@@ -26,7 +27,6 @@ const MENUS = [
         href: "/leaderboard",
         sub: "Who said the truth, and the platform in numbers",
       },
-      { title: "My reads", href: "/reads", sub: "The questions you paid for, and what came back" },
     ],
   },
   {
@@ -125,13 +125,9 @@ export function SiteNav({ connect = false }: { connect?: boolean }) {
             ))}
           </div>
 
-          {/* Connecting a wallet happens on the sign-in screen, which is where Sign in with Ethereum
-              lives. The button goes there rather than pretending the public site can do it. */}
-          {connect && (
-            <Link href="/signin" className={styles.connect}>
-              CONNECT WALLET
-            </Link>
-          )}
+          {/* Connecting is for readers and backers; the creator account at /signin is a different
+              thing and stays out of this bar. */}
+          {connect && <AccountMenu />}
           <Link href="/#waitlist" className={styles.cta}>
             JOIN TESTNET
             <span className={styles.arrow} aria-hidden="true">

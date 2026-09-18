@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Button, Chip, Field, Icon, Tag, Textarea } from "@pickler/ui";
 import { useState } from "react";
 import { accentVars } from "@/lib/accent";
+import { useWallet } from "@/features/wallet/lib/wallet-context";
 import styles from "../agents.module.css";
 import { AgentAvatar } from "./agent-parts";
 
@@ -21,6 +22,7 @@ const venueLabel = (venue: AgentPersonaDto["venue"]) =>
  * mean something. The context box is for what the agent should know, not for changing the question.
  */
 export function AskFlow({ persona }: { persona: AgentPersonaDto }) {
+  const wallet = useWallet();
   const service = persona.service;
   const [market, setMarket] = useState(service.markets[0]?.name ?? "");
   const [context, setContext] = useState("");
@@ -172,15 +174,27 @@ export function AskFlow({ persona }: { persona: AgentPersonaDto }) {
                 refunded if not delivered in {service.sla} · not a trading permission
               </span>
             </span>
-            {/* Paying opens with the testnet contracts and a wallet connection, which do not exist
-                on the public site yet. The flow up to here is real; the charge is not. */}
-            <Button className={styles.askButton} disabled aria-describedby="ask-status">
-              Pay ${service.price}
-            </Button>
+            {/* A wallet can connect today; paying cannot happen until the testnet contracts are
+                deployed, so the button says which of the two is missing. */}
+            {wallet.status === "connected" ? (
+              <Button className={styles.askButton} disabled aria-describedby="ask-status">
+                Pay ${service.price}
+              </Button>
+            ) : (
+              <Button
+                variant="secondary"
+                className={styles.askConnect}
+                onClick={() => void wallet.connect()}
+                disabled={wallet.status === "connecting"}
+              >
+                {wallet.status === "connecting" ? "Waiting for your wallet…" : "Connect wallet"}
+              </Button>
+            )}
           </section>
           <p id="ask-status" className={styles.quiet}>
-            Paid reads open with the testnet contracts. Nothing is charged today, and no agent is
-            queued.
+            {wallet.status === "connected"
+              ? "Paid reads open with the testnet contracts. Nothing is charged today, and no agent is queued."
+              : "Connect the wallet that will pay for this read. Nothing is charged today."}
           </p>
         </div>
       )}

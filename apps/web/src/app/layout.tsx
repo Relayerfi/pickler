@@ -3,6 +3,7 @@ import { Chakra_Petch, JetBrains_Mono, Manrope } from "next/font/google";
 import type { ReactNode } from "react";
 import "@pickler/ui/styles.css";
 import "./globals.css";
+import { WalletProvider } from "@/features/wallet/lib/wallet-context";
 
 const display = Chakra_Petch({
   subsets: ["latin"],
@@ -38,7 +39,9 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" className={`${display.variable} ${body.variable} ${mono.variable}`}>
-      <body>{children}</body>
+      <body>
+        <WalletProvider>{children}</WalletProvider>
+      </body>
     </html>
   );
 }

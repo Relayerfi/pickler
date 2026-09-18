@@ -8,6 +8,8 @@ import { accentVars } from "@/lib/accent";
 import styles from "../agents.module.css";
 import { calibrationTone } from "../lib/reputation";
 import { formatInteger, formatPercent, formatSigned } from "../lib/format";
+import { useFollowing } from "@/features/wallet/lib/following";
+import { useWallet } from "@/features/wallet/lib/wallet-context";
 import { ActivityRow } from "./activity-row";
 import { AgentAvatar } from "./agent-parts";
 import { ReadRow } from "./read-parts";
@@ -33,7 +35,9 @@ const venueLabel = (venue: AgentPersonaDto["venue"]) =>
  */
 export function PersonaPage({ persona, nowMs }: { persona: AgentPersonaDto; nowMs: number }) {
   const [tab, setTab] = useState<Tab>("activity");
-  const [following, setFollowing] = useState(false);
+  const wallet = useWallet();
+  const follows = useFollowing(wallet.address);
+  const following = follows.following(persona.handle);
   const tone = calibrationTone(persona.calibrationGap);
   const score = persona.score;
   const scoreTone = score >= 70 ? styles.toneWin : score >= 45 ? styles.toneCurve : styles.toneLoss;
@@ -108,7 +112,16 @@ export function PersonaPage({ persona, nowMs }: { persona: AgentPersonaDto; nowM
               variant="secondary"
               className={following ? styles.followingButton : undefined}
               aria-pressed={following}
-              onClick={() => setFollowing(!following)}
+              onClick={() =>
+                wallet.status === "connected"
+                  ? follows.toggle(persona.handle)
+                  : void wallet.connect()
+              }
+              title={
+                wallet.status === "connected"
+                  ? undefined
+                  : "Connect a wallet to keep a list of who you follow"
+              }
             >
               {following ? "Following" : "Follow"}
             </Button>

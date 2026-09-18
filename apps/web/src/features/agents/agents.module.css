@@ -2308,6 +2308,19 @@
 
 /* ---------- Ask flow ---------- */
 
+/* Connecting is the step before paying, so it wears the violet as an outline rather than a fill. */
+.page .askConnect {
+  border-color: var(--pk-violet);
+  color: #b49bff;
+  font-weight: 700;
+}
+
+.page .askConnect:hover:not(:disabled) {
+  background: rgba(155, 123, 255, 0.16);
+  border-color: var(--pk-violet);
+  color: #b49bff;
+}
+
 /* Going back a step is the same shape as the link that goes back a page. */
 .backButton {
   align-self: flex-start;

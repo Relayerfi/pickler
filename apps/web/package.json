@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@pickler/api-schema": "*",
+    "@pickler/chain": "*",
     "@pickler/core": "*",
     "@pickler/infrastructure": "*",
     "@pickler/ui": "*",
