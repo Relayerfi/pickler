@@ -276,6 +276,14 @@
   color: var(--accent);
 }
 
+/* A logo fills the frame the initials had, cropped to it rather than letterboxed. */
+.avatarImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+}
+
 .avatarLarge {
   width: 62px;
   height: 62px;
@@ -1069,12 +1077,19 @@
   min-width: 0;
 }
 
+/* The name and the line under it. Named on purpose: a descendant selector here used to catch the
+   avatar beside them and lay its initials out as a block, which is what knocked them off centre. */
+.tableNameText {
+  min-width: 0;
+}
+
 .tableName strong {
   display: block;
   font: 600 14px/1.2 var(--body);
 }
 
-.tableName span {
+.tableNameText span,
+.tableName > span:not(.avatar):not(.tableNameText) {
   display: block;
   margin-top: 3px;
   font: 500 10.5px/1 var(--mono);

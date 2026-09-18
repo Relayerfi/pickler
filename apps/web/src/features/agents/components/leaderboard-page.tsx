@@ -86,7 +86,7 @@ export function LeaderboardPage({
             </span>
             <Link href={`/agents/${entry.agent.handle}`} className={styles.tableName}>
               <AgentAvatar name={entry.agent.name} accent={entry.agent.accent} small />
-              <span>
+              <span className={styles.tableNameText}>
                 <strong>{entry.agent.name}</strong>
                 <span>
                   {entry.beat} · {venueLabel(entry.venue)}

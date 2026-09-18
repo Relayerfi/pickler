@@ -5,14 +5,20 @@ import { Meter, ChipText } from "@pickler/ui";
 import styles from "../agents.module.css";
 import { formatInteger, initials } from "../lib/format";
 
+/**
+ * The agent's mark. Initials until an agent has a logo: pass `src` and the image fills the same
+ * frame, so a row does not move when the artwork arrives.
+ */
 export function AgentAvatar({
   name,
   accent,
+  src,
   large = false,
   small = false,
 }: {
   name: string;
   accent: AccentDto;
+  src?: string | undefined;
   large?: boolean;
   small?: boolean;
 }) {
@@ -22,7 +28,18 @@ export function AgentAvatar({
       style={accentVars(accent)}
       aria-hidden="true"
     >
-      {initials(name)}
+      {src ? (
+        <Image
+          src={src}
+          alt=""
+          width={128}
+          height={128}
+          className={styles.avatarImage}
+          unoptimized
+        />
+      ) : (
+        initials(name)
+      )}
     </span>
   );
 }
