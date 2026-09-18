@@ -8,7 +8,7 @@ import styles from "../auth.module.css";
 import { ensureProfile, signInWithWallet, type AccountResult } from "../lib/account";
 import type { AuthBoardData } from "../lib/board-data";
 import { isAuthConfigured } from "../lib/config";
-import { Icon } from "@pickler/ui";
+import { Icon, Button } from "@pickler/ui";
 import { getSupabase } from "../lib/supabase-browser";
 import { AuthHeader } from "./auth-header";
 import { BoardNow } from "./board-now";
@@ -106,8 +106,8 @@ export function SignInCard({ board }: { board: AuthBoardData }) {
                 {error}
               </p>
             )}
-            <button
-              type="button"
+            <Button
+              variant="tile"
               className={styles.walletButton}
               disabled={!configured || busy !== null}
               onClick={() => {
@@ -119,7 +119,7 @@ export function SignInCard({ board }: { board: AuthBoardData }) {
             >
               <Icon name={"wallet"} size={16} />
               {busy === "wallet" ? "Waiting for your wallet…" : "Sign in with a wallet"}
-            </button>
+            </Button>
             <p className={styles.divider}>OR WITH EMAIL</p>
             <form className={styles.stack} onSubmit={signInWithEmail}>
               <label>
@@ -146,13 +146,13 @@ export function SignInCard({ board }: { board: AuthBoardData }) {
                   required
                 />
               </label>
-              <button
+              <Button
                 type="submit"
                 className={styles.primary}
                 disabled={!configured || busy !== null || !email || !password}
               >
                 {busy === "email" ? "Signing in…" : "Sign in"}
-              </button>
+              </Button>
             </form>
           </div>
 

@@ -10,7 +10,7 @@ import {
 } from "../lib/account";
 import type { AuthBoardData } from "../lib/board-data";
 import { isAuthConfigured } from "../lib/config";
-import { Icon } from "@pickler/ui";
+import { Icon, Button } from "@pickler/ui";
 import { isEmail, PASSWORD_MIN, passwordScore } from "../lib/password";
 import { ApiError, checkHandle, type HandleAvailability } from "../lib/pickler-api";
 import { getSupabase } from "../lib/supabase-browser";
@@ -238,9 +238,9 @@ export function SignUpFlow({
                     },
                   ] as const
                 ).map((option) => (
-                  <button
+                  <Button
                     key={option.key}
-                    type="button"
+                    variant="tile"
                     role="radio"
                     aria-checked={method === option.key}
                     className={styles.method}
@@ -254,7 +254,7 @@ export function SignUpFlow({
                     {method === option.key && (
                       <Icon name="check" size={16} className={styles.check} />
                     )}
-                  </button>
+                  </Button>
                 ))}
               </div>
 
@@ -312,14 +312,14 @@ export function SignUpFlow({
                 </span>
               </label>
 
-              <button
+              <Button
                 type="submit"
                 className={`${styles.primary} ${styles.continue}`}
                 disabled={!step1Ok}
+                arrow
               >
                 Continue
-                <Icon name={"arrow"} size={16} />
-              </button>
+              </Button>
             </form>
           ) : (
             <form onSubmit={createAccount}>
@@ -373,15 +373,16 @@ export function SignUpFlow({
 
               <div className={styles.actions}>
                 {!completeProfile && (
-                  <button
-                    type="button"
+                  <Button
+                    variant="secondary"
+                    size="sm"
                     className={`${styles.ghostButton} ${styles.back}`}
                     onClick={() => setStep(1)}
                   >
                     Back
-                  </button>
+                  </Button>
                 )}
-                <button type="submit" className={styles.primary} disabled={!step2Ok}>
+                <Button type="submit" className={styles.primary} disabled={!step2Ok} arrow>
                   {busy
                     ? method === "wallet" && !completeProfile
                       ? "Waiting for your wallet…"
@@ -389,8 +390,7 @@ export function SignUpFlow({
                     : completeProfile
                       ? "Save profile"
                       : "Create account"}
-                  <Icon name={"arrow"} size={16} />
-                </button>
+                </Button>
               </div>
             </form>
           )}

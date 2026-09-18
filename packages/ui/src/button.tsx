@@ -4,16 +4,18 @@ import { Icon } from "./icon";
 export type ButtonVariant = "primary" | "secondary" | "ghost" | "tile";
 export type ButtonSize = "sm" | "md" | "lg";
 
+/* The repo compiles with exactOptionalPropertyTypes, and a CSS module class is `string |
+   undefined`, so every optional prop here says so rather than making callers guard. */
 interface ButtonOwnProps {
-  variant?: ButtonVariant;
-  size?: ButtonSize;
+  variant?: ButtonVariant | undefined;
+  size?: ButtonSize | undefined;
   /** Uppercase mono label, for navigation and utility actions. */
-  mono?: boolean;
-  block?: boolean;
+  mono?: boolean | undefined;
+  block?: boolean | undefined;
   /** Trailing arrow, for actions that move you somewhere. */
-  arrow?: boolean;
-  children?: ReactNode;
-  className?: string;
+  arrow?: boolean | undefined;
+  children?: ReactNode | undefined;
+  className?: string | undefined;
 }
 
 const classes = (...values: (string | undefined)[]) => values.filter(Boolean).join(" ");

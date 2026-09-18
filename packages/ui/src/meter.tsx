@@ -18,9 +18,9 @@ export function Meter({
 }: {
   /** 0 to 100. Anything outside is clamped. */
   value: number;
-  tone?: MeterTone;
-  label?: string;
-  className?: string;
+  tone?: MeterTone | undefined;
+  label?: string | undefined;
+  className?: string | undefined;
 }) {
   const percent = Math.max(0, Math.min(100, value));
   return (
