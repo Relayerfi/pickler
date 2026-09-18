@@ -2,7 +2,7 @@
 
 Read ../../AGENTS.md and each affected package's AGENTS.md first.
 
-This local research and manual-simulation host owns Mastra integration, Studio workflows, HTTP transport, and worker lifecycle. Core owns authorization and research/scheduling rules. Infrastructure owns provider and PostgreSQL adapters. Never add trading or signing tools to this pilot.
+This local research and manual-simulation host owns Mastra integration, Studio workflows, HTTP transport, and worker lifecycle. Core owns authorization and research/scheduling rules. Infrastructure owns provider and PostgreSQL adapters. Never expose trading or signing tools to the model. The optional local trading executor is separate from research.
 
 Bind only to loopback. Studio is privileged local operator tooling, not tenant authentication. Pickler API routes resolve distinct local tokens server-side. Never trust model-supplied tenant identifiers. No paid calls at import or startup. Database URLs and provider credentials must stay untracked.
 
@@ -47,3 +47,5 @@ Manual simulation is documented in [PAPER-TRADING.md](PAPER-TRADING.md). The com
 NFL context citations are produced by core's `researchReferences` and remain separate from retrieved sources. The final prompt lists their section restrictions; do not bypass attribution checks or turn plugin availability into sports evidence. Explicit evaluator `--attempt <label>` directories preserve previous results; `--case <id>` restricts a deliberate diagnostic. No default-ledger bypass or automatic paid retry is allowed. Read `NFL-LIVE-VALIDATION.md` for actual acceptance results and `NFL-SOURCES.md` before adding sports providers.
 
 Read [MARKET-CATEGORIES.md](MARKET-CATEGORIES.md) for the catalog, v4 contracts and explicit `configure:categories` lab migration. `market-categories` in the CLI and `marketCategories` in Studio presets expose the core catalog; legacy provider categories remain available. `src/prompts/general-decision-system.ts` defines the immutable general final prompt and is snapshotted alongside NFL/legacy prompts. Protocol selection is core-owned; the adapter only chooses the corresponding structured schema.
+
+Read [LIVE-TRADING.md](LIVE-TRADING.md) for the Node-only opt-in pilot. `src/composition/trading.ts` binds its provider/store; `src/workers/main.ts` awaits a separate trading loop. `wallet:init` and `trading:setup` are explicit operator commands, never startup hooks. Runtime defaults off; Cloudflare composition forces it off. The tenant API/CLI handles public intents and polling, never private keys or signatures. A request may reserve an order without proving execution; unknown submissions are reconciled by hash and never resent. Controlled test success is not live acceptance.

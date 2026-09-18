@@ -16,11 +16,14 @@ import {
   PostgresPublicDataCache,
 } from "@pickler/infrastructure";
 import { readEnv } from "../config/env";
+import { composeTrading } from "./trading";
 import { createModel } from "./model";
 
 export async function createContainer(env = readEnv()) {
   const repository = new PostgresResearchStore(env.DATABASE_URL);
+  let trading: ReturnType<typeof composeTrading>;
   try {
+    trading = composeTrading(env, repository);
     await repository.init();
     await repository.bindConnectionIdentity(
       createHash("sha256")
@@ -46,6 +49,7 @@ export async function createContainer(env = readEnv()) {
     env,
     repository,
     markets,
+    trading,
     paper: createPaperService(new PostgresPaperStore(repository.pool), markets),
     execute: createResearchRunner({
       repository,
@@ -77,6 +81,14 @@ export async function createContainer(env = readEnv()) {
         await markets.categories(signal);
       } else if (plugin === "exa") {
         await search.search("NFL official schedule", signal);
+      } else if (plugin === "polymarket-trading") {
+        if (!trading) {
+          throw new PilotError("TRADING_DISABLED", "Node trading runtime is disabled");
+        }
+        const state = await trading.check(scope);
+        if (state.blocked || !state.approved) {
+          throw new PilotError("TRADING_NOT_READY", "Trading access or approvals are unavailable");
+        }
       } else if (plugin === "paper-trading") {
         if (!effectivePlugins(agent.config).enabled.includes("polymarket")) {
           throw new PilotError("PLUGIN_DISABLED", "Paper requires Polymarket");

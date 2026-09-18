@@ -13,7 +13,9 @@
     "diagnose": "node --import tsx src/diagnose.ts",
     "configure:nfl": "node --import tsx src/configure-nfl.ts",
     "evaluate:nfl": "node --import tsx src/evaluate-nfl.ts",
-    "configure:categories": "node --import tsx src/configure-categories.ts"
+    "configure:categories": "node --import tsx src/configure-categories.ts",
+    "wallet:init": "node --import tsx src/wallet-init.ts",
+    "trading:setup": "node --import tsx src/trading-setup.ts"
   },
   "dependencies": {
     "@ai-sdk/openai-compatible": "3.0.48",
