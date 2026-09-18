@@ -460,20 +460,19 @@
 }
 
 .cardStats {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  margin: 0 0 12px;
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0 0 13px;
   border-top: 1px solid rgba(245, 246, 255, 0.12);
   border-bottom: 1px solid rgba(245, 246, 255, 0.12);
-  border-radius: var(--pk-radius-lg);
 }
 
 .cardStat {
   display: flex;
-  flex-direction: column-reverse;
+  flex: 1 1 120px;
+  flex-direction: column;
   min-width: 0;
-  padding: 11px 8px;
-  border-radius: var(--pk-radius-lg);
+  padding: 11px 12px 11px 0;
 }
 
 .cardStat:first-child {
@@ -487,15 +486,15 @@
 }
 
 .cardStat dd {
-  margin: 0;
+  margin: 5px 0 0;
   overflow: hidden;
-  font: 700 16px/1 var(--mono);
+  font: 700 18px/1 var(--mono);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .cardStat dt {
-  margin-top: 4px;
+  margin: 0;
   font: 500 10px/1 var(--mono);
   letter-spacing: 0.08em;
   color: var(--faint);
@@ -612,12 +611,15 @@
 }
 
 .chip {
-  padding: 6px 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 11px;
   background: rgba(245, 246, 255, 0.05);
   border: 1px solid var(--rule);
+  border-radius: var(--pk-radius-pill);
   font: 500 12px/1 var(--mono);
   color: var(--ink-dim);
-  border-radius: var(--pk-radius-pill);
 }
 
 .page a.chip {
@@ -2349,20 +2351,20 @@
 
 .tokenStat {
   display: flex;
-  flex-direction: column-reverse;
+  flex-direction: column;
   min-width: 0;
   padding: 14px 16px;
 }
 
 .tokenStat dt {
-  margin-top: 8px;
+  margin: 0;
   font: 500 10px/1 var(--mono);
   letter-spacing: 0.1em;
   color: var(--faint);
 }
 
 .tokenStat dd {
-  margin: 0;
+  margin: 8px 0 0;
   font: 700 18px/1 var(--mono);
 }
 

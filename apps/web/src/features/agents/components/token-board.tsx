@@ -151,12 +151,12 @@ export function TokenBoard({
                   </span>
                   <dl className={styles.cardStats}>
                     <div className={styles.cardStat}>
-                      <dt>MCAP</dt>
-                      <dd>{agent.token ? `${formatCompact(agent.token.marketCap)} MON` : "—"}</dd>
+                      <dt>MCAP · MON</dt>
+                      <dd>{agent.token ? formatCompact(agent.token.marketCap) : "—"}</dd>
                     </div>
                     <div className={styles.cardStat}>
-                      <dt>VOL 24H</dt>
-                      <dd>{agent.token ? `${formatCompact(agent.token.volume24h)} MON` : "—"}</dd>
+                      <dt>VOL 24H · MON</dt>
+                      <dd>{agent.token ? formatCompact(agent.token.volume24h) : "—"}</dd>
                     </div>
                   </dl>
                 </Link>

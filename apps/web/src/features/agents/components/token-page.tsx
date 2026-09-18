@@ -77,8 +77,8 @@ export function TokenPage({ agent, nowMs }: { agent: AgentProfileDto; nowMs: num
                 change24h={market.change24h}
                 candles={market.candles}
                 accent={agent.accent}
-                marketCap={`${formatCompact(token.marketCap)} MON`}
-                volume24h={`${formatCompact(token.volume24h)} MON`}
+                marketCap={formatCompact(token.marketCap)}
+                volume24h={formatCompact(token.volume24h)}
               />
             </section>
           )}
@@ -128,18 +128,16 @@ export function TokenPage({ agent, nowMs }: { agent: AgentProfileDto; nowMs: num
 
           {market && token && (
             <dl className={styles.statGrid}>
-              <TokenStat label="PRICE" value={`${formatTokenPrice(market.price)} MON`} />
-              <TokenStat label="MCAP" value={`${formatCompact(token.marketCap)} MON`} />
+              <TokenStat label="PRICE · MON" value={formatTokenPrice(market.price)} />
+              <TokenStat label="MCAP · MON" value={formatCompact(token.marketCap)} />
               <TokenStat
                 label="24H"
                 value={formatChange(market.change24h)}
                 className={market.change24h < 0 ? styles.toneLoss : styles.toneWin}
               />
               <TokenStat
-                label="LIQUIDITY"
-                value={
-                  market.liquidity === null ? "ON CURVE" : `${formatCompact(market.liquidity)} MON`
-                }
+                label="LIQUIDITY · MON"
+                value={market.liquidity === null ? "ON CURVE" : formatCompact(market.liquidity)}
                 className={market.liquidity === null ? styles.toneCurve : undefined}
               />
             </dl>
