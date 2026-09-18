@@ -193,6 +193,36 @@
   box-shadow: 0 0 14px rgba(200, 240, 58, 0.7);
 }
 
+/* Every surface styles its own links, and those rules reach inside here: on the landing the brand
+   lit cyan on hover and everywhere else it lit lime. The bar answers for its own links, at a weight
+   that wins, so the brand behaves the same wherever you are. */
+.nav a.brand:hover .name {
+  color: var(--pk-cyan-ink);
+}
+
+.nav a.cta,
+.nav a.cta:hover,
+.nav a.item {
+  color: var(--pk-ink);
+}
+
+/* A menu entry lights lime on the way in: that is the colour of going somewhere in this product. */
+.nav a.item:hover .itemTitle {
+  color: var(--pk-lime);
+}
+
+.nav a.item .itemSub {
+  color: var(--pk-ink-faint);
+}
+
+.nav a.connect {
+  color: var(--pk-ink-dim);
+}
+
+.nav a.connect:hover {
+  color: var(--pk-ink);
+}
+
 /* Click-away closer: the dropdowns are the only thing it dismisses. */
 .scrim {
   position: fixed;
