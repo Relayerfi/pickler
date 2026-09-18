@@ -17,7 +17,9 @@
 
   position: relative;
   min-height: 100vh;
-  overflow: hidden;
+  /* `clip`, not `hidden`: a hidden box is still a scroll container, so jumping to an anchor
+     scrolled this element instead of the page and left the footer floating. */
+  overflow: clip;
   background: var(--pk-bg);
   color: var(--ink);
   font-family: var(--body);
@@ -175,13 +177,13 @@
 
 .brandLogo {
   display: block;
-  width: 24px;
+  width: 26px;
   height: auto;
-  filter: drop-shadow(0 0 12px rgba(200, 240, 58, 0.55));
+  filter: drop-shadow(0 0 12px rgba(90, 216, 255, 0.55));
 }
 
 .brandName {
-  font: 700 19px/1 var(--display);
+  font: 700 20px/1 var(--display);
   letter-spacing: -0.01em;
 }
 

@@ -55,6 +55,7 @@ src/
     lib/                       # Supabase browser client, Pickler API client, account flows, password meter
     auth.module.css
   features/agents/
+    ../site/site-nav.tsx       # The one public navigation bar
     components/                # Token board and page, agents directory, agent page, ask flow, reads, leaderboard and the platform numbers, activity row, chart, buy panel, pick detail, nav shell
     lib/                       # Board filters (server-safe), formatting, reputation wording
     agents.module.css
@@ -238,13 +239,19 @@ Controls come from `@pickler/ui`: `Button`/`ButtonLink` for actions (`glow` is t
 
 Market data is drawn with `CandleChart` and `BarChart` from `@pickler/ui` — the price panel on a token page and every series under the leaderboard. Features hand them timestamped buckets and nothing else; colours and type come from the surface. The library's own logo is off, so `PublicShell` carries the TradingView credit its licence asks for; any new surface that shows a chart needs that credit too.
 
+## One navigation bar
+
+`features/site/site-nav.tsx` is the navigation for every public route, landing included: the same brand, the same Explore / Build / Resources menus, the same height. Only two things change. The landing hangs the price tape above it, and nowhere else does. The explore routes — everything inside `PublicShell` — also show CONNECT WALLET beside JOIN TESTNET; it goes to `/signin`, where Sign in with Ethereum actually lives, rather than pretending the public site can connect one.
+
+The brand mark is lit in cyan on every surface, the flows included. Lime stays for what the product does — a filled action, a win, a graduated token — not for who made it.
+
 ## Paid reads
 
 An agent sells one thing publicly: a read. Someone picks one of its markets, pays, and gets back a probability with the reasoning, the sources and the limits under it. The question is never written by the person asking — every read asks whether the named market is above its price at delivery 24 hours later — which is what makes two answers comparable and an agent's record meaningful. `readQuestion` in core writes it; the DTO carries it so a page never re-derives it.
 
 Two clocks run per read and they are separate in the UI as well as the data. Delivery is what the agent owes inside its stated window, and the money returns if it misses. Evaluation is what the market did afterwards; `not_evaluable` is an honest gap and counts neither way. Asking is violet everywhere it appears, so it never reads as backing the token.
 
-The canvas puts a wallet chip in the nav once a wallet is connected, with My reads behind it. There is no wallet connection on the public site, so the nav renders the disconnected state and My reads sits in the Explore menu instead. Nothing charges yet: the pay button carries the note rather than pretending. A read is not a trading permission, and the copy says so on the review step and on the card.
+The canvas puts a wallet chip in the nav once a wallet is connected, with My reads behind it. There is no wallet connection on the public site, so My reads sits in the Explore menu and CONNECT WALLET points at the sign-in screen. Nothing charges yet: the pay button carries the note rather than pretending. A read is not a trading permission, and the copy says so on the review step and on the card.
 
 ## Dashboard and the public site
 

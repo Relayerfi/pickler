@@ -98,13 +98,13 @@
 
 .brandLogo {
   display: block;
-  width: 22px;
+  width: 26px;
   height: auto;
-  filter: drop-shadow(0 0 10px rgba(200, 240, 58, 0.45));
+  filter: drop-shadow(0 0 12px rgba(90, 216, 255, 0.55));
 }
 
 .brandName {
-  font: 700 17px/1 var(--display);
+  font: 700 20px/1 var(--display);
   letter-spacing: -0.01em;
 }
 
