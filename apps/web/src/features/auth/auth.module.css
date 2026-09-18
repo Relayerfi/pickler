@@ -122,7 +122,7 @@
   align-items: center;
   padding: 7px 12px;
   border: 1px solid rgba(243, 241, 236, 0.14);
-  border-radius: 999px;
+  border-radius: var(--pk-radius-pill);
   font: 500 10px/1 var(--mono);
   letter-spacing: 0.12em;
   color: var(--muted);
@@ -141,7 +141,7 @@
 .ghostButton {
   padding: 9px 16px;
   border: 1px solid var(--line-strong);
-  border-radius: 999px;
+  border-radius: var(--pk-radius-pill);
   background: transparent;
   font: 600 12.5px/1 var(--body);
   color: var(--ink);
@@ -152,6 +152,7 @@
 .ghostButton:hover {
   color: var(--ink);
   border-color: rgba(243, 241, 236, 0.36);
+  border-radius: var(--pk-radius-pill);
 }
 
 /* ---------- Buttons and fields ---------- */
@@ -163,7 +164,7 @@
   gap: 9px;
   padding: 16px 22px;
   border: 1px solid rgba(255, 255, 255, 0.45);
-  border-radius: 999px;
+  border-radius: var(--pk-radius-pill);
   background: var(--lime);
   font: 700 13px/1 var(--body);
   color: var(--lime-ink);
@@ -199,7 +200,7 @@
   width: 100%;
   padding: 14px 16px;
   border: 1px solid rgba(243, 241, 236, 0.16);
-  border-radius: 12px;
+  border-radius: var(--pk-radius-md);
   background: var(--field);
   font: 400 14.5px/1.2 var(--body);
   color: var(--ink);
@@ -208,6 +209,7 @@
 
 .input:focus {
   border-color: rgba(200, 240, 58, 0.5);
+  border-radius: var(--pk-radius-md);
 }
 
 .handleField {
@@ -215,12 +217,13 @@
   align-items: center;
   overflow: hidden;
   border: 1px solid rgba(243, 241, 236, 0.16);
-  border-radius: 12px;
+  border-radius: var(--pk-radius-md);
   background: var(--field);
 }
 
 .handleField:focus-within {
   border-color: rgba(200, 240, 58, 0.5);
+  border-radius: var(--pk-radius-md);
 }
 
 .handleAt {
@@ -239,6 +242,7 @@
   font: 400 14.5px/1.2 var(--mono);
   color: var(--ink);
   outline: none;
+  border-radius: var(--pk-radius-md);
 }
 
 .note {
@@ -264,7 +268,7 @@
   margin: 0 0 16px;
   padding: 12px 14px;
   border: 1px solid rgba(255, 95, 162, 0.4);
-  border-radius: 12px;
+  border-radius: var(--pk-radius-md);
   background: rgba(255, 95, 162, 0.08);
   font: 500 13px/1.45 var(--body);
   color: #ffc2da;
@@ -333,7 +337,7 @@
   gap: 9px;
   padding: 8px 14px;
   border: 1px solid rgba(243, 241, 236, 0.14);
-  border-radius: 999px;
+  border-radius: var(--pk-radius-pill);
   font: 600 12.5px/1 var(--body);
   color: var(--muted);
 }
@@ -361,7 +365,7 @@
   gap: 12px;
   padding: 15px 16px;
   border: 1px solid rgba(243, 241, 236, 0.14);
-  border-radius: 14px;
+  border-radius: var(--pk-radius-md);
   background: transparent;
   color: var(--ink-soft);
   text-align: left;
@@ -407,7 +411,7 @@
   margin-bottom: 16px;
   padding: 18px;
   border: 1px solid rgba(243, 241, 236, 0.14);
-  border-radius: 16px;
+  border-radius: var(--pk-radius-lg);
   background: var(--panel);
   animation: fadeIn 240ms ease-out;
 }
@@ -422,14 +426,14 @@
   flex: 1 1 auto;
   height: 5px;
   overflow: hidden;
-  border-radius: 999px;
+  border-radius: var(--pk-radius-pill);
   background: rgba(243, 241, 236, 0.08);
 }
 
 .strengthFill {
   display: block;
   height: 5px;
-  border-radius: 999px;
+  border-radius: var(--pk-radius-pill);
   background: currentColor;
 }
 
@@ -462,7 +466,7 @@
   height: 20px;
   margin-top: 1px;
   border: 1px solid rgba(243, 241, 236, 0.26);
-  border-radius: 6px;
+  border-radius: var(--pk-radius-sm);
   color: var(--lime-ink);
 }
 
@@ -496,6 +500,7 @@
   font: 400 13px/1.5 var(--body);
   color: var(--muted);
   text-wrap: pretty;
+  border-radius: var(--pk-radius-lg);
 }
 
 .actions {
@@ -520,7 +525,7 @@
   min-width: 0;
   overflow: hidden;
   border: 1px solid rgba(243, 241, 236, 0.14);
-  border-radius: 18px;
+  border-radius: var(--pk-radius-lg);
   background: var(--panel);
 }
 
@@ -553,7 +558,7 @@
 .liveDot {
   width: 6px;
   height: 6px;
-  border-radius: 999px;
+  border-radius: var(--pk-radius-pill);
   background: var(--lime);
   box-shadow: 0 0 10px rgba(200, 240, 58, 0.8);
   animation: blink 1.6s steps(1, end) infinite;
@@ -605,7 +610,7 @@
   overflow: hidden;
   list-style: none;
   border: 1px solid rgba(243, 241, 236, 0.14);
-  border-radius: 12px;
+  border-radius: var(--pk-radius-md);
   background-color: var(--bg);
   background-image:
     linear-gradient(rgba(243, 241, 236, 0.06) 1px, transparent 1px),
@@ -623,6 +628,7 @@
   font: 700 15px/1 var(--display);
   letter-spacing: 0.06em;
   text-shadow: 0 0 20px rgba(200, 240, 58, 0.9);
+  border-radius: var(--pk-radius-lg);
 }
 
 .drop {
@@ -769,7 +775,7 @@
 .glassCard {
   padding: 26px;
   border: 1px solid var(--line-strong);
-  border-radius: 18px;
+  border-radius: var(--pk-radius-lg);
   background: rgba(13, 13, 16, 0.82);
   backdrop-filter: blur(18px);
   box-shadow:
@@ -798,7 +804,7 @@
   margin-bottom: 14px;
   padding: 13px 16px;
   border: 1px solid rgba(243, 241, 236, 0.14);
-  border-radius: 12px;
+  border-radius: var(--pk-radius-md);
   background: var(--field);
   font: 600 13.5px/1 var(--body);
   color: var(--ink);
@@ -808,6 +814,7 @@
 
 .walletButton:hover:not(:disabled) {
   border-color: rgba(243, 241, 236, 0.32);
+  border-radius: var(--pk-radius-pill);
 }
 
 .walletButton:disabled {
@@ -851,7 +858,7 @@
   padding: 16px 18px;
   list-style: none;
   border: 1px solid var(--line);
-  border-radius: 16px;
+  border-radius: var(--pk-radius-lg);
   background: rgba(13, 13, 16, 0.7);
   backdrop-filter: blur(14px);
 }
@@ -946,7 +953,7 @@
   height: 56px;
   margin: 0 auto 20px;
   border: 1px solid rgba(200, 240, 58, 0.4);
-  border-radius: 999px;
+  border-radius: var(--pk-radius-pill);
   background: rgba(200, 240, 58, 0.12);
   color: var(--lime);
   box-shadow: 0 0 30px rgba(200, 240, 58, 0.3);

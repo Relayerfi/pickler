@@ -49,7 +49,7 @@ export function PublicShell({ children }: { children: ReactNode }) {
   )?.key;
 
   return (
-    <div className={styles.page}>
+    <div className={styles.page} data-surface="public">
       <div aria-hidden="true">
         <div className={styles.space} />
         <div className={styles.stars} />

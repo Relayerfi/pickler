@@ -74,6 +74,7 @@
   backdrop-filter: blur(16px);
   border: 1px solid rgba(245, 246, 255, 0.22);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.26);
+  border-radius: var(--pk-radius-lg);
 }
 
 .primaryButton {
@@ -91,6 +92,7 @@
     inset 0 2px 0 rgba(255, 255, 255, 0.4),
     0 0 40px rgba(200, 240, 58, 0.5);
   transition: box-shadow 240ms cubic-bezier(0.22, 1, 0.36, 1);
+  border-radius: var(--pk-radius-pill);
 }
 
 .page a.primaryButton,
@@ -110,6 +112,7 @@
   border-color: rgba(245, 246, 255, 0.2);
   box-shadow: none;
   cursor: not-allowed;
+  border-radius: var(--pk-radius-pill);
 }
 
 .secondaryButton {
@@ -120,10 +123,12 @@
   letter-spacing: 0.08em;
   color: var(--ink);
   cursor: pointer;
+  border-radius: var(--pk-radius-pill);
 }
 
 .secondaryButton:hover {
   border-color: var(--ink);
+  border-radius: var(--pk-radius-pill);
 }
 
 /* ---------- Background ---------- */
@@ -215,6 +220,7 @@
   font: 500 11px/1 var(--mono);
   letter-spacing: 0.14em;
   color: var(--faint);
+  border-radius: var(--pk-radius-pill);
 }
 
 .headerLink {
@@ -317,14 +323,17 @@
   border: 1px solid rgba(245, 246, 255, 0.2);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
   transition: border-color 200ms ease;
+  border-radius: var(--pk-radius-lg);
 }
 
 .cardDone {
   border-color: rgba(200, 240, 58, 0.45);
+  border-radius: var(--pk-radius-lg);
 }
 
 .cardError {
   border-color: rgba(255, 95, 162, 0.6);
+  border-radius: var(--pk-radius-lg);
 }
 
 .cardLabel {
@@ -336,6 +345,7 @@
   font: 500 12px/1 var(--mono);
   letter-spacing: 0.1em;
   color: var(--muted);
+  border-radius: var(--pk-radius-lg);
 }
 
 .row {
@@ -353,11 +363,13 @@
   border: 1px solid rgba(245, 246, 255, 0.28);
   color: var(--ink);
   outline: none;
+  border-radius: var(--pk-radius-md);
 }
 
 .input:focus,
 .textarea:focus {
   border-color: var(--cyan);
+  border-radius: var(--pk-radius-md);
 }
 
 .input {
@@ -375,6 +387,7 @@
   border-color: rgba(200, 240, 58, 0.45);
   font: 700 17px/1.2 var(--mono);
   color: var(--lime);
+  border-radius: var(--pk-radius-md);
 }
 
 .handleInput {
@@ -435,10 +448,12 @@
   font: 600 14px/1 var(--body);
   color: var(--ink-soft);
   cursor: pointer;
+  border-radius: var(--pk-radius-pill);
 }
 
 .chip:hover {
   border-color: rgba(245, 246, 255, 0.6);
+  border-radius: var(--pk-radius-pill);
 }
 
 .chip .pixel {
@@ -447,18 +462,21 @@
   border-color: rgba(255, 255, 255, 0.35);
   box-shadow: none;
   opacity: 0.55;
+  border-radius: var(--pk-radius-pill);
 }
 
 .chip[aria-checked="true"] {
   background: rgba(245, 246, 255, 0.14);
   border-color: var(--ink);
   color: var(--ink);
+  border-radius: var(--pk-radius-pill);
 }
 
 .chip[aria-checked="true"] .pixel {
   border-color: rgba(255, 255, 255, 0.5);
   box-shadow: 0 0 12px rgba(var(--accent-rgb), 0.6);
   opacity: 1;
+  border-radius: var(--pk-radius-pill);
 }
 
 .fieldError {
@@ -526,6 +544,7 @@
     linear-gradient(rgba(245, 246, 255, 0.07) 1px, transparent 1px),
     linear-gradient(90deg, rgba(245, 246, 255, 0.07) 1px, transparent 1px);
   background-size: 17px 17px;
+  border-radius: var(--pk-radius-lg);
 }
 
 .block {
@@ -597,6 +616,7 @@
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.35),
     0 0 80px rgba(155, 123, 255, 0.28);
+  border-radius: var(--pk-radius-lg);
 }
 
 .liveRow {
@@ -644,6 +664,7 @@
   padding: 14px 16px;
   background: rgba(5, 6, 26, 0.45);
   border: 1px solid rgba(245, 246, 255, 0.24);
+  border-radius: var(--pk-radius-md);
 }
 
 .tile dd {
@@ -661,11 +682,13 @@
 .tileLime {
   background: rgba(200, 240, 58, 0.12);
   border-color: rgba(200, 240, 58, 0.4);
+  border-radius: var(--pk-radius-md);
 }
 
 .tileCyan {
   background: rgba(90, 216, 255, 0.12);
   border-color: rgba(90, 216, 255, 0.4);
+  border-radius: var(--pk-radius-md);
 }
 
 .tileLime dd {
@@ -765,6 +788,7 @@
   box-shadow:
     inset 0 2px 0 rgba(255, 255, 255, 0.4),
     0 0 34px rgba(200, 240, 58, 0.45);
+  border-radius: var(--pk-radius-pill);
 }
 
 .crowdSide {
