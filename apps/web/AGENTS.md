@@ -244,7 +244,7 @@ An agent sells one thing publicly: a read. Someone picks one of its markets, pay
 
 Two clocks run per read and they are separate in the UI as well as the data. Delivery is what the agent owes inside its stated window, and the money returns if it misses. Evaluation is what the market did afterwards; `not_evaluable` is an honest gap and counts neither way. Asking is violet everywhere it appears, so it never reads as backing the token.
 
-Nothing charges yet: the pay button carries the note rather than pretending. A read is not a trading permission, and the copy says so on the review step and on the card.
+The canvas puts a wallet chip in the nav once a wallet is connected, with My reads behind it. There is no wallet connection on the public site, so the nav renders the disconnected state and My reads sits in the Explore menu instead. Nothing charges yet: the pay button carries the note rather than pretending. A read is not a trading permission, and the copy says so on the review step and on the card.
 
 ## Dashboard and the public site
 
