@@ -190,7 +190,7 @@
   background: var(--pk-lime);
   color: var(--pk-on-lime);
   border-radius: var(--pk-radius-pill);
-  box-shadow: 0 0 14px rgba(200, 240, 58, 0.7);
+  box-shadow: 0 0 10px rgba(200, 240, 58, 0.35);
 }
 
 /* Every surface styles its own links, and those rules reach inside here: on the landing the brand

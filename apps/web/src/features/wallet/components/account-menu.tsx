@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Icon } from "@pickler/ui";
+import { Button, Icon } from "@pickler/ui";
 import { useState } from "react";
 import styles from "./account-menu.module.css";
 import { useWallet } from "../lib/wallet-context";
@@ -23,14 +23,13 @@ export function AccountMenu() {
   if (wallet.status !== "connected" || !wallet.address) {
     const label =
       wallet.status === "connecting"
-        ? "CONNECTING…"
+        ? "Waiting for your wallet…"
         : wallet.status === "unsupported"
-          ? "NO WALLET FOUND"
-          : "CONNECT WALLET";
+          ? "No wallet found"
+          : "Connect wallet";
     return (
       <span className={styles.slot}>
-        <button
-          type="button"
+        <Button
           className={styles.connect}
           onClick={() => void wallet.connect()}
           disabled={wallet.status === "connecting" || wallet.status === "unsupported"}
@@ -40,9 +39,8 @@ export function AccountMenu() {
               : undefined
           }
         >
-          <Icon name="wallet" size={15} />
           {label}
-        </button>
+        </Button>
         {wallet.error && <span className={styles.error}>{wallet.error}</span>}
       </span>
     );

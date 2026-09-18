@@ -8,7 +8,11 @@
   border-left: 1px solid var(--pk-rule);
 }
 
-.connect,
+/* The same action as the one on a token page, sitting inside the bar. */
+.connect {
+  margin: 0 14px;
+}
+
 .chip {
   display: inline-flex;
   align-items: center;
@@ -26,15 +30,9 @@
     color var(--pk-duration);
 }
 
-.connect:hover:not(:disabled),
 .chip:hover {
   background: rgba(245, 246, 255, 0.06);
   color: var(--pk-ink);
-}
-
-.connect:disabled {
-  cursor: not-allowed;
-  color: var(--pk-ink-faint);
 }
 
 /* Lit while the wallet is on the network we read; amber while it is somewhere else. */
