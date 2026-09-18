@@ -263,3 +263,7 @@ See [Manual paper trading](PAPER-TRADING.md) for the optional paper plugin, endp
 ## Sports categories
 
 See [MARKET-CATEGORIES.md](MARKET-CATEGORIES.md) for category/subcategory configuration, automatic NFL/general research protocols, decision v4, compatibility and local validation.
+
+## Optional local trading integration
+
+See [LIVE-TRADING.md](LIVE-TRADING.md) for the separately disabled Node pilot, explicit operator wallet/setup commands, API/CLI contracts and controlled-test status. This does not enable trading for existing agents or establish live-provider acceptance.
