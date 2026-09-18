@@ -1,3 +1,4 @@
+import { TOOL_NAMES } from "@pickler/core";
 import { record } from "./model-output";
 
 /** Persist metadata only. Never copy provider text, arguments, headers or error messages. */
@@ -23,13 +24,7 @@ export function modelDiagnostic(phase: string, durationMs: number, input: unknow
               .find((item) => item.toolCallId === data.toolCallId)
           : undefined;
         return {
-          name: [
-            "searchWeb",
-            "readPage",
-            "getMarketRules",
-            "getOrderBook",
-            "connectionProbe",
-          ].includes(String(name))
+          name: ([...TOOL_NAMES, "connectionProbe"] as readonly string[]).includes(String(name))
             ? String(name)
             : "unknown",
           status: result ? (result.isError ? "failed" : "completed") : "invoked",

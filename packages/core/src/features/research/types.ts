@@ -1,5 +1,5 @@
 import type { PluginConfig } from "./plugins.js";
-import type { ResearchReport, SportsContext } from "./nfl.js";
+import type { ResearchReport, SportsContext, ResearchReference } from "./nfl.js";
 export const TOOL_NAMES = [
   "searchWeb",
   "readPage",
@@ -235,7 +235,7 @@ export interface ResearchModel {
     onUsage(usage: unknown): Promise<void>;
     beforeStep?(): Promise<void>;
     onDiagnostic?(data: unknown): Promise<void>;
-    evidence?(): { sources: Source[]; quotes: OrderBook[] };
+    evidence?(): { sources: Source[]; quotes: OrderBook[]; references?: ResearchReference[] };
     selectionSteps?: number;
   }): Promise<{ decision: ModelAssessment; usage: unknown }>;
   metadata(): {

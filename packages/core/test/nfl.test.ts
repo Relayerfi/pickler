@@ -2,11 +2,13 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
   DEFAULT_CONFIG,
+  ModelFailure,
   effectivePlugins,
   pluginEnabled,
   toolEnabled,
   requireTool,
   validateReport,
+  researchReferences,
   NFL_SECTIONS,
   nflMarketEligible,
   uniqueSources,
@@ -126,5 +128,67 @@ test("identical content and canonical URLs are not independent evidence", () => 
       { ...evidence, id: "b", url: "https://example.com/a#section", content: "different" },
     ]).length,
     1,
+  );
+});
+
+test("execution references support metadata without masquerading as sports evidence", () => {
+  const a = assessment();
+  const references = researchReferences(
+    market,
+    [
+      {
+        outcomeId: "2",
+        observedAt: "2026-09-17T12:00:00Z",
+        asks: [{ price: "0.4", size: "10" }],
+        bids: [],
+      },
+    ],
+    { balldontlie: "disabled" },
+  );
+  for (const section of a.report!.sections) {
+    if (["identity", "schedule", "rules"].includes(section.section)) {
+      section.sourceIds = [references[0]!.id];
+    } else if (section.section === "quotes") {
+      section.sourceIds = [references[2]!.id, references[0]!.id];
+    } else if (section.section === "limitations") {
+      section.sourceIds = [references[1]!.id];
+    }
+  }
+  assert.equal(validateReport(a, market, [evidence], references), a.report);
+  assert.throws(() => validateReport(a, market, [evidence]), {
+    code: "INVALID_RESEARCH_REPORT_ATTRIBUTION",
+  });
+  const injuries = a.report!.sections.find((section) => section.section === "injuries")!;
+  injuries.sourceIds = [references[1]!.id];
+  assert.throws(() => validateReport(a, market, [evidence], references), {
+    code: "INVALID_RESEARCH_REPORT_ATTRIBUTION",
+  });
+  injuries.sourceIds = ["e"];
+  a.report!.sections.find((section) => section.section === "quotes")!.sourceIds = [
+    references[0]!.id,
+  ];
+  assert.throws(() => validateReport(a, market, [evidence], references), {
+    code: "INVALID_RESEARCH_REPORT_ATTRIBUTION",
+  });
+  injuries.sourceIds = ["context:invented"];
+  assert.throws(() => validateReport(a, market, [evidence], references), {
+    code: "INVALID_RESEARCH_REPORT_ATTRIBUTION",
+  });
+});
+
+test("invalid report attribution includes a safe path without citation values", () => {
+  const a = assessment();
+  a.report!.sections[0]!.sourceIds = ["private-provider-value"];
+  assert.throws(
+    () => validateReport(a, market, [evidence]),
+    (error: unknown) => {
+      assert.ok(error instanceof ModelFailure);
+      assert.deepEqual(error.details, {
+        stage: "decision",
+        validation: [{ code: "attribution", path: "report.sections[0].sourceIds" }],
+      });
+      assert.equal(JSON.stringify(error).includes("private-provider-value"), false);
+      return true;
+    },
   );
 });
