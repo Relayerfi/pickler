@@ -47,3 +47,9 @@ NFL research adds provider-neutral `SportsData`, versioned plugin permissions an
 `researchReferences` produces citable market, quote and plugin-availability context, distinct from external `Source` evidence. `validateReport` accepts these only in their declared sections; context cannot substantiate injuries or sporting advantage. The runner persists these references and retains the original provider events. Top-level decision source IDs still require retrieved sources. Keep historical reports readable without requiring a context-reference backfill.
 
 `features/research/market-scope.ts` owns the version-1 two-level sports catalog, legacy-aware scope checks and automatic NFL/general protocol selection. Match versus award/season timing is enforced before selection, manual loading and final trade refresh. New scoped runs produce decision v4; legacy configs retain their protocols. General reports have eight sections, NFL nine. Provider classification is trusted only from the injected market adapter; model text never grants scope. Paper finalization remains NFL-only.
+
+Product API-key authorization is deny-by-default for every key kind. `read:agents` grants read-only
+product agent access; legacy broad labels grant no implied permissions. Budget reservations record
+the actual commit period and reset generation. A refund may reduce current spend only when both
+match; legacy unknown-period charges cannot credit the active balance. This product ledger is not
+the research quota authority.
