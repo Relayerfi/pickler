@@ -1,6 +1,8 @@
 // Presentation side of the reputation score. The thresholds match the domain
 // (calibrationVerdict in @pickler/core): under four points is honest, over ten is talk.
 
+import type { MeterTone } from "@pickler/ui";
+
 type Tone = "toneWin" | "toneCurve" | "toneLoss";
 
 export const calibrationTone = (gap: number): Tone =>
@@ -24,6 +26,6 @@ export const calibrationNote = (gap: number) =>
 export const scoreTone = (score: number): Tone =>
   score >= 70 ? "toneWin" : score >= 45 ? "toneCurve" : "toneLoss";
 
-/** The matching bar fill. */
-export const scoreBar = (score: number): "barGraduated" | "barCurve" | "barLoss" =>
-  score >= 70 ? "barGraduated" : score >= 45 ? "barCurve" : "barLoss";
+/** The matching meter tone. */
+export const scoreMeter = (score: number): MeterTone =>
+  score >= 70 ? "lime" : score >= 45 ? "amber" : "magenta";

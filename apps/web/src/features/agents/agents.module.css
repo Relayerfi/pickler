@@ -472,23 +472,6 @@
   min-width: 0;
 }
 
-.bar {
-  display: block;
-  height: 7px;
-  background: rgba(5, 6, 26, 0.65);
-  border: 1px solid rgba(245, 246, 255, 0.18);
-}
-
-.barFill {
-  display: block;
-  height: 5px;
-  background: var(--cyan);
-}
-
-.barGraduated {
-  background: var(--lime);
-}
-
 .curveNote {
   display: block;
   margin-top: 6px;
@@ -1310,13 +1293,6 @@
 }
 .toneQuiet {
   color: #b49bff;
-}
-
-.barCurve {
-  background: #ffc93f;
-}
-.barLoss {
-  background: var(--magenta);
 }
 
 .avatarSmall {

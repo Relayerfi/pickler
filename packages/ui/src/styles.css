@@ -230,3 +230,34 @@
   letter-spacing: 0.06em;
   color: var(--pk-ink-dim);
 }
+
+/* ---------- Meter: one number between 0 and 100 ---------- */
+
+.pk-meter {
+  display: block;
+  height: 7px;
+  border: 1px solid var(--pk-border);
+  border-radius: var(--pk-radius-pill);
+  background: var(--pk-field);
+  overflow: hidden;
+}
+
+.pk-meter-fill {
+  display: block;
+  height: 100%;
+  border-radius: var(--pk-radius-pill);
+  background: var(--pk-cyan);
+  transition: width var(--pk-duration);
+}
+
+.pk-meter-fill[data-tone="lime"] {
+  background: var(--pk-lime);
+}
+
+.pk-meter-fill[data-tone="amber"] {
+  background: var(--pk-amber);
+}
+
+.pk-meter-fill[data-tone="magenta"] {
+  background: var(--pk-magenta);
+}

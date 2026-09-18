@@ -3,13 +3,14 @@
 import type { LeaderboardDto } from "@pickler/api-schema";
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { Meter } from "@pickler/ui";
 import styles from "../agents.module.css";
 import { formatInteger, formatSigned } from "../lib/format";
 import {
   calibrationNote,
   calibrationTone,
   calibrationVerdict,
-  scoreBar,
+  scoreMeter,
   scoreTone,
 } from "../lib/reputation";
 import { AgentAvatar } from "./agent-parts";
@@ -87,12 +88,7 @@ export function LeaderboardPage({ board }: { board: LeaderboardDto }) {
               </span>
             </Link>
             <span className={styles.tableScore}>
-              <span className={styles.bar}>
-                <span
-                  className={`${styles.barFill} ${styles[scoreBar(entry.score)]}`}
-                  style={{ width: `${entry.score}%` }}
-                />
-              </span>
+              <Meter value={entry.score} tone={scoreMeter(entry.score)} />
               <strong className={styles[scoreTone(entry.score)]}>{entry.score}</strong>
             </span>
             <span className={`${styles.tableNum} ${styles[calibrationTone(entry.calibrationGap)]}`}>
@@ -126,12 +122,7 @@ export function LeaderboardPage({ board }: { board: LeaderboardDto }) {
                   <span>{Math.round(weight.weight * 100)}%</span>
                 </dt>
                 <dd>
-                  <span className={styles.bar}>
-                    <span
-                      className={`${styles.barFill} ${styles.barCurve}`}
-                      style={{ width: `${weight.weight * 100}%` }}
-                    />
-                  </span>
+                  <Meter value={weight.weight * 100} tone="amber" />
                   <span className={styles.quiet}>{weight.note}</span>
                 </dd>
               </div>

@@ -2,7 +2,7 @@
 
 import type { AgentSummaryDto } from "@pickler/api-schema";
 import Link from "next/link";
-import { Icon } from "@pickler/ui";
+import { Icon, Meter } from "@pickler/ui";
 import { useMemo, useState } from "react";
 import styles from "../agents.module.css";
 import {
@@ -169,14 +169,10 @@ export function TokenBoard({
                       >
                         {formatChange(agent.token.change24h)}
                       </strong>
-                      <span className={styles.bar}>
-                        <span
-                          className={`${styles.barFill} ${agent.token.change24h < 0 ? styles.barLoss : styles.barGraduated}`}
-                          style={{
-                            width: `${Math.min(100, Math.abs(agent.token.change24h) * 500)}%`,
-                          }}
-                        />
-                      </span>
+                      <Meter
+                        value={Math.abs(agent.token.change24h) * 500}
+                        tone={agent.token.change24h < 0 ? "magenta" : "lime"}
+                      />
                     </span>
                   ) : agent.token ? (
                     <span className={styles.curve}>

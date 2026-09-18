@@ -1,6 +1,7 @@
 import type { AccentDto, AgentSummaryDto, VenueDto } from "@pickler/api-schema";
 import Image from "next/image";
 import { accentVars } from "@/lib/accent";
+import { Meter } from "@pickler/ui";
 import styles from "../agents.module.css";
 import { formatInteger, initials } from "../lib/format";
 
@@ -108,19 +109,11 @@ export function CurveProgress({
   const ratio = graduated ? 1 : Math.min(1, target > 0 ? token.raised / target : 0);
   return (
     <span className={className}>
-      <span
-        className={styles.bar}
-        role="progressbar"
-        aria-label="Progress to graduation"
-        aria-valuemin={0}
-        aria-valuemax={100}
-        aria-valuenow={Math.round(ratio * 100)}
-      >
-        <span
-          className={`${styles.barFill} ${graduated ? styles.barGraduated : styles.barCurve}`}
-          style={{ width: `${ratio * 100}%` }}
-        />
-      </span>
+      <Meter
+        value={ratio * 100}
+        tone={graduated ? "lime" : "amber"}
+        label="Progress to graduation"
+      />
       {!bareBar && (
         <span className={styles.curveNote}>
           {graduated

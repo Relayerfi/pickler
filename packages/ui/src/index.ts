@@ -2,3 +2,4 @@ export { Button, ButtonLink, type ButtonSize, type ButtonVariant } from "./butto
 export { BarChart, CandleChart, type Bar, type Candle } from "./chart";
 export { Chip, Tag } from "./chip";
 export { Icon, ICON_NAMES, type IconName } from "./icon";
+export { Meter, type MeterTone } from "./meter";

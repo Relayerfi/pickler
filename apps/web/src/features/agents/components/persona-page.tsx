@@ -2,7 +2,7 @@
 
 import type { AgentPersonaDto } from "@pickler/api-schema";
 import Link from "next/link";
-import { Icon } from "@pickler/ui";
+import { Icon, Meter } from "@pickler/ui";
 import { useState } from "react";
 import { accentVars } from "@/lib/accent";
 import styles from "../agents.module.css";
@@ -167,12 +167,7 @@ export function PersonaPage({ persona, nowMs }: { persona: AgentPersonaDto; nowM
                   <div key={meter.label} className={styles.meter}>
                     <dt>{meter.label}</dt>
                     <dd>
-                      <span className={styles.bar}>
-                        <span
-                          className={`${styles.barFill} ${styles.barCurve}`}
-                          style={{ width: `${meter.value}%` }}
-                        />
-                      </span>
+                      <Meter value={meter.value} tone="amber" />
                     </dd>
                   </div>
                 ))}
