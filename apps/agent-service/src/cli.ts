@@ -15,6 +15,14 @@ if (command === "init") {
   console.log(
     "Created .env with distinct local tokens. Fill in database connection URLs and the four provider variables before starting.",
   );
+} else if (command === "concurrency") {
+  const databaseUrl = process.env.DATABASE_URL;
+  if (!databaseUrl) {
+    throw new Error("DATABASE_URL is required for the operator command");
+  }
+  const { setConcurrency } = await import("./composition/set-concurrency");
+  await setConcurrency(databaseUrl, Number(args[0]), Number(args[1]));
+  console.log("Shared concurrency policy updated; active research was not aborted.");
 } else {
   const tenant = args[0] ?? "alpha";
   if (!["alpha", "beta"].includes(tenant)) {

@@ -34,6 +34,7 @@ export function createApi(deps: {
   tokens: Record<string, string>;
   checkConnections(): Promise<unknown>;
   notifyQueued?(): Promise<void>;
+  checkPlugin?(scope: { tenantId: string; agentId: string }, plugin: string): Promise<unknown>;
 }) {
   const api = new Hono<{ Variables: { tenant: string } }>();
   api.use("*", bodyLimit({ maxSize: 16_384 }));
@@ -130,6 +131,17 @@ export function createApi(deps: {
     const { paused } = pauseSchema.parse(await c.req.json());
     await repo.pause({ tenantId: c.get("tenant"), agentId: c.req.param("id") }, paused);
     return c.json({ ok: true });
+  });
+  api.post("/agents/:id/plugins/:plugin/check", async (c) => {
+    if (!deps.checkPlugin) {
+      throw new PilotError("PLUGIN_NOT_CONFIGURED", "Plugin checks unavailable");
+    }
+    return c.json(
+      await deps.checkPlugin(
+        { tenantId: c.get("tenant"), agentId: c.req.param("id") },
+        c.req.param("plugin"),
+      ),
+    );
   });
   // Explicit operator-triggered paid diagnostics; never called at startup.
   api.post("/connections/check", async (c) => c.json(await deps.checkConnections()));

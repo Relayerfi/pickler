@@ -1,4 +1,13 @@
-export const TOOL_NAMES = ["searchWeb", "readPage", "getMarketRules", "getOrderBook"] as const;
+import type { PluginConfig } from "./plugins.js";
+import type { ResearchReport, SportsContext } from "./nfl.js";
+export const TOOL_NAMES = [
+  "searchWeb",
+  "readPage",
+  "getMarketRules",
+  "getOrderBook",
+  "getSportsContext",
+  "getExternalOdds",
+] as const;
 export type ToolName = (typeof TOOL_NAMES)[number];
 export const MAX_LIMITS = {
   searches: 3,
@@ -9,7 +18,16 @@ export const MAX_LIMITS = {
   dailyRuns: 6,
 } as const;
 export type ResearchLimits = { [K in keyof typeof MAX_LIMITS]: number };
+export interface DiscoveryPolicy {
+  version: 1;
+  mode: "open-market" | "pre-event";
+  minLeadMinutes: number;
+  maxHorizonDays: number;
+}
 export interface AgentConfig {
+  plugins?: PluginConfig | undefined;
+  researchProtocol?: "nfl-winner-v1" | undefined;
+  discoveryPolicy?: DiscoveryPolicy | undefined;
   limits: ResearchLimits;
   profile: string;
   categoryIds: string[];
@@ -45,6 +63,10 @@ export interface Market {
   categoryIds: string[];
   active: boolean;
   closesAt: string | null;
+  startsAt?: string | null;
+  timingSource?: string | null;
+  sportsMarketType?: string | null;
+  resolutionUrls?: string[];
   liquidity: number;
   outcomes: { id: string; label: string }[];
 }
@@ -65,7 +87,11 @@ export interface Source {
   publishedAt: string | null;
   provider: string;
   truncated: boolean;
+  pluginVersion?: string;
+  externalId?: string;
   providerUsage?: unknown;
+  requestedUrl?: string;
+  provenance?: "search" | "resolution-rule-link";
 }
 
 export interface LegacyDecision {
@@ -99,6 +125,7 @@ export interface ModelAssessment extends Omit<LegacyDecision, "estimatedProbabil
   probability: { lower: number; estimate: number; upper: number } | null;
   uncertaintyLevel: "LOW" | "MEDIUM" | "HIGH";
   missingInformation: string[];
+  report?: ResearchReport;
 }
 export type PolicyReason =
   | "MODEL_ABSTAINED"
@@ -119,7 +146,12 @@ export interface DecisionV2 extends LegacyDecision {
     evaluatedAt: string;
   };
 }
-export type Decision = LegacyDecision | DecisionV2;
+export interface DecisionV3 extends Omit<DecisionV2, "schemaVersion"> {
+  schemaVersion: 3;
+  forecast: ResearchReport["forecast"];
+  coverage: ResearchReport["sections"];
+}
+export type Decision = LegacyDecision | DecisionV2 | DecisionV3;
 
 export interface RunRecord extends Scope {
   id: string;
@@ -157,12 +189,18 @@ export interface PageReader {
 
 export interface MarketData {
   categories(signal: AbortSignal): Promise<Category[]>;
-  list(categoryIds: string[], signal: AbortSignal): Promise<Market[]>;
+  list(
+    categoryIds: string[],
+    signal: AbortSignal,
+    report?: (data: unknown) => Promise<void>,
+  ): Promise<Market[]>;
   get(id: string, signal: AbortSignal): Promise<Market>;
   book(outcomeId: string, signal: AbortSignal): Promise<OrderBook>;
 }
 
 export interface ResearchTools {
+  getSportsContext(): Promise<SportsContext>;
+  getExternalOdds(): Promise<SportsContext>;
   searchWeb(query: string, intent: "supporting" | "contradicting"): Promise<Source[]>;
   readPage(url: string): Promise<Source>;
   getMarketRules(): Promise<Market>;
@@ -184,19 +222,31 @@ export interface ResearchModel {
     signal: AbortSignal,
     limits: ResearchLimits,
     now: string,
+    onDiagnostic?: (data: unknown) => Promise<void>,
   ): Promise<{ marketId: string; reason: string; usage: unknown }>;
   research(input: {
     market: Market;
+    protocol?: "nfl-winner-v1";
+    availability?: Record<string, string>;
     profile: string;
     tools: Partial<ResearchTools>;
     signal: AbortSignal;
     limits: ResearchLimits;
     onUsage(usage: unknown): Promise<void>;
+    beforeStep?(): Promise<void>;
+    onDiagnostic?(data: unknown): Promise<void>;
+    evidence?(): { sources: Source[]; quotes: OrderBook[] };
+    selectionSteps?: number;
   }): Promise<{ decision: ModelAssessment; usage: unknown }>;
   metadata(): {
     model: string;
     provider: string;
-    prompts: { research: PromptSnapshot; marketSelection: PromptSnapshot };
+    prompts: {
+      research: PromptSnapshot;
+      marketSelection: PromptSnapshot;
+      decision?: PromptSnapshot;
+      nflDecision?: PromptSnapshot;
+    };
   };
 }
 
@@ -211,6 +261,9 @@ export interface ResearchRepository {
   events(tenantId: string, runId: string): Promise<RunEvent[]>;
   event(run: RunRecord, type: string, data: unknown, now: number): Promise<void>;
   claim(now: number): Promise<RunRecord | null>;
+  assertOwnership(run: RunRecord): Promise<void>;
+  renew(run: RunRecord): Promise<void>;
+  setConcurrency(globalLimit: number, tenantLimit: number): Promise<void>;
   finish(
     run: RunRecord,
     decision: Decision | null,
@@ -262,6 +315,36 @@ export function assertUncertaintyPolicy(policy: UncertaintyPolicy): void {
 }
 
 export function assertConfig(config: AgentConfig): void {
+  const discovery = config.discoveryPolicy;
+  if (
+    config.researchProtocol &&
+    (config.researchProtocol !== "nfl-winner-v1" || discovery?.mode !== "pre-event")
+  ) {
+    throw new PilotError("INVALID_INPUT", "NFL research requires pre-event discovery");
+  }
+  if (
+    discovery &&
+    (discovery.version !== 1 ||
+      !["open-market", "pre-event"].includes(discovery.mode) ||
+      !Number.isInteger(discovery.minLeadMinutes) ||
+      discovery.minLeadMinutes < 15 ||
+      discovery.minLeadMinutes > 1440 ||
+      !Number.isInteger(discovery.maxHorizonDays) ||
+      discovery.maxHorizonDays < 1 ||
+      discovery.maxHorizonDays > 7)
+  ) {
+    throw new PilotError("INVALID_INPUT", "Invalid discovery policy");
+  }
+  if (
+    config.plugins &&
+    (config.plugins.version !== 1 ||
+      new Set(config.plugins.enabled).size !== config.plugins.enabled.length ||
+      config.plugins.enabled.some(
+        (id) => !["polymarket", "exa", "balldontlie", "the-odds-api", "paper-trading"].includes(id),
+      ))
+  ) {
+    throw new PilotError("INVALID_INPUT", "Invalid plugin configuration");
+  }
   assertUncertaintyPolicy(config.uncertaintyPolicy ?? DEFAULT_UNCERTAINTY_POLICY);
   if (
     !config.limits ||
@@ -294,7 +377,8 @@ export function assertConfig(config: AgentConfig): void {
 }
 
 export interface ModelFailureDetails {
-  stage: "selection" | "research";
+  stage: "selection" | "research" | "decision";
+  validation?: { code: string; path: string }[];
   statusCode?: number;
   finishReason?: string;
   inputTokens?: number;
