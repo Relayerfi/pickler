@@ -1,5 +1,5 @@
 import styles from "../auth.module.css";
-import { iconStyle } from "../lib/icons";
+import { Icon } from "@pickler/ui";
 
 export type DoneState =
   { kind: "ready"; handle: string; returning: boolean } | { kind: "confirm_email"; email: string };
@@ -10,11 +10,7 @@ export function DoneView({ state }: { state: DoneState }) {
     <main className={styles.done}>
       <div className={styles.doneBox} role="status">
         <span className={styles.doneBadge}>
-          <span
-            className={styles.icon}
-            style={iconStyle(confirm ? "mail" : "check")}
-            aria-hidden="true"
-          />
+          <Icon name={confirm ? "mail" : "check"} size={20} />
         </span>
         <p className={styles.eyebrow}>
           {confirm ? "ONE MORE STEP" : state.returning ? "SIGNED IN" : "ACCOUNT CREATED"}
@@ -31,7 +27,7 @@ export function DoneView({ state }: { state: DoneState }) {
           // The studio is not built yet; the button stays visible but inactive.
           <button type="button" className={styles.primary} disabled aria-describedby="studio-soon">
             Open the studio
-            <span className={styles.icon} style={iconStyle("arrow")} aria-hidden="true" />
+            <Icon name={"arrow"} size={16} />
           </button>
         )}
         <p id="studio-soon" className={styles.doneFoot}>

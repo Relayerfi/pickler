@@ -2,7 +2,7 @@
 
 Read [the root instructions](../../AGENTS.md) first. Read the web app's local instructions when changing consumption there. Update this file when components, styling exports, or client boundaries change.
 
-`@pickler/ui` contains product-independent React components and the control system both surfaces share. Current files are `src/button.tsx`, `src/chip.tsx`, `src/index.ts`, and `src/styles.css`. The package exports `Button`, `ButtonLink`, `Chip`, `Tag` and the stylesheet `@pickler/ui/styles.css`. The web root layout imports that stylesheet.
+`@pickler/ui` contains product-independent React components and the control system both surfaces share. Current files are `src/button.tsx`, `src/chip.tsx`, `src/icon.tsx`, `src/index.ts`, and `src/styles.css`. The package exports `Button`, `ButtonLink`, `Chip`, `Tag`, `Icon` and the stylesheet `@pickler/ui/styles.css`. The web root layout imports that stylesheet.
 
 ## The control system
 
@@ -12,6 +12,7 @@ One set of shapes, two surfaces. The public site and the creator console share r
 - **Surfaces:** put `data-surface="public"` or `data-surface="console"` on a wrapper. Public is Space Grotesk on the blue-ink background; console is Manrope on near-black. Public is the default.
 - **Type:** display (Chakra Petch) is for the lead figure of a view — a token price, a wallet balance. Mono (JetBrains Mono) is for tabular data, labels, tickers, addresses and timestamps. Everything else uses the surface font.
 - **Buttons:** one `primary` per view, and never two filled buttons side by side — pair `primary` with `secondary`. `tile` is the rectangular action used in console grids. Sizes are `sm`, `md` and `lg`; `mono` switches the label to uppercase mono for navigation and utility actions.
+- **Icons:** `Icon` carries the set drawn in the design canvases — no icon library. They are 24×24 stroke paths with a 1.9 weight and round joins, coloured by `currentColor`. Add a new one to `src/icon.tsx` on the same grid rather than importing a package, and pass `label` whenever the icon is the only content of a control.
 - New controls use these components. Feature stylesheets may keep their own layout, but not their own shapes.
 
 - Keep components independent of Next.js, core, infrastructure, authentication, wallets, and provider services.

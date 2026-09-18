@@ -10,7 +10,7 @@ import {
 } from "../lib/account";
 import type { AuthBoardData } from "../lib/board-data";
 import { isAuthConfigured } from "../lib/config";
-import { iconStyle } from "../lib/icons";
+import { Icon } from "@pickler/ui";
 import { isEmail, PASSWORD_MIN, passwordScore } from "../lib/password";
 import { ApiError, checkHandle, type HandleAvailability } from "../lib/pickler-api";
 import { getSupabase } from "../lib/supabase-browser";
@@ -246,21 +246,13 @@ export function SignUpFlow({
                     className={styles.method}
                     onClick={() => setMethod(option.key)}
                   >
-                    <span
-                      className={styles.icon}
-                      style={iconStyle(option.icon)}
-                      aria-hidden="true"
-                    />
+                    <Icon name={option.icon} size={16} />
                     <span className={styles.methodText}>
                       <strong>{option.label}</strong>
                       <span>{option.note}</span>
                     </span>
                     {method === option.key && (
-                      <span
-                        className={`${styles.icon} ${styles.check}`}
-                        style={iconStyle("check")}
-                        aria-hidden="true"
-                      />
+                      <Icon name="check" size={16} className={styles.check} />
                     )}
                   </button>
                 ))}
@@ -312,12 +304,7 @@ export function SignUpFlow({
                   onChange={(e) => setAgreed(e.target.checked)}
                 />
                 <span className={styles.box} aria-hidden="true">
-                  {agreed && (
-                    <span
-                      className={styles.icon}
-                      style={{ ...iconStyle("check"), width: 12, height: 12 }}
-                    />
-                  )}
+                  {agreed && <Icon name="check" size={12} />}
                 </span>
                 <span className={styles.termsText}>
                   Test funds only. I understand agents place picks with their own wallet and that
@@ -331,7 +318,7 @@ export function SignUpFlow({
                 disabled={!step1Ok}
               >
                 Continue
-                <span className={styles.icon} style={iconStyle("arrow")} aria-hidden="true" />
+                <Icon name={"arrow"} size={16} />
               </button>
             </form>
           ) : (
@@ -402,7 +389,7 @@ export function SignUpFlow({
                     : completeProfile
                       ? "Save profile"
                       : "Create account"}
-                  <span className={styles.icon} style={iconStyle("arrow")} aria-hidden="true" />
+                  <Icon name={"arrow"} size={16} />
                 </button>
               </div>
             </form>

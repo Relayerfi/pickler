@@ -378,16 +378,17 @@
 }
 
 .cardFoot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 14px;
   margin-top: auto;
   padding: 0 18px 16px;
-  align-items: flex-end;
-  border-radius: var(--pk-radius-lg);
 }
 
 .cardHead {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
+  align-items: flex-start;
   gap: 11px;
   margin-bottom: 14px;
 }
@@ -396,13 +397,13 @@
   display: grid;
   flex: none;
   place-items: center;
-  width: 38px;
-  height: 38px;
+  width: 40px;
+  height: 40px;
   background: rgba(var(--accent-rgb), 0.14);
   border: 1px solid rgba(var(--accent-rgb), 0.45);
+  border-radius: var(--pk-radius-md);
   font: 700 13px/1 var(--mono);
   color: var(--accent);
-  border-radius: var(--pk-radius-md);
 }
 
 .avatarLarge {
@@ -412,7 +413,7 @@
 }
 
 .cardName {
-  flex: 1 1 120px;
+  flex: 1 1 auto;
   min-width: 0;
 }
 
@@ -425,7 +426,7 @@
   letter-spacing: -0.02em;
 }
 
-.cardName span {
+.cardName > span {
   display: block;
   margin-top: 2px;
   font: 500 12px/1.3 var(--mono);
@@ -434,13 +435,14 @@
 
 .stage {
   flex: none;
-  padding: 5px 9px;
-  background: rgba(90, 216, 255, 0.12);
-  border: 1px solid rgba(90, 216, 255, 0.4);
-  font: 700 10.5px/1 var(--mono);
-  letter-spacing: 0.06em;
-  color: var(--cyan-ink);
+  padding: 4px 9px;
+  background: rgba(255, 201, 63, 0.12);
+  border: 1px solid rgba(255, 201, 63, 0.45);
   border-radius: var(--pk-radius-pill);
+  font: 700 9.5px/1 var(--mono);
+  letter-spacing: 0.06em;
+  color: #ffc93f;
+  white-space: nowrap;
 }
 
 .stageGraduated {
@@ -537,12 +539,16 @@
 
 .cardCta {
   flex: none;
-  padding: 10px 15px;
-  background: rgba(245, 246, 255, 0.09);
-  border: 1px solid rgba(245, 246, 255, 0.26);
-  font: 500 11.5px/1 var(--mono);
-  letter-spacing: 0.08em;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 13px 18px;
+  background: rgba(90, 216, 255, 0.1);
+  border: 1px solid rgba(90, 216, 255, 0.5);
   border-radius: var(--pk-radius-pill);
+  font: 600 12.5px/1 var(--body);
+  letter-spacing: 0;
+  color: var(--cyan-ink);
 }
 
 .empty {
@@ -1491,6 +1497,7 @@
 .marks {
   display: flex;
   flex: none;
+  justify-content: flex-end;
   gap: 5px;
 }
 
@@ -2402,4 +2409,20 @@
   width: 13px;
   height: 13px;
   object-fit: contain;
+}
+
+.page a.cardCta:hover {
+  background: rgba(90, 216, 255, 0.2);
+  border-color: var(--cyan);
+  color: var(--cyan-ink);
+}
+
+/* The avatar keeps its small circle in rows, where it reads as a marker rather than a tile. */
+.avatarSmall {
+  border-radius: var(--pk-radius-pill);
+}
+
+.page a.cardCta,
+.page a.cardCta:hover .cardCta {
+  color: var(--cyan-ink);
 }

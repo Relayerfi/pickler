@@ -8,7 +8,7 @@ import styles from "../auth.module.css";
 import { ensureProfile, signInWithWallet, type AccountResult } from "../lib/account";
 import type { AuthBoardData } from "../lib/board-data";
 import { isAuthConfigured } from "../lib/config";
-import { iconStyle } from "../lib/icons";
+import { Icon } from "@pickler/ui";
 import { getSupabase } from "../lib/supabase-browser";
 import { AuthHeader } from "./auth-header";
 import { BoardNow } from "./board-now";
@@ -117,7 +117,7 @@ export function SignInCard({ board }: { board: AuthBoardData }) {
                 }
               }}
             >
-              <span className={styles.icon} style={iconStyle("wallet")} aria-hidden="true" />
+              <Icon name={"wallet"} size={16} />
               {busy === "wallet" ? "Waiting for your wallet…" : "Sign in with a wallet"}
             </button>
             <p className={styles.divider}>OR WITH EMAIL</p>
