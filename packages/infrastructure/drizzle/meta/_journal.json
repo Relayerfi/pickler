@@ -8,6 +8,20 @@
       "when": 1789550714820,
       "tag": "0000_research_persistence",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1789700525874,
+      "tag": "0001_product_schemas",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1789700530416,
+      "tag": "0002_product_functions_and_grants",
+      "breakpoints": true
     }
   ]
 }

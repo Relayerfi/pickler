@@ -6,8 +6,25 @@ Drizzle in packages/infrastructure owns Pickler migrations. Do not duplicate its
 
 Use root npm scripts supabase:start, supabase:stop, supabase:status, db:migrate and test:supabase. Stop without deleting volumes. Generated .temp and .branches content must remain ignored. Never commit environment files or copy generated keys into documentation.
 
-## Hosted project (pending reconciliation)
+## Product schemas and the hosted project
 
-A hosted Supabase project (`pickler`, us-east-1) exists and already carries the product schemas the web app reads: `identity`, `agents`, `budget`, `audit`, `growth` and `market`. They were written as SQL migrations with the Supabase CLI and applied there after verification on a Supabase branch, before Drizzle was adopted as the single migration tool. The SQL is kept in `migrations/` as the record of what the hosted database contains.
+The product schemas the web app reads (`identity`, `agents`, `budget`, `audit`, `growth`, `market`)
+are defined in `packages/infrastructure/src/persistence/product/` and applied by the same Drizzle
+pipeline as the research tables: `npm run db:generate` writes the SQL, `npm run db:migrate` applies
+it. `drizzle/0002_product_functions_and_grants.sql` is a custom migration for what Drizzle does not
+model: the `internal` helper schema, triggers, deferrable foreign keys, the references to
+`auth.users`, the security-definer functions the web app calls, and the grants. It detects whether
+Supabase roles and `auth.users` exist, so the same migration runs on the local Docker PostgreSQL and
+on Supabase.
 
-Do not apply that SQL from here and do not add new SQL beside it. Migrating those schemas into `packages/infrastructure/src/persistence/schema.ts` (with custom Drizzle migrations for the security-definer functions, triggers and grants that Drizzle does not model) is infrastructure's call. Until that happens, treat the hosted schemas as read-only history: the connection URLs and the service key belong to the operator and are never committed.
+There is no SQL in this directory any more. Never apply schema changes from here.
+
+A hosted Supabase project (`pickler`, us-east-1) exists and currently carries those schemas from the
+earlier CLI-based migrations. Before Drizzle owns it end to end, the six schemas must be dropped
+there and `npm run db:migrate` run against the project's direct or session connection URL, never the
+transaction pooler. The database holds no rows yet. Connection URLs and the service key belong to
+the operator and are never committed.
+
+Data API: the hosted project exposes `identity`, `agents`, `budget`, `audit`, `growth` and `market`
+so the service role can read them over PostgREST. Never expose `internal`, `pickler`,
+`pickler_migrations` or `mastra`.
