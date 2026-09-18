@@ -6,18 +6,71 @@ Read [the root instructions](../../AGENTS.md) first. Before changing a dependenc
 
 `@pickler/web` is the Next.js App Router application. It owns presentation, HTTP transport, and the server composition root. Business logic and provider implementations live in separate workspace packages so the backend can later move to `apps/api`.
 
-The current app contains a landing page, a shared `Button`, and `GET /api/v1/health`. The endpoint calls an injected system clock through a use case. It is a liveness check, not a check of databases or external services. Authentication, persistence, providers, and wallet functionality are not implemented.
+The app serves the Pickler landing page ("Pickler Landing" design canvas), the creator application at `/apply` ("Pickler Join" canvas), the token board at `/tokens`, token pages at `/tokens/[ticker]`, pick pages at `/tokens/[ticker]/picks/[pickId]`, agent pages at `/agents/[handle]`, `/analytics` and `/leaderboard` ("Pickler Public" canvas), `GET /api/v1/health`, `GET /api/v1/landing`, `POST /api/v1/waitlist`, `GET|POST /api/v1/applications`, and `GET /api/v1/tickers/availability`. Health is a liveness check, not a check of databases or external services. Authentication and wallet functionality are not implemented.
+
+Auth screens ("Pickler Sign Up" canvas): `/signup` (method + email/password + terms, then name + @handle) and `/signin` (wallet or email), under `app/(auth)` with Manrope and `noindex`. They are not linked from the landing while the waitlist is the public entry point. Authentication uses Supabase Auth in the browser (`@supabase/ssr`, publishable key; wallet sign-in is Sign-In with Ethereum via `signInWithWeb3`). Name and handle are stored through the API worker (`GET /v1/handles/:handle/availability`, `GET|POST /v1/profile`), never written from the browser to the database. With email confirmation on, the details wait in user metadata and the profile is created on first sign-in; `/signup?complete=1` finishes a profile for a signed-in user. Without `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` and `NEXT_PUBLIC_PICKLER_API_URL` the screens render with a "not connected" notice and cannot submit. "Open the studio" is disabled until the studio exists.
+
+Apply flow: a new waitlist signup sets the httpOnly `pk_apply` cookie (`src/server/http/apply-cookie.ts`) holding the seat's apply token, and the landing form redirects to `/apply`. The token is a bearer secret: keep it out of URLs, logs, and client code. `/apply` shows the form, the submitted state with referral sharing, or a "get in line first" screen without a seat. Share links are `/?ref=<code>`; the landing form forwards `ref` on signup. A repeat signup for the same email gets the cookie only from the browser that already holds it. Sending the "come back" and invite emails is not implemented.
+
+Public pages, and which product each one is about:
+
+- `/tokens` — the token board. Filters (`stage`, `sort`, `q`, `view`) live in the URL and are applied client-side over the full list. Cards carry the chain marks: the Pickler curve on Monad before graduation, Pons on Robinhood Chain after it.
+- `/tokens/[ticker]` — the token: chart, buy panel, and what the agent is buying. The ticker slug is the ticker without `$`, lower-cased (`/tokens/half`). The buy panel shows a quote only; its button stays disabled until launcher contracts and wallet connection exist.
+- `/tokens/[ticker]/picks/[pickId]` — one pick with its receipt and trail.
+- `/agents/[handle]` — the agent itself: decisions, how it thinks, record and paid answers. Addressed by Pickler handle, the namespace shared with people (`identity.handles`). `/agents` redirects to the leaderboard.
+- `/analytics` — platform activity (`?range=7d|30d|90d`, read on the server).
+- `/leaderboard` — ranked by calibration, with the published weights and the said-vs-happened plot.
+
+Buying a token never funds the agent's budget, and the agent's budget never buys its token; keep that separation in the copy and in the links.
+
+Data source, chosen in `src/server/config.ts`: `PICKLER_DATA_SOURCE=supabase` with `SUPABASE_URL` and `SUPABASE_SECRET_KEY` reads Supabase; otherwise the app serves labelled sample data and an in-memory waitlist. See `.env.example`. The page renders the snapshot on the server, and `LandingDataProvider` refreshes it from `/api/v1/landing` every 30 seconds while the tab is visible.
 
 ```text
 src/
   app/
     layout.tsx                 # Root layout and global/shared styles
-    page.tsx                   # Server Component landing page
-    globals.css                # Application-specific styles
+    page.tsx                   # Server Component: loads the landing snapshot
+    error.tsx                  # Fallback when the data source fails
+    globals.css                # Base styles
     api/v1/health/route.ts      # HTTP presentation adapter
+    api/v1/landing/route.ts     # Landing snapshot DTO, short shared cache
+    api/v1/waitlist/route.ts    # Waitlist signup; sets the apply cookie
+    api/v1/applications/route.ts        # Read or submit the cookie holder's application
+    api/v1/tickers/availability/route.ts # Ticker availability check
+    apply/page.tsx             # Creator application
+    tokens/page.tsx            # Token board
+    tokens/[ticker]/page.tsx   # One token: chart, buy panel, its calls
+    tokens/[ticker]/picks/[pickId]/page.tsx # Pick detail
+    agents/page.tsx            # Redirect to the leaderboard
+    agents/[handle]/page.tsx   # The agent: decisions, thinking, record, answers
+    analytics/page.tsx         # Platform analytics
+    leaderboard/page.tsx       # Ranking and reputation weights
+    not-found.tsx
+  features/auth/
+    components/                # Sign-up flow, sign-in card, done view, side panels
+    lib/                       # Supabase browser client, Pickler API client, account flows, password meter
+    auth.module.css
+  features/agents/
+    components/                # Token board and page, agent page, analytics, leaderboard, activity row, chart, buy panel, pick detail, nav shell
+    lib/                       # Board filters (server-safe), formatting, reputation wording
+    agents.module.css
+  features/apply/
+    components/                # Form, submitted view, no-seat screen
+    lib/options.ts             # Category and personality swatches, ticker helpers
+    apply.module.css
+  features/landing/
+    components/                # Sections; client components read LandingDataProvider
+    lib/                       # Data provider, accents, formatting
+    landing.module.css         # Design tokens, layout, animations
   server/
+    config.ts                  # Data-source selection from environment
     container.ts               # Protected composition root
+    http/                      # DTO mapping, apply cookie, JSON body parsing, safe error responses
+  lib/accent.ts                # Accent colour custom properties shared by features
+public/brand/                  # Logo, mascot and chain marks (Monad, Pons, Robinhood) exported from the design
 ```
+
+In sample mode the in-memory store is pinned to `globalThis`, because Next.js loads pages and route handlers as separate module instances. Animations pause for `prefers-reduced-motion`. Sample data shows a "SAMPLE DATA" tag in the footer; keep that label whenever sample data is served.
 
 ## Three-layer rules
 
@@ -172,3 +225,13 @@ npm run build --workspace=@pickler/web
 ```
 
 Use root `npm run build` and `npm run typecheck` when validating changes across packages. For behavior changes, verify affected HTTP methods, runtime input rejection, safe failures, caching, and the UI flow as applicable. The existing health test covers core behavior only; it is not an end-to-end test suite.
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->
