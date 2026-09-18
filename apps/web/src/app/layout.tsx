@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Chakra_Petch, JetBrains_Mono, Space_Grotesk } from "next/font/google";
+import { Chakra_Petch, JetBrains_Mono, Manrope } from "next/font/google";
 import type { ReactNode } from "react";
 import "@pickler/ui/styles.css";
 import "./globals.css";
@@ -10,9 +10,9 @@ const display = Chakra_Petch({
   variable: "--font-display",
   display: "swap",
 });
-const body = Space_Grotesk({
+const body = Manrope({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["400", "500", "600", "700", "800"],
   variable: "--font-body",
   display: "swap",
 });

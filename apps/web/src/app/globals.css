@@ -12,7 +12,7 @@ body {
   margin: 0;
   background: #05061a;
   color: #f5f6ff;
-  font-family: var(--font-body), "Space Grotesk", system-ui, sans-serif;
+  font-family: var(--font-body), Manrope, system-ui, sans-serif;
 }
 
 button,

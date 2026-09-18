@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { Icon } from "@pickler/ui";
 import type { ReactNode } from "react";
 import styles from "../apply.module.css";
 
@@ -27,7 +28,7 @@ export function ApplyShell({ children }: { children: ReactNode }) {
           </Link>
           <span className={styles.headerTag}>CLOSED TESTNET</span>
           <Link href="/" className={styles.headerLink}>
-            ← THE BOARD
+            <Icon name="arrowLeft" size={14} /> THE BOARD
           </Link>
         </div>
       </header>

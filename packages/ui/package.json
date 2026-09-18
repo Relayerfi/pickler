@@ -13,7 +13,9 @@
   "devDependencies": {
     "@pickler/typescript-config": "*"
   },
-  "dependencies": {},
+  "dependencies": {
+    "lucide-react": "^1.47.0"
+  },
   "peerDependencies": {
     "react": "^19.0.0",
     "react-dom": "^19.0.0"

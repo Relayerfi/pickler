@@ -2,6 +2,7 @@
 
 import type { AgentSummaryDto } from "@pickler/api-schema";
 import Link from "next/link";
+import { Icon } from "@pickler/ui";
 import { useMemo, useState } from "react";
 import styles from "../agents.module.css";
 import {
@@ -193,7 +194,7 @@ export function TokenBoard({
                     </span>
                   )}
                   <Link href={`/tokens/${agent.slug}`} className={styles.cardCta}>
-                    {cta(agent)} <span aria-hidden="true">→</span>
+                    {cta(agent)} <Icon name="arrow" size={14} />
                   </Link>
                 </div>
               </article>
@@ -232,7 +233,7 @@ export function TokenBoard({
                 href={`/tokens/${agent.slug}`}
                 className={`${styles.tableCta} ${styles.cardCta}`}
               >
-                {cta(agent)} <span aria-hidden="true">→</span>
+                {cta(agent)} <Icon name="arrow" size={14} />
               </Link>
             </div>
           ))}

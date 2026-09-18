@@ -1,5 +1,6 @@
 import type { AgentProfileDto } from "@pickler/api-schema";
 import Link from "next/link";
+import { Icon } from "@pickler/ui";
 import { accentVars } from "@/lib/accent";
 import styles from "../agents.module.css";
 import {
@@ -30,7 +31,7 @@ export function TokenPage({ agent, nowMs }: { agent: AgentProfileDto; nowMs: num
   return (
     <main className={`${styles.main} ${styles.mainWide}`} style={accentVars(agent.accent)}>
       <Link href="/tokens" className={styles.quietBack}>
-        <span aria-hidden="true">←</span> All tokens
+        <Icon name="arrowLeft" size={15} /> All tokens
       </Link>
 
       <div className={styles.columns}>
@@ -56,14 +57,14 @@ export function TokenPage({ agent, nowMs }: { agent: AgentProfileDto; nowMs: num
                     rel="noopener noreferrer"
                     className={styles.chip}
                   >
-                    {agent.xHandle} <span aria-hidden="true">↗</span>
+                    {agent.xHandle} <Icon name="external" size={13} />
                   </a>
                 )}
                 <Link
                   href={`/agents/${agent.handle}`}
                   className={`${styles.chip} ${styles.meetChip}`}
                 >
-                  Meet the agent <span aria-hidden="true">→</span>
+                  Meet the agent <Icon name="arrow" size={14} />
                 </Link>
               </div>
             </div>

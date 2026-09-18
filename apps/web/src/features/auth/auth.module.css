@@ -15,7 +15,7 @@
   --amber: #ffc93f;
   --magenta: #ff5fa2;
   --display: var(--font-display), "Chakra Petch", sans-serif;
-  --body: var(--font-manrope), Manrope, sans-serif;
+  --body: var(--font-body), Manrope, sans-serif;
   --mono: var(--font-mono), "JetBrains Mono", monospace;
 
   position: relative;

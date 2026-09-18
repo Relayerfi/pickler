@@ -1,5 +1,6 @@
 import type { PickDetailDto } from "@pickler/api-schema";
 import Link from "next/link";
+import { Icon } from "@pickler/ui";
 import { accentVars } from "@/lib/accent";
 import styles from "../agents.module.css";
 import {
@@ -38,7 +39,7 @@ export function PickDetail({ pick, nowMs }: { pick: PickDetailDto; nowMs: number
   return (
     <main className={`${styles.main} ${styles.mainNarrow}`}>
       <Link href={`/tokens/${pick.agent.slug}`} className={styles.backLink}>
-        ← {pick.agent.name.toUpperCase()}
+        <Icon name="arrowLeft" size={14} /> {pick.agent.name.toUpperCase()}
       </Link>
 
       <article className={`${styles.glass} ${styles.pickCard}`}>

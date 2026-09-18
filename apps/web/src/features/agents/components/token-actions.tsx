@@ -1,5 +1,6 @@
 "use client";
 
+import { Icon } from "@pickler/ui";
 import { useState } from "react";
 import styles from "../agents.module.css";
 
@@ -29,7 +30,7 @@ export function TokenActions({ address, name }: { address: string | null; name: 
           title={address}
         >
           {copied === "contract" ? "Copied" : shorten(address)}
-          <span aria-hidden="true">⧉</span>
+          <Icon name="copy" size={13} />
         </button>
       )}
       <button

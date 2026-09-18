@@ -9,10 +9,10 @@ Read [the root instructions](../../AGENTS.md) first. Read the web app's local in
 One set of shapes, two surfaces. The public site and the creator console share radii, control sizes and button variants; what changes is tone.
 
 - **Shapes:** pill for actions, chips and status; `--pk-radius-lg` (16) for cards and panels; `--pk-radius-md` (12) for inputs and tiles; `--pk-radius-sm` (6) for small marks. Nothing square. Feature stylesheets use these tokens rather than literal values.
-- **Surfaces:** put `data-surface="public"` or `data-surface="console"` on a wrapper. Public is Space Grotesk on the blue-ink background; console is Manrope on near-black. Public is the default.
-- **Type:** display (Chakra Petch) is for the lead figure of a view — a token price, a wallet balance. Mono (JetBrains Mono) is for tabular data, labels, tickers, addresses and timestamps. Everything else uses the surface font.
+- **Surfaces:** put `data-surface="public"` or `data-surface="console"` on a wrapper. Both use Manrope; what changes is the background and the ink. Public is the blue-ink surface and the default, console is near-black.
+- **Type:** three faces, everywhere. Chakra Petch for titles and the lead figure of a view (a token price, a wallet balance); JetBrains Mono for tabular data, labels, tickers, addresses and timestamps; Manrope for everything else, including every control label.
 - **Buttons:** one `primary` per view, and never two filled buttons side by side — pair `primary` with `secondary`. `tile` is the rectangular action used in console grids. Sizes are `sm`, `md` and `lg`; `mono` switches the label to uppercase mono for navigation and utility actions.
-- **Icons:** `Icon` carries the set drawn in the design canvases — no icon library. They are 24×24 stroke paths with a 1.9 weight and round joins, coloured by `currentColor`. Add a new one to `src/icon.tsx` on the same grid rather than importing a package, and pass `label` whenever the icon is the only content of a control.
+- **Icons:** `Icon` wraps a curated set from `lucide-react`, which matches what the canvases drew by hand: a 24×24 grid, round joins and one stroke weight (1.9 here). Colour comes from `currentColor`, and `label` is required whenever the icon is the only content of a control. Add a name to `src/icon.tsx` rather than importing from `lucide-react` inside a feature — that is how two screens end up with two different arrows.
 - New controls use these components. Feature stylesheets may keep their own layout, but not their own shapes.
 
 - Keep components independent of Next.js, core, infrastructure, authentication, wallets, and provider services.

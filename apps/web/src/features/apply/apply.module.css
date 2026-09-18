@@ -12,7 +12,7 @@
   --cyan: #5ad8ff;
   --magenta: #ff5fa2;
   --display: var(--font-display), "Chakra Petch", sans-serif;
-  --body: var(--font-body), "Space Grotesk", sans-serif;
+  --body: var(--font-body), Manrope, sans-serif;
   --mono: var(--font-mono), "JetBrains Mono", monospace;
 
   position: relative;

@@ -34,10 +34,10 @@
   --pk-duration: 140ms;
 }
 
-/* Public surface: the landing, token and agent pages. Playful, roomier, Space Grotesk. */
+/* Public surface: the landing, token and agent pages. Playful and roomier. */
 [data-surface="public"],
 :root {
-  --pk-font: var(--font-body), "Space Grotesk", sans-serif;
+  --pk-font: var(--font-body), Manrope, sans-serif;
   --pk-font-mono: var(--font-mono), "JetBrains Mono", monospace;
   --pk-ink: #f5f6ff;
   --pk-ink-dim: #c3c9e4;
@@ -48,9 +48,9 @@
   --pk-border-strong: rgba(245, 246, 255, 0.45);
 }
 
-/* Console surface: the creator dashboard. Denser, quieter, Manrope. */
+/* Console surface: the creator dashboard. Denser and quieter. */
 [data-surface="console"] {
-  --pk-font: var(--font-manrope), Manrope, sans-serif;
+  --pk-font: var(--font-body), Manrope, sans-serif;
   --pk-ink: #f3f1ec;
   --pk-ink-dim: #c9c6bf;
   --pk-ink-faint: #8b8880;

@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { Icon } from "@pickler/ui";
 import Link from "next/link";
 import styles from "../landing.module.css";
 import { formatInteger } from "../lib/format";
@@ -51,7 +52,7 @@ export function Nav() {
         <a href="#waitlist" className={styles.navCta}>
           JOIN TESTNET
           <span className={styles.arrowChip} aria-hidden="true">
-            →
+            <Icon name="arrow" size={13} />
           </span>
         </a>
       </div>

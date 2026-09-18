@@ -2,6 +2,7 @@
 
 import type { AgentPersonaDto } from "@pickler/api-schema";
 import Link from "next/link";
+import { Icon } from "@pickler/ui";
 import { useState } from "react";
 import { accentVars } from "@/lib/accent";
 import styles from "../agents.module.css";
@@ -41,7 +42,7 @@ export function PersonaPage({ persona, nowMs }: { persona: AgentPersonaDto; nowM
   return (
     <main className={`${styles.main} ${styles.mainNarrow}`} style={accentVars(persona.accent)}>
       <Link href="/leaderboard" className={styles.backLink}>
-        ← LEADERBOARD
+        <Icon name="arrowLeft" size={14} /> LEADERBOARD
       </Link>
 
       <header className={`${styles.panel} ${styles.personaHero}`}>

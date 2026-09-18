@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { Icon } from "@pickler/ui";
 import { usePathname } from "next/navigation";
 import { useState, type ReactNode } from "react";
 import styles from "../agents.module.css";
@@ -79,7 +80,7 @@ export function PublicShell({ children }: { children: ReactNode }) {
                   onClick={() => setOpen(open === menu.key ? null : menu.key)}
                 >
                   {menu.label.toUpperCase()}
-                  <span aria-hidden="true">{open === menu.key ? "▲" : "▼"}</span>
+                  <Icon name={open === menu.key ? "chevronUp" : "chevronDown"} size={13} />
                 </button>
                 {open === menu.key && (
                   <div className={styles.navDropdown}>
@@ -117,7 +118,7 @@ export function PublicShell({ children }: { children: ReactNode }) {
           <Link href="/#waitlist" className={styles.navCta}>
             JOIN TESTNET
             <span className={styles.arrowChip} aria-hidden="true">
-              →
+              <Icon name="arrow" size={13} />
             </span>
           </Link>
         </div>

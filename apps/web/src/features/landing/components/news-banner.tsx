@@ -1,5 +1,6 @@
 "use client";
 
+import { Icon } from "@pickler/ui";
 import { useState } from "react";
 import styles from "../landing.module.css";
 import { useLanding } from "../lib/landing-data";
@@ -27,7 +28,7 @@ export function NewsBanner() {
         <a href={item.href} className={styles.newsCta}>
           {item.cta}
           <span className={styles.arrowChip} aria-hidden="true">
-            →
+            <Icon name="arrow" size={13} />
           </span>
         </a>
         <button
