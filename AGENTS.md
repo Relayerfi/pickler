@@ -31,7 +31,7 @@ See [README.md](README.md) for setup, [docs/architecture.md](docs/architecture.m
 - Keep Next.js, React, transport objects, database clients, and provider SDKs out of core. Use business-owned interfaces and dependency injection.
 - Keep HTTP DTOs in `api-schema`; keep public on-chain artifacts in `chain`. Neither package carries credentials or server implementation details.
 - Use declared workspace dependencies and public package exports. Do not bypass package boundaries with relative imports into another project's source.
-- The local agent pilot uses Mastra, Exa, Polymarket and PostgreSQL. Provider credentials and the exact OpenAI-compatible model are operator supplied. No real trading, wallets, public login, deployed external queue, contracts or Firecrawl integration exists. A separate local Cloudflare Queue experiment is documented in `apps/agent-service/CLOUDFLARE-BACKGROUND.md`. Do not describe offline tests as a verified live model run.
+- The local agent pilot uses Mastra, Exa, Polymarket and PostgreSQL. Provider credentials and the exact OpenAI-compatible model are operator supplied. An opt-in local Polymarket trading adapter and explicit wallet setup commands are implemented; live-provider acceptance is not established by controlled tests. Public login, deployed external queues, contracts and Firecrawl are not implemented. A separate local Cloudflare Queue experiment is documented in `apps/agent-service/CLOUDFLARE-BACKGROUND.md`. Do not describe offline tests as a verified live model run.
 
 ## Branch and pull request workflow
 
@@ -77,3 +77,5 @@ PostgreSQL is hosted by Supabase in deployed environments. Drizzle and database 
 The full local Supabase stack is configured in `supabase/config.toml`; read `supabase/AGENTS.md` before changing it. Use `npm run supabase:start` and `npm run test:supabase` for the Supabase-specific integration run. Its database uses port 54522; the PostgreSQL-only Docker alternative uses 55432.
 
 Manual paper trading is an opt-in plugin, with no model-executable tool. Read [the simulation guide](apps/agent-service/PAPER-TRADING.md) for permissions, reservations and exclusions.
+
+The local trading pilot is documented in [LIVE-TRADING.md](apps/agent-service/LIVE-TRADING.md). It is disabled by default and is never a model-executable tool. Keep the signing executor Node-only, preserve unknown-order reservations, and do not describe controlled integration tests as actual wallet funding or bets.
