@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import styles from "../agents.module.css";
 import { formatCompact, formatInteger, formatPercent, formatSigned } from "../lib/format";
-import { BarChart } from "@pickler/ui";
+import { BarChart, Chip } from "@pickler/ui";
 import { ActivityRow } from "./activity-row";
 import { AgentAvatar } from "./agent-parts";
 
@@ -96,15 +96,14 @@ export function AnalyticsPage({
             <span className={styles.panelHeadValue}>{series.total}</span>
             <span className={styles.ranges} role="group" aria-label="Range">
               {RANGES.map((range) => (
-                <button
+                <Chip
                   key={range}
-                  type="button"
                   className={styles.rangeButton}
-                  aria-pressed={analytics.range === range}
+                  selected={analytics.range === range}
                   onClick={() => router.push(`/analytics?range=${range}`, { scroll: false })}
                 >
                   {range.toUpperCase()}
-                </button>
+                </Chip>
               ))}
             </span>
           </div>
