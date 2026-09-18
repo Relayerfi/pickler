@@ -148,3 +148,48 @@ export const providerQuotas = pickler
     (t) => [primaryKey({ columns: [t.key, t.windowStart] })],
   )
   .enableRLS();
+
+export const paperOrders = pickler
+  .table(
+    "paper_orders",
+    {
+      id: text("id").primaryKey(),
+      tenantId: text("tenant_id").notNull(),
+      agentId: text("agent_id").notNull(),
+      runId: text("run_id")
+        .notNull()
+        .references(() => runs.id),
+      marketId: text("market_id").notNull(),
+      outcomeId: text("outcome_id").notNull(),
+      requestKey: text("request_key").notNull(),
+      configVersion: integer("config_version").notNull(),
+      status: text("status").notNull(),
+      createdAt: milliseconds("created_at").notNull(),
+      finishedAt: milliseconds("finished_at"),
+      reason: text("reason"),
+      fill: jsonb("fill").$type<import("@pickler/core").PaperFill>(),
+      snapshot: jsonb("snapshot").notNull(),
+      leaseOwner: text("lease_owner"),
+      leaseExpiresAt: milliseconds("lease_expires_at"),
+    },
+    (t) => [
+      foreignKey({
+        columns: [t.tenantId, t.agentId],
+        foreignColumns: [agents.tenantId, agents.id],
+      }),
+      uniqueIndex("one_paper_attempt_per_run").on(t.runId),
+      uniqueIndex("paper_request_identity").on(t.tenantId, t.requestKey),
+      uniqueIndex("one_open_paper_position")
+        .on(t.tenantId, t.agentId, t.marketId)
+        .where(sql`${t.status} in ('pending', 'filled')`),
+      check(
+        "paper_status",
+        sql`${t.status} in ('pending','filled','not_filled','failed','interrupted')`,
+      ),
+      check(
+        "paper_pending_lease",
+        sql`${t.status} <> 'pending' OR (${t.leaseOwner} IS NOT NULL AND ${t.leaseExpiresAt} IS NOT NULL)`,
+      ),
+    ],
+  )
+  .enableRLS();

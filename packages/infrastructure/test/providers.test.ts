@@ -187,3 +187,45 @@ test("discovery shares five pages across categories, preserving verified start a
   ]);
   assert.equal((reports[0] as { exhaustedBudget: boolean }).exhaustedBudget, true);
 });
+
+test("paper conditions require explicit per-market fees and constraints", async () => {
+  const market = {
+    id: "1",
+    question: "Fixture",
+    description: "Fixture full-game rules",
+    active: true,
+    closed: false,
+    outcomes: '["A","B"]',
+    clobTokenIds: '["2","3"]',
+    feesEnabled: true,
+    feeSchedule: { rate: 0.05, exponent: 1, takerOnly: true },
+    orderPriceMinTickSize: 0.01,
+    orderMinSize: 5,
+  };
+  const result = await new PolymarketData(respond(market)).conditions("1", "2", signal());
+  assert.equal(result.feeRate, "0.05");
+  assert.equal(result.minimumNotional, "5");
+  await assert.rejects(
+    new PolymarketData(respond({ ...market, feeSchedule: null })).conditions("1", "2", signal()),
+    { code: "PAPER_INVALID_CONDITIONS" },
+  );
+  await assert.rejects(
+    new PolymarketData(respond({ ...market, orderMinSize: undefined })).conditions(
+      "1",
+      "2",
+      signal(),
+    ),
+    { code: "INVALID_PROVIDER_RESPONSE" },
+  );
+  assert.equal(
+    (
+      await new PolymarketData(
+        respond({ ...market, feesEnabled: false, feeSchedule: null }),
+      ).conditions("1", "2", signal())
+    ).feeRate,
+    "0",
+  );
+  await assert.rejects(new PolymarketData(respond(market)).conditions("1", "999", signal()), {
+    code: "PAPER_INVALID_CONDITIONS",
+  });
+});

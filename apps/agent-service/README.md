@@ -257,3 +257,5 @@ Arguments are the global and default per-tenant limits; values are persisted in 
 See [research reliability](RELIABILITY.md) for the two-phase model flow, pre-event Sports policy, safe diagnostic events and explicit model diagnostic commands.
 
 See [Configurable NFL research](NFL-RESEARCH.md) for plugin configuration, structured sources, decision v3 and explicit evaluation commands.
+
+See [Manual paper trading](PAPER-TRADING.md) for the optional paper plugin, endpoints, CLI, migration and simulation assumptions.

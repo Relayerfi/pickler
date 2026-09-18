@@ -57,6 +57,14 @@ if (command === "init") {
       method = "POST";
       body = args[1] ? { marketId: args[1] } : {};
       break;
+    case "paper-buy":
+      path = `/runs/${encodeURIComponent(args[1] ?? "")}/paper-order`;
+      method = "POST";
+      body = {};
+      break;
+    case "paper-result":
+      path = `/runs/${encodeURIComponent(args[1] ?? "")}/paper-order`;
+      break;
     case "result":
       path = `/runs/${encodeURIComponent(args[1] ?? "")}`;
       break;
@@ -79,7 +87,7 @@ if (command === "init") {
       break;
     default:
       throw new Error(
-        "Commands: init, agents, categories, check, configure, run, result, events, schedule, pause, resume. Each accepts alpha|beta (default alpha).",
+        "Commands: init, agents, categories, check, configure, run, result, events, paper-buy, paper-result, schedule, pause, resume. Each accepts alpha|beta (default alpha).",
       );
   }
   const response = await fetch(`http://127.0.0.1:4111/pilot${path}`, {
@@ -87,7 +95,8 @@ if (command === "init") {
     headers: {
       Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
-      "Idempotency-Key": randomUUID(),
+      "Idempotency-Key":
+        command === "paper-buy" ? (args[2] ?? `paper:${args[1] ?? ""}`) : randomUUID(),
     },
     ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
     signal: AbortSignal.timeout(240_000),

@@ -4,7 +4,7 @@ The `nfl-winner-v1` protocol covers NFL full-game moneyline markets only. It ret
 
 ## Plugins and configuration
 
-Reviewed plugins are `polymarket`, `exa`, `balldontlie`, `the-odds-api` and (in the next delivery) `paper-trading`. Core owns permissions and capability ports; infrastructure owns provider calls and storage; the service binds them and exposes validated tools. No external code installation occurs.
+Reviewed plugins are `polymarket`, `exa`, `balldontlie`, `the-odds-api` and `paper-trading` (see [manual simulation](PAPER-TRADING.md)). Core owns permissions and capability ports; infrastructure owns provider calls and storage; the service binds them and exposes validated tools. No external code installation occurs.
 
 Configuration adds `plugins: { version: 1, enabled: [...] }` and optional `researchProtocol: "nfl-winner-v1"`. A tool requires both its individual permission and its owning plugin. Historic configurations infer only Exa/Polymarket permissions from existing tools. Sports providers never become enabled implicitly. Versioned updates materialize the plugin configuration without rewriting run snapshots.
 

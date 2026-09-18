@@ -71,3 +71,55 @@ test("closed tool registry omits disabled capabilities and validates output", as
   );
   assert.equal(decisionSchema.safeParse({ action: "TRADE", size: "100" }).success, false);
 });
+
+test("paper transport authenticates tenant and rejects executable sizes or tenant overrides", async (t) => {
+  const repository = await createTestStore(t);
+  const unavailable = async () => {
+    throw new Error("Not used");
+  };
+  let calls = 0;
+  const app = createApi({
+    repository,
+    markets: { categories: async () => [], list: unavailable, get: unavailable, book: unavailable },
+    tokens: { alpha: "a".repeat(32) },
+    checkConnections: unavailable,
+    paper: {
+      get: unavailable,
+      create: async (tenantId, runId, key) => {
+        calls++;
+        assert.equal(tenantId, "alpha");
+        assert.equal(key, "paper-key");
+        return {
+          id: "paper",
+          tenantId,
+          agentId: "pickle-alpha",
+          runId,
+          marketId: "1",
+          outcomeId: "2",
+          status: "pending",
+          virtualBudget: "10",
+          createdAt: 1,
+          finishedAt: null,
+          reason: null,
+          fill: null,
+        };
+      },
+    },
+  });
+  const request = (body: unknown) =>
+    app.request("/runs/fixture/paper-order", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${"a".repeat(32)}`,
+        "Idempotency-Key": "paper-key",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    });
+  assert.equal((await app.request("/runs/fixture/paper-order", { method: "POST" })).status, 401);
+  assert.equal((await request({ size: "100" })).status, 400);
+  assert.equal((await request({ tenantId: "beta" })).status, 400);
+  assert.equal(calls, 0);
+  assert.equal((await request({})).status, 202);
+  assert.equal(calls, 1);
+});

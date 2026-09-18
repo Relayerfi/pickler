@@ -475,6 +475,10 @@ export class PostgresResearchStore implements ResearchRepository {
   }
 
   async recover(_now: number): Promise<void> {
+    await this.db.execute(
+      sql`UPDATE pickler.paper_orders SET status = 'interrupted', reason = 'INTERRUPTED', finished_at = ${this.leaseNow()}, lease_owner = NULL, lease_expires_at = NULL WHERE status = 'pending' AND lease_expires_at <= ${this.leaseNow()}`,
+    );
+
     void _now; // The database clock, not the caller clock, owns lease expiration.
     await this.db.transaction(async (tx) => {
       const expired = await tx

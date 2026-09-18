@@ -31,7 +31,7 @@ See [README.md](README.md) for setup, [docs/architecture.md](docs/architecture.m
 - Keep Next.js, React, transport objects, database clients, and provider SDKs out of core. Use business-owned interfaces and dependency injection.
 - Keep HTTP DTOs in `api-schema`; keep public on-chain artifacts in `chain`. Neither package carries credentials or server implementation details.
 - Use declared workspace dependencies and public package exports. Do not bypass package boundaries with relative imports into another project's source.
-- The local agent pilot uses Mastra, Exa, Polymarket and PostgreSQL. Provider credentials and the exact OpenAI-compatible model are operator supplied. No trading, wallets, public login, deployed external queue, contracts or Firecrawl integration exists. A separate local Cloudflare Queue experiment is documented in `apps/agent-service/CLOUDFLARE-BACKGROUND.md`. Do not describe offline tests as a verified live model run.
+- The local agent pilot uses Mastra, Exa, Polymarket and PostgreSQL. Provider credentials and the exact OpenAI-compatible model are operator supplied. No real trading, wallets, public login, deployed external queue, contracts or Firecrawl integration exists. A separate local Cloudflare Queue experiment is documented in `apps/agent-service/CLOUDFLARE-BACKGROUND.md`. Do not describe offline tests as a verified live model run.
 
 ## Branch and pull request workflow
 
@@ -75,3 +75,5 @@ Write one statement per line and separate logical phases with blank lines. Expan
 PostgreSQL is hosted by Supabase in deployed environments. Drizzle and database clients belong only in infrastructure. Use direct or session-pooler connections. Research ownership uses renewable per-run leases; concurrency admission uses a short transaction. Never expose `pickler`, `pickler_migrations`, or `mastra` through the Supabase Data API. Local PostgreSQL runs through `compose.yaml`; credentials there are disposable local development values only.
 
 The full local Supabase stack is configured in `supabase/config.toml`; read `supabase/AGENTS.md` before changing it. Use `npm run supabase:start` and `npm run test:supabase` for the Supabase-specific integration run. Its database uses port 54522; the PostgreSQL-only Docker alternative uses 55432.
+
+Manual paper trading is an opt-in plugin, with no model-executable tool. Read [the simulation guide](apps/agent-service/PAPER-TRADING.md) for permissions, reservations and exclusions.

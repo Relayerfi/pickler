@@ -9,3 +9,4 @@ export const systemClock: Clock = {
 export { PostgresResearchStore } from "./persistence/research-store.js";
 export { ExaResearch } from "./research/exa.js";
 export { PolymarketData } from "./polymarket/market-data.js";
+export { PostgresPaperStore } from "./persistence/paper-store.js";
