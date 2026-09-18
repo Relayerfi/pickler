@@ -7,3 +7,4 @@ export interface HealthResponse {
 export * from "./research.js";
 
 export * from "./paper.js";
+export * from "./trading.js";
