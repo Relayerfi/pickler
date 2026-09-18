@@ -14,11 +14,15 @@ export function PriceChart({
   change24h,
   candles,
   accent,
+  marketCap,
+  volume24h,
 }: {
   price: number;
   change24h: number;
   candles: Candles;
   accent: AccentDto;
+  marketCap: string;
+  volume24h: string;
 }) {
   const [range, setRange] = useState<ChartRangeDto>("1h");
   const series = candles[range];
@@ -34,14 +38,16 @@ export function PriceChart({
   return (
     <>
       <div className={styles.panelHead}>
-        <span className={styles.label}>PRICE</span>
-        <span className={styles.panelHeadValue}>{formatTokenPrice(price)} MON</span>
+        <span className={styles.label}>MCAP</span>
+        <span className={styles.panelHeadValue}>{marketCap}</span>
         <span
           className={`${styles.change} ${change24h < 0 ? styles.toneLoss : styles.toneWin}`}
           style={{ margin: 0 }}
         >
-          {formatChange(change24h)} 24H
+          {formatChange(change24h)}
         </span>
+        <span className={styles.label}>VOL 24H</span>
+        <span className={styles.panelHeadValue}>{volume24h}</span>
         <span className={styles.ranges} role="group" aria-label="Chart range">
           {RANGES.map((r) => (
             <button

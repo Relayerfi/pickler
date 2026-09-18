@@ -38,29 +38,49 @@ export function StageBadge({ token }: { token: AgentSummaryDto["token"] }) {
   );
 }
 
+const venueMarks = (token: NonNullable<AgentSummaryDto["token"]>) =>
+  token.stage === "graduated"
+    ? [
+        { src: "/brand/pons.png", label: "Pons", title: "Graduated on Pons" },
+        { src: "/brand/robinhood.png", label: "Robinhood Chain", title: "Robinhood Chain" },
+      ]
+    : [
+        { src: "/brand/logo.png", label: "Pickler curve", title: "On the Pickler curve" },
+        { src: "/brand/monad.png", label: "Monad", title: "Monad" },
+      ];
+
 /** Where the token trades: our curve on Monad before graduation, Pons on Robinhood Chain after it. */
 export function VenueMarks({ token }: { token: AgentSummaryDto["token"] }) {
   if (!token) {
     return null;
   }
-  const marks =
-    token.stage === "graduated"
-      ? [
-          { src: "/brand/pons.png", label: "Graduated on Pons" },
-          { src: "/brand/robinhood.png", label: "Robinhood Chain" },
-        ]
-      : [
-          { src: "/brand/logo.png", label: "On the Pickler curve" },
-          { src: "/brand/monad.png", label: "Monad" },
-        ];
   return (
     <span className={styles.marks}>
-      {marks.map((mark) => (
-        <span key={mark.src} className={styles.mark} title={mark.label}>
-          <Image src={mark.src} alt={mark.label} width={64} height={64} unoptimized />
+      {venueMarks(token).map((mark) => (
+        <span key={mark.src} className={styles.mark} title={mark.title}>
+          <Image src={mark.src} alt={mark.title} width={64} height={64} unoptimized />
         </span>
       ))}
     </span>
+  );
+}
+
+/** The same information as chips, one per venue, for the token page. */
+export function VenueChips({ token }: { token: AgentSummaryDto["token"] }) {
+  if (!token) {
+    return null;
+  }
+  return (
+    <>
+      {venueMarks(token).map((mark) => (
+        <span key={mark.src} className={`${styles.chip} ${styles.venueChip}`}>
+          <span className={styles.chipMark}>
+            <Image src={mark.src} alt="" width={64} height={64} unoptimized />
+          </span>
+          {mark.label.toUpperCase()}
+        </span>
+      ))}
+    </>
   );
 }
 
