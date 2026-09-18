@@ -1,6 +1,6 @@
 "use client";
 
-import { Icon } from "@pickler/ui";
+import { Icon, Button } from "@pickler/ui";
 import { useState } from "react";
 import styles from "../landing.module.css";
 import { useLanding } from "../lib/landing-data";
@@ -31,14 +31,14 @@ export function NewsBanner() {
             <Icon name="arrow" size={13} />
           </span>
         </a>
-        <button
-          type="button"
+        <Button
+          variant="secondary"
           className={styles.newsClose}
           onClick={() => setOpen(false)}
           aria-label="Dismiss announcements"
         >
-          ×
-        </button>
+          <Icon name="x" size={13} />
+        </Button>
       </div>
       {announcements.length > 1 && (
         <div className={`${styles.dots} ${styles.newsDots}`}>

@@ -514,15 +514,9 @@
 }
 
 .chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
   padding: 6px 11px;
   background: rgba(245, 246, 255, 0.05);
-  border: 1px solid var(--rule);
-  border-radius: var(--pk-radius-pill);
-  font: 500 12px/1 var(--mono);
-  color: var(--ink-dim);
+  border-color: var(--rule);
 }
 
 .page a.chip {
@@ -1029,17 +1023,12 @@
 }
 
 .navMenuButton {
-  display: inline-flex;
-  align-items: center;
   gap: 8px;
   padding: 10px 13px;
-  background: transparent;
-  border: none;
-  font: 500 12.5px/1 var(--mono);
+  font-size: 12.5px;
+  font-weight: 500;
   letter-spacing: 0.06em;
   color: var(--muted);
-  cursor: pointer;
-  border-radius: var(--pk-radius-pill);
 }
 
 .navMenuButton span {
@@ -1160,28 +1149,17 @@
 }
 
 .viewToggle {
-  display: flex;
   gap: 2px;
-  padding: 3px;
   border: 1px solid rgba(245, 246, 255, 0.16);
-  border-radius: var(--pk-radius-pill);
+  background: transparent;
 }
 
 .viewButton {
+  flex: none;
   padding: 7px 13px;
-  background: transparent;
-  border: none;
-  border-radius: var(--pk-radius-pill);
   font: 600 11px/1 var(--mono);
   letter-spacing: 0.06em;
   color: var(--faint);
-  cursor: pointer;
-}
-
-.viewButton[aria-pressed="true"] {
-  background: rgba(245, 246, 255, 0.14);
-  color: var(--ink);
-  border-radius: var(--pk-radius-pill);
 }
 
 /* ---------- Chain marks and chips ---------- */
@@ -1872,28 +1850,13 @@
 
 .sideToggle {
   display: flex;
-  gap: 3px;
-  padding: 3px;
   margin-bottom: 18px;
   background: rgba(5, 6, 26, 0.55);
-  border-radius: var(--pk-radius-pill);
 }
 
 .sideButton {
-  flex: 1;
   padding: 11px;
-  background: transparent;
-  border: none;
-  border-radius: var(--pk-radius-pill);
   font: 600 13px/1 var(--body);
-  color: var(--ink-dim);
-  cursor: pointer;
-}
-
-.sideButton[aria-pressed="true"] {
-  background: var(--lime);
-  color: #0b1200;
-  font-weight: 700;
 }
 
 .amountRow {
@@ -1954,13 +1917,12 @@
 
 .quickButton {
   flex: 1 1 60px;
+  justify-content: center;
   padding: 10px 6px;
   background: rgba(5, 6, 26, 0.5);
-  border: 1px solid var(--rule);
+  border-color: var(--rule);
   border-radius: var(--pk-radius-md);
-  font: 600 12px/1 var(--mono);
-  color: var(--ink-dim);
-  cursor: pointer;
+  font-weight: 600;
 }
 
 .quickButton:hover {

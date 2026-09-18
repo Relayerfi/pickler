@@ -1,7 +1,7 @@
 import type { AccentDto, AgentSummaryDto, VenueDto } from "@pickler/api-schema";
 import Image from "next/image";
 import { accentVars } from "@/lib/accent";
-import { Meter } from "@pickler/ui";
+import { Meter, ChipText } from "@pickler/ui";
 import styles from "../agents.module.css";
 import { formatInteger, initials } from "../lib/format";
 
@@ -74,12 +74,12 @@ export function VenueChips({ token }: { token: AgentSummaryDto["token"] }) {
   return (
     <>
       {venueMarks(token).map((mark) => (
-        <span key={mark.src} className={`${styles.chip} ${styles.venueChip}`}>
+        <ChipText key={mark.src} className={`${styles.chip} ${styles.venueChip}`}>
           <span className={styles.chipMark}>
             <Image src={mark.src} alt="" width={64} height={64} unoptimized />
           </span>
           {mark.label.toUpperCase()}
-        </span>
+        </ChipText>
       ))}
     </>
   );
@@ -92,7 +92,7 @@ const venueLabel: Record<VenueDto, string> = {
 };
 
 export function VenueChip({ venue }: { venue: VenueDto }) {
-  return <span className={`${styles.chip} ${styles.venueChip}`}>{venueLabel[venue]}</span>;
+  return <ChipText className={`${styles.chip} ${styles.venueChip}`}>{venueLabel[venue]}</ChipText>;
 }
 
 export function CurveProgress({

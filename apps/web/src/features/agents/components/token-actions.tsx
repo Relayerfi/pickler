@@ -1,6 +1,6 @@
 "use client";
 
-import { Icon } from "@pickler/ui";
+import { Icon, Chip } from "@pickler/ui";
 import { useState } from "react";
 import styles from "../agents.module.css";
 
@@ -23,24 +23,18 @@ export function TokenActions({ address, name }: { address: string | null; name: 
   return (
     <>
       {address && (
-        <button
-          type="button"
-          className={styles.chip}
-          onClick={() => copy(address, "contract")}
-          title={address}
-        >
+        <Chip className={styles.chip} onClick={() => copy(address, "contract")} title={address}>
           {copied === "contract" ? "Copied" : shorten(address)}
           <Icon name="copy" size={13} />
-        </button>
+        </Chip>
       )}
-      <button
-        type="button"
+      <Chip
         className={styles.chip}
         onClick={() => copy(window.location.href, "link")}
         aria-label={`Copy the link to ${name}`}
       >
         {copied === "link" ? "Copied" : "Share"}
-      </button>
+      </Chip>
     </>
   );
 }

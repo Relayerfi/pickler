@@ -2,7 +2,7 @@
 
 import type { AgentPersonaDto } from "@pickler/api-schema";
 import Link from "next/link";
-import { Icon, Meter } from "@pickler/ui";
+import { Icon, Meter, ChipLink, ChipText } from "@pickler/ui";
 import { useState } from "react";
 import { accentVars } from "@/lib/accent";
 import styles from "../agents.module.css";
@@ -52,16 +52,16 @@ export function PersonaPage({ persona, nowMs }: { persona: AgentPersonaDto; nowM
             <h1 className={styles.heroTitle}>{persona.name}</h1>
             <span className={styles.handleChip}>@{persona.handle}</span>
             {persona.xHandle && (
-              <a
+              <ChipLink
                 href={xUrl(persona.xHandle)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className={styles.chip}
               >
                 {persona.xHandle}
-              </a>
+              </ChipLink>
             )}
-            <span className={`${styles.chip} ${styles.vibeChip}`}>{persona.vibe}</span>
+            <ChipText className={`${styles.chip} ${styles.vibeChip}`}>{persona.vibe}</ChipText>
             <VenueChip venue={persona.venue} />
           </div>
 
@@ -94,10 +94,10 @@ export function PersonaPage({ persona, nowMs }: { persona: AgentPersonaDto; nowM
         </div>
         <p className={styles.tokenAsideRow}>
           <strong>{persona.ticker}</strong>
-          <span className={styles.chip}>mcap {formatCompact(persona.marketCap)} MON</span>
-          <span className={`${styles.chip} ${styles.chipMuted}`}>
+          <ChipText className={styles.chip}>mcap {formatCompact(persona.marketCap)} MON</ChipText>
+          <ChipText className={`${styles.chip} ${styles.chipMuted}`}>
             {persona.stage === "graduated" ? "GRADUATED" : "PRE-GRAD"}
-          </span>
+          </ChipText>
           {persona.creatorHandle && (
             <span className={styles.quiet}>deployed by {persona.creatorHandle}</span>
           )}

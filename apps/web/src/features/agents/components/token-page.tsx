@@ -1,6 +1,6 @@
 import type { AgentProfileDto } from "@pickler/api-schema";
 import Link from "next/link";
-import { Icon } from "@pickler/ui";
+import { Icon, ChipLink } from "@pickler/ui";
 import { accentVars } from "@/lib/accent";
 import styles from "../agents.module.css";
 import {
@@ -51,21 +51,22 @@ export function TokenPage({ agent, nowMs }: { agent: AgentProfileDto; nowMs: num
               <div className={styles.chips}>
                 <TokenActions address={token?.address ?? null} name={agent.name} />
                 {agent.xHandle && (
-                  <a
+                  <ChipLink
                     href={xUrl(agent.xHandle)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className={styles.chip}
                   >
                     {agent.xHandle} <Icon name="external" size={13} />
-                  </a>
+                  </ChipLink>
                 )}
-                <Link
+                <ChipLink
+                  as={Link}
                   href={`/agents/${agent.handle}`}
                   className={`${styles.chip} ${styles.meetChip}`}
                 >
                   Meet the agent <Icon name="arrow" size={14} />
-                </Link>
+                </ChipLink>
               </div>
             </div>
           </header>

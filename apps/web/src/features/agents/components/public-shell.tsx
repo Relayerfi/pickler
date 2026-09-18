@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Icon } from "@pickler/ui";
+import { Icon, Button } from "@pickler/ui";
 import { usePathname } from "next/navigation";
 import { useState, type ReactNode } from "react";
 import styles from "../agents.module.css";
@@ -73,15 +73,16 @@ export function PublicShell({ children }: { children: ReactNode }) {
           <div className={styles.navMenus}>
             {MENUS.map((menu) => (
               <div key={menu.key} className={styles.navMenu}>
-                <button
-                  type="button"
+                <Button
+                  variant="ghost"
+                  mono
                   className={`${styles.navMenuButton} ${open === menu.key || owner === menu.key ? styles.navMenuButtonOn : ""}`}
                   aria-expanded={open === menu.key}
                   onClick={() => setOpen(open === menu.key ? null : menu.key)}
                 >
                   {menu.label.toUpperCase()}
                   <Icon name={open === menu.key ? "chevronUp" : "chevronDown"} size={13} />
-                </button>
+                </Button>
                 {open === menu.key && (
                   <div className={styles.navDropdown}>
                     <p className={styles.navDropdownLabel}>{menu.label.toUpperCase()}</p>

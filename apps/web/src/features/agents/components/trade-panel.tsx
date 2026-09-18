@@ -2,7 +2,7 @@
 
 import type { AgentProfileDto } from "@pickler/api-schema";
 import { useState } from "react";
-import { Button } from "@pickler/ui";
+import { Button, Segmented, Chip } from "@pickler/ui";
 import styles from "../agents.module.css";
 import { formatInteger, formatTokenPrice } from "../lib/format";
 import { CurveProgress } from "./agent-parts";
@@ -33,24 +33,18 @@ export function TradePanel({ agent }: { agent: AgentProfileDto }) {
         {graduated ? "Trade" : "Back"} {agent.name}
       </h2>
 
-      <div className={styles.sideToggle} role="group" aria-label="Side">
-        <button
-          type="button"
-          className={styles.sideButton}
-          aria-pressed={side === "buy"}
-          onClick={() => setSide("buy")}
-        >
-          Buy
-        </button>
-        <button
-          type="button"
-          className={styles.sideButton}
-          aria-pressed={side === "sell"}
-          onClick={() => setSide("sell")}
-        >
-          Sell
-        </button>
-      </div>
+      <Segmented
+        label="Side"
+        tone="lime"
+        className={styles.sideToggle}
+        optionClassName={styles.sideButton}
+        value={side}
+        onChange={setSide}
+        options={[
+          { value: "buy", label: "Buy" },
+          { value: "sell", label: "Sell" },
+        ]}
+      />
 
       <div className={styles.amountRow}>
         <input
@@ -76,14 +70,9 @@ export function TradePanel({ agent }: { agent: AgentProfileDto }) {
 
       <div className={styles.quickRow} role="group" aria-label="Amount">
         {QUICK_AMOUNTS.map((quick) => (
-          <button
-            key={quick}
-            type="button"
-            className={styles.quickButton}
-            onClick={() => setAmount(String(quick))}
-          >
+          <Chip key={quick} className={styles.quickButton} onClick={() => setAmount(String(quick))}>
             {quick}
-          </button>
+          </Chip>
         ))}
       </div>
 

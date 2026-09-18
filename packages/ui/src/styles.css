@@ -297,3 +297,48 @@
 .pk-meter-fill[data-tone="magenta"] {
   background: var(--pk-magenta);
 }
+
+/* ---------- Segmented: exclusive options in one track ---------- */
+
+.pk-segmented {
+  display: inline-flex;
+  gap: 3px;
+  padding: 3px;
+  border-radius: var(--pk-radius-pill);
+  background: var(--pk-field);
+}
+
+.pk-segment {
+  flex: 1;
+  padding: 9px 14px;
+  border: none;
+  border-radius: var(--pk-radius-pill);
+  background: transparent;
+  color: var(--pk-ink-dim);
+  font: var(--pk-control-font-sm) var(--pk-font);
+  cursor: pointer;
+  transition:
+    background var(--pk-duration),
+    color var(--pk-duration);
+}
+
+.pk-segment:hover:not([aria-pressed="true"]) {
+  color: var(--pk-ink);
+}
+
+.pk-segment:focus-visible {
+  outline: 2px solid var(--pk-lime);
+  outline-offset: 2px;
+}
+
+.pk-segment[aria-pressed="true"] {
+  background: var(--pk-surface-strong);
+  color: var(--pk-ink);
+}
+
+/* Taking a side reads as loud as the money it moves. */
+.pk-segmented[data-tone="lime"] .pk-segment[aria-pressed="true"] {
+  background: var(--pk-lime);
+  color: var(--pk-on-lime);
+  font-weight: 700;
+}

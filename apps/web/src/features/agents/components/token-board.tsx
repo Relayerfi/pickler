@@ -2,7 +2,7 @@
 
 import type { AgentSummaryDto } from "@pickler/api-schema";
 import Link from "next/link";
-import { Icon, Meter, Chip } from "@pickler/ui";
+import { Icon, Meter, Chip, Segmented } from "@pickler/ui";
 import { useMemo, useState } from "react";
 import styles from "../agents.module.css";
 import {
@@ -108,19 +108,14 @@ export function TokenBoard({
               {sort.toUpperCase()}
             </Chip>
           ))}
-          <span className={styles.viewToggle} role="group" aria-label="Layout">
-            {VIEWS.map((view) => (
-              <button
-                key={view}
-                type="button"
-                className={styles.viewButton}
-                aria-pressed={filters.view === view}
-                onClick={() => update({ view })}
-              >
-                {view.toUpperCase()}
-              </button>
-            ))}
-          </span>
+          <Segmented
+            label="Layout"
+            className={styles.viewToggle}
+            optionClassName={styles.viewButton}
+            value={filters.view}
+            onChange={(view) => update({ view })}
+            options={VIEWS.map((view) => ({ value: view, label: view.toUpperCase() }))}
+          />
         </div>
       </div>
 

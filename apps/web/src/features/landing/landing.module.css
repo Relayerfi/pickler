@@ -480,18 +480,13 @@
   box-shadow: none;
 }
 
-.newsClose {
-  display: grid;
+.page .newsClose {
   flex: none;
-  place-items: center;
   width: 26px;
   height: 26px;
-  background: transparent;
-  border: 1px solid rgba(245, 246, 255, 0.24);
-  font: 500 12px/1 var(--body);
+  padding: 0;
+  border-color: rgba(245, 246, 255, 0.24);
   color: var(--muted);
-  cursor: pointer;
-  border-radius: var(--pk-radius-pill);
 }
 
 .newsClose:hover {
