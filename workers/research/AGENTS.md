@@ -13,3 +13,7 @@ or terminal research. Cron only reconciles durable jobs. Admission shutdown pres
 Use the shared runtime and prompts, not a duplicate model implementation. Do not seed lab
 agents or change operator configuration during startup. Connection checks are explicit operator
 commands. Credentials stay in Worker secrets. Production deployment is outside this release.
+
+The staging Wrangler config caps Queue concurrency at five and reconciles every minute.
+Build with `npm run build:worker --workspace=@pickler/research-worker`. The zero Hyperdrive ID
+is for dry runs only; use the root staging checks and operations guide before any deployment.

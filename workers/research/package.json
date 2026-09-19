@@ -4,7 +4,8 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "build:worker": "wrangler deploy --config wrangler.jsonc --dry-run --outdir .wrangler/build"
   },
   "dependencies": {
     "@pickler/agent-runtime": "*",

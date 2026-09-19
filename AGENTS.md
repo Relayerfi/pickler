@@ -85,8 +85,13 @@ Manual paper trading is an opt-in plugin, with no model-executable tool. Read [t
 
 ## Cloudflare unification in progress
 
-The API/data branch adds request-scoped Hono composition in `workers/api`, private console
-identity links and PostgreSQL monetary budgets. Read `workers/api/AGENTS.md` before changes.
+The unified implementation adds request-scoped Hono composition in `workers/api`, private console
+identity links, PostgreSQL monetary budgets and shared research runtime. Read `workers/api/AGENTS.md` before changes.
 See [delivery status and contracts](docs/cloudflare-unification.md); do not describe the planned
 staging deployment as complete until the three-Worker flow is verified remotely. Deployed
 composition must never seed local alpha/beta tenants or import legacy budget projections silently.
+
+The three staging Worker configurations are validated by `npm run check:staging` and built by
+`npm run build:workers`. Read [staging operations](docs/cloudflare-staging.md) before deployment.
+Local dry runs do not establish remote readiness; record deployed commits and paid acceptance
+results separately. Never deploy placeholder resource IDs or put backend secrets in the web.
