@@ -31,7 +31,9 @@
     "supabase:start": "supabase start",
     "supabase:stop": "supabase stop",
     "supabase:status": "supabase status",
-    "test:supabase": "TEST_DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54522/postgres npm test"
+    "test:supabase": "TEST_DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54522/postgres npm test",
+    "check:staging": "node scripts/check-staging.mjs",
+    "build:workers": "npm run build:shared && npm run build:worker --workspace=@pickler/api && npm run build:worker --workspace=@pickler/research-worker && npm run build:worker --workspace=@pickler/web"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
