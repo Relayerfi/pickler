@@ -2,8 +2,8 @@
 
 ## Delivery status
 
-The API/data branch introduces the private console API and PostgreSQL coordination.
-The current Next.js routes remain until the runtime/console follow-up switches their transport.
+The implementation provides a private console API, PostgreSQL coordination, shared Mastra
+runtime and a Next.js console with transport-only delegation.
 This document does not claim a deployed staging environment or live-provider acceptance.
 
 Target deployment consists of a Next.js/OpenNext web Worker, a Hono API Worker, and a
@@ -43,7 +43,7 @@ satisfy that requirement. Checking a connection is an explicit operator action.
 ## HTTP contracts
 
 The public prefix is `/api/v1`; the API Worker internally mounts `/v1`. The web binding
-will transport requests and cookies without business logic. Response families intentionally
+transports requests and cookies without business logic. Response families intentionally
 retain their existing formats:
 
 - Product/auth/profile routes: existing success/error envelopes.
@@ -79,7 +79,7 @@ Apply the reconciled migrator against an isolated database first. The tests cove
 research-only and product-only histories. Keep all private Pickler schemas out of the
 Supabase Data API. Never provide database/provider credentials to the web Worker.
 
-## Runtime and console follow-up
+## Runtime and console
 
 `packages/agent-runtime` now contains the shared Mastra adapter, prompts, tool registry,
 composition and lease/background lifecycle. Local import paths forward to that package.
